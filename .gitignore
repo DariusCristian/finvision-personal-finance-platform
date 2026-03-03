@@ -1,0 +1,12 @@
+node_modules/
+dist/
+client/dist/
+coverage/
+.env
+client/.env
+server/.env
+*.log
+*.tsbuildinfo
+apps_legacy/
+packages_legacy/
+*.legacy.json

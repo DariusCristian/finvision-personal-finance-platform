@@ -1,0 +1,110 @@
+import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+
+import { useAuth } from '../context/AuthContext';
+
+type AppShellProps = {
+  activeTab: 'home' | 'budget' | 'learning' | 'invest';
+  children: ReactNode;
+};
+
+type NavItem = {
+  id: AppShellProps['activeTab'];
+  label: string;
+  href?: string;
+};
+
+const NAV_ITEMS: NavItem[] = [
+  { id: 'home', label: 'Home', href: '/' },
+  { id: 'budget', label: 'Budget', href: '/budget' },
+  { id: 'learning', label: 'Learning Center' },
+  { id: 'invest', label: 'Invest' },
+];
+
+function BellIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <path d="M12 4.5a4.5 4.5 0 0 0-4.5 4.5v2.1c0 .8-.3 1.6-.8 2.2l-1 1.2c-.5.7 0 1.8.9 1.8h11c1 0 1.5-1.1.9-1.8l-1-1.2a3.4 3.4 0 0 1-.8-2.2V9A4.5 4.5 0 0 0 12 4.5Z" />
+      <path d="M10 18.5a2 2 0 0 0 4 0" />
+    </svg>
+  );
+}
+
+const getInitials = (displayName?: string) => {
+  if (!displayName) {
+    return 'FV';
+  }
+
+  return displayName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+};
+
+export function AppShell({ activeTab, children }: AppShellProps) {
+  const { user } = useAuth();
+  const initials = getInitials(user?.displayName);
+
+  return (
+    <div className="min-h-screen bg-[#f3f4f6] text-slate-900">
+      <nav className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2563eb] text-xl font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
+              F
+            </div>
+            <span className="text-2xl font-bold tracking-[-0.03em]">FinVision</span>
+          </div>
+
+          <div className="hidden items-center gap-8 md:flex">
+            {NAV_ITEMS.map((item) => {
+              const isActive = item.id === activeTab;
+              const className = [
+                'text-base font-medium transition-colors',
+                isActive ? 'text-[#2563eb]' : 'text-slate-500 hover:text-[#2563eb]',
+              ].join(' ');
+
+              if (item.href) {
+                return (
+                  <Link key={item.id} to={item.href} className={className}>
+                    {item.label}
+                  </Link>
+                );
+              }
+
+              return (
+                <button key={item.id} type="button" className={className}>
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              className="relative rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              aria-label="Notifications"
+            >
+              <BellIcon />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-red-500" />
+            </button>
+            <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
+              <div className="hidden text-right sm:block">
+                <p className="text-sm font-semibold text-slate-900">{user?.displayName ?? 'FinVision User'}</p>
+                <p className="text-xs text-slate-500">Pro Plan</p>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-[#0d5b52] to-[#2563eb] text-sm font-semibold text-white shadow-sm">
+                {initials}
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+    </div>
+  );
+}
