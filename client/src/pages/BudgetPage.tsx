@@ -3,22 +3,33 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AddTransactionModal } from '../components/AddTransactionModal';
 import { AppShell } from '../components/AppShell';
 import { CategoryDonutChart } from '../components/CategoryDonutChart';
+import { InvestingWalletConvertModal } from '../components/InvestingWalletConvertModal';
+import { InvestingWalletDepositModal } from '../components/InvestingWalletDepositModal';
 import { KpiCard } from '../components/KpiCard';
+import { ManageInvestingWalletModal } from '../components/ManageInvestingWalletModal';
 import { SetBudgetModal } from '../components/SetBudgetModal';
-import { SetInvestingModal } from '../components/SetInvestingModal';
 import { TransactionsTable } from '../components/TransactionsTable';
 import { useAuth } from '../context/AuthContext';
 import {
   ApiRequestError,
+  convertInvestingWalletToEur,
   createTransaction,
+  depositInvestingWallet,
   deleteTransaction,
   fetchCategories,
+  fetchInvestAccount,
+  fetchInvestingWallet,
+  fetchInvestingWalletConvertQuote,
+  fetchInvestingWalletSummary,
   fetchTransactions,
   updateTransaction,
-  updateInvestingProfile,
+  updateInvestingWallet,
   updateMonthlyBudgetGoal,
   type BudgetCategory,
   type BudgetTransaction,
+  type InvestingWallet,
+  type InvestingWalletConvertQuote,
+  type InvestingWalletSummary,
 } from '../lib/api';
 
 type RecurrenceValue = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'annually' | 'none';
@@ -116,10 +127,14 @@ const getMonthRange = (month: string) => {
   };
 };
 
-const formatCurrency = (value: number, fractionDigits = 2) =>
+const formatCurrency = (
+  value: number,
+  fractionDigits = 2,
+  currency: 'RON' | 'EUR' | 'USD' = 'RON',
+) =>
   new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency,
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   }).format(value);
@@ -295,12 +310,32 @@ export function BudgetPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<BudgetTransaction | null>(null);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
-  const [isInvestingModalOpen, setIsInvestingModalOpen] = useState(false);
+  const [isWalletSettingsModalOpen, setIsWalletSettingsModalOpen] = useState(false);
+  const [isWalletDepositModalOpen, setIsWalletDepositModalOpen] = useState(false);
+  const [isWalletConvertModalOpen, setIsWalletConvertModalOpen] = useState(false);
+  const [walletConvertInputAmount, setWalletConvertInputAmount] = useState(0);
   const [isSavingTransaction, setIsSavingTransaction] = useState(false);
   const [isSavingBudgetGoal, setIsSavingBudgetGoal] = useState(false);
-  const [isSavingInvestingGoal, setIsSavingInvestingGoal] = useState(false);
+  const [isSavingWalletSettings, setIsSavingWalletSettings] = useState(false);
+  const [isDepositingWalletFunds, setIsDepositingWalletFunds] = useState(false);
+  const [isConvertingWalletFunds, setIsConvertingWalletFunds] = useState(false);
+  const [isLoadingWalletQuote, setIsLoadingWalletQuote] = useState(false);
+  const [walletQuoteError, setWalletQuoteError] = useState<string | null>(null);
+  const [walletConvertQuote, setWalletConvertQuote] = useState<InvestingWalletConvertQuote | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isUsingMockData, setIsUsingMockData] = useState(false);
+  const [investingWallet, setInvestingWallet] = useState<InvestingWallet | null>(null);
+  const [investingWalletSummary, setInvestingWalletSummary] = useState<InvestingWalletSummary | null>(null);
+  const budgetCurrency: 'RON' | 'EUR' | 'USD' = user?.baseCurrency ?? 'RON';
+  const selectedMonthParts = useMemo(() => {
+    const [year, month] = selectedMonth.split('-').map(Number);
+
+    return {
+      year,
+      month,
+    };
+  }, [selectedMonth]);
 
   const loadBudgetData = useCallback(async () => {
     if (!accessToken) {
@@ -313,28 +348,48 @@ export function BudgetPage() {
     const range = getMonthRange(selectedMonth);
 
     try {
-      const [categoriesPayload, transactionsPayload] = await Promise.all([
+      const [categoriesPayload, transactionsPayload, walletPayload, walletSummaryPayload] = await Promise.all([
         fetchCategories(accessToken),
         fetchTransactions({ ...range, sort: sortOption }, accessToken),
+        fetchInvestingWallet(accessToken),
+        fetchInvestingWalletSummary(accessToken, selectedMonthParts.year, selectedMonthParts.month),
       ]);
 
       setCategories(categoriesPayload.categories);
       setTransactions(sortTransactionsByOption(transactionsPayload.transactions, sortOption));
+      setInvestingWallet(walletPayload);
+      setInvestingWalletSummary(walletSummaryPayload);
       setIsUsingMockData(false);
     } catch {
       const fallbackCategories = MOCK_CATEGORIES;
       setCategories(fallbackCategories);
       setTransactions(sortTransactionsByOption(buildMockTransactions(selectedMonth, fallbackCategories), sortOption));
+      setInvestingWallet(null);
+      setInvestingWalletSummary(null);
       setIsUsingMockData(true);
       setLoadError('Live API unavailable. Showing demo fallback data.');
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, selectedMonth, sortOption]);
+  }, [accessToken, selectedMonth, selectedMonthParts.month, selectedMonthParts.year, sortOption]);
 
   useEffect(() => {
     void loadBudgetData();
   }, [loadBudgetData]);
+
+  useEffect(() => {
+    if (!successMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccessMessage(null);
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [successMessage]);
 
   const visibleTransactions = useMemo(() => {
     const term = searchValue.trim().toLowerCase();
@@ -370,20 +425,11 @@ export function BudgetPage() {
         ? Math.round((expenses / monthlyBudgetGoal) * 100)
         : null;
     const balanceRatio = income > 0 ? (totalBalance / income) * 100 : 0;
-    const investingGoal =
-      typeof user?.investingMonthlyContributionGoal === 'number'
-        ? user.investingMonthlyContributionGoal
-        : 0;
-    const investedThisMonth = transactions
-      .filter(
-        (transaction) =>
-          transaction.type === 'expense' && transaction.category?.slug === 'investing',
-      )
-      .reduce((sum, transaction) => sum + transaction.amount, 0);
+    const investingGoal = investingWallet?.monthlyGoal ?? 0;
+    const investedThisMonth = investingWalletSummary?.investedThisMonthRON ?? 0;
     const investingProgress =
       investingGoal > 0 ? Math.round((investedThisMonth / investingGoal) * 100) : null;
-    const investingAccountBalance =
-      typeof user?.investingAccountBalance === 'number' ? user.investingAccountBalance : 0;
+    const investingAccountBalance = investingWallet?.balance ?? 0;
 
     return {
       income,
@@ -398,7 +444,7 @@ export function BudgetPage() {
       investingProgress,
       investingAccountBalance,
     };
-  }, [transactions, user]);
+  }, [investingWallet, investingWalletSummary, transactions, user]);
 
   const categorySpend = useMemo(() => {
     const grouped = new Map<string, { label: string; value: number; color: string }>();
@@ -423,42 +469,6 @@ export function BudgetPage() {
     return Array.from(grouped.values()).sort((left, right) => right.value - left.value);
   }, [transactions]);
 
-  const updateLocalInvestingBalance = useCallback(
-    (payload: CreateTransactionArgs) => {
-      if (!user) {
-        return;
-      }
-
-      const selectedCategory = categories.find((item) => item.id === payload.categoryId) ?? null;
-      const isInvestingContribution =
-        payload.type === 'expense' && selectedCategory?.slug === 'investing';
-
-      if (!isInvestingContribution) {
-        return;
-      }
-
-      setCurrentUser({
-        ...user,
-        investingAccountBalance: user.investingAccountBalance + payload.amount,
-      });
-    },
-    [categories, setCurrentUser, user],
-  );
-
-  const applyMockInvestingDelta = useCallback(
-    (delta: number) => {
-      if (!user || !delta) {
-        return;
-      }
-
-      setCurrentUser({
-        ...user,
-        investingAccountBalance: Math.max(0, user.investingAccountBalance + delta),
-      });
-    },
-    [setCurrentUser, user],
-  );
-
   const handleSaveTransaction = async (payload: CreateTransactionArgs) => {
     if (!accessToken) {
       throw new Error('You need to be logged in to add transactions.');
@@ -471,7 +481,6 @@ export function BudgetPage() {
         await updateTransaction(editingTransaction.originalTransactionId, payload, accessToken);
       } else {
         await createTransaction(payload, accessToken);
-        updateLocalInvestingBalance(payload);
       }
 
       setEditingTransaction(null);
@@ -482,14 +491,6 @@ export function BudgetPage() {
         const category = categories.find((item) => item.id === payload.categoryId) ?? null;
         const normalizedDate = new Date(`${payload.date}T12:00:00.000Z`);
         if (editingTransaction) {
-          const previousContribution =
-            editingTransaction.type === 'expense' && editingTransaction.category?.slug === 'investing'
-              ? editingTransaction.amount
-              : 0;
-          const nextContribution =
-            payload.type === 'expense' && category?.slug === 'investing' ? payload.amount : 0;
-
-          applyMockInvestingDelta(nextContribution - previousContribution);
           setTransactions((current) =>
             current.map((transaction) =>
               transaction.originalTransactionId !== editingTransaction.originalTransactionId
@@ -536,7 +537,6 @@ export function BudgetPage() {
             category,
           };
 
-          updateLocalInvestingBalance(payload);
           setTransactions((current) => [mockTransaction, ...current]);
         }
 
@@ -560,12 +560,12 @@ export function BudgetPage() {
     }
   };
 
-  const handleEditTransaction = (transaction: BudgetTransaction) => {
+  const handleEditTransaction = useCallback((transaction: BudgetTransaction) => {
     setEditingTransaction(transaction);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleDeleteTransaction = async (transaction: BudgetTransaction) => {
+  const handleDeleteTransaction = useCallback(async (transaction: BudgetTransaction) => {
     const targetLabel = transaction.isProjected
       ? 'this recurring source transaction'
       : 'this transaction';
@@ -588,12 +588,6 @@ export function BudgetPage() {
       await loadBudgetData();
     } catch (error) {
       if (isUsingMockData) {
-        const investingContribution =
-          transaction.type === 'expense' && transaction.category?.slug === 'investing'
-            ? transaction.amount
-            : 0;
-
-        applyMockInvestingDelta(-investingContribution);
         setTransactions((current) =>
           current.filter(
             (item) => item.originalTransactionId !== transaction.originalTransactionId,
@@ -618,7 +612,24 @@ export function BudgetPage() {
     } finally {
       setIsSavingTransaction(false);
     }
-  };
+  }, [
+    accessToken,
+    editingTransaction,
+    isUsingMockData,
+    loadBudgetData,
+  ]);
+
+  const handleBudgetSearchChange = useCallback((value: string) => {
+    setSearchValue(value);
+  }, []);
+
+  const handleBudgetSortChange = useCallback((value: SortOption) => {
+    setSortOption(value);
+  }, []);
+
+  const handleDeleteBudgetTransaction = useCallback((transaction: BudgetTransaction) => {
+    void handleDeleteTransaction(transaction);
+  }, [handleDeleteTransaction]);
 
   const handleSaveBudgetGoal = async (amount: number) => {
     if (!accessToken || !user) {
@@ -652,25 +663,41 @@ export function BudgetPage() {
     }
   };
 
-  const handleSaveInvestingGoal = async (amount: number) => {
-    if (!accessToken || !user) {
-      throw new Error('You need to be logged in to update the investing goal.');
+  const handleSaveWalletSettings = async (payload: {
+    monthlyGoal: number;
+    autoFundEnabled: boolean;
+    autoFundAmount: number;
+    autoFundDayOfMonth: number;
+  }) => {
+    if (!accessToken) {
+      throw new Error('You need to be logged in to update investing wallet settings.');
     }
 
-    setIsSavingInvestingGoal(true);
+    setIsSavingWalletSettings(true);
 
     try {
-      const payload = await updateInvestingProfile(amount, accessToken);
-      setCurrentUser(payload.user);
-      setIsInvestingModalOpen(false);
+      const [walletPayload, walletSummaryPayload] = await Promise.all([
+        updateInvestingWallet(payload, accessToken),
+        fetchInvestingWalletSummary(accessToken, selectedMonthParts.year, selectedMonthParts.month),
+      ]);
+      setInvestingWallet(walletPayload);
+      setInvestingWalletSummary(walletSummaryPayload);
+      setIsWalletSettingsModalOpen(false);
+      setSuccessMessage('Investing wallet settings updated.');
     } catch (error) {
-      if (isUsingMockData) {
-        setCurrentUser({
-          ...user,
-          investingMonthlyContributionGoal: amount,
+      if (isUsingMockData && investingWallet) {
+        setInvestingWallet({
+          ...investingWallet,
+          ...payload,
         });
-        setIsInvestingModalOpen(false);
-        setLoadError('Investing goal saved locally in demo mode because the live API is unavailable.');
+        setInvestingWalletSummary((current) => current ?? {
+          investedThisMonthRON: 0,
+          convertedToEurThisMonthRON: 0,
+          monthStart: '',
+          monthEnd: '',
+        });
+        setIsWalletSettingsModalOpen(false);
+        setLoadError('Wallet settings saved locally in demo mode because the live API is unavailable.');
         return;
       }
 
@@ -678,9 +705,111 @@ export function BudgetPage() {
         throw error;
       }
 
-      throw new Error('Unable to save your investing goal right now.');
+      throw new Error('Unable to save investing wallet settings right now.');
     } finally {
-      setIsSavingInvestingGoal(false);
+      setIsSavingWalletSettings(false);
+    }
+  };
+
+  const handleDepositWalletFunds = async (payload: { amountRON: number; note?: string }) => {
+    if (!accessToken) {
+      throw new Error('You need to be logged in to add funds.');
+    }
+
+    setIsDepositingWalletFunds(true);
+
+    try {
+      const [walletPayload, walletSummaryPayload] = await Promise.all([
+        depositInvestingWallet(payload, accessToken),
+        fetchInvestingWalletSummary(accessToken, selectedMonthParts.year, selectedMonthParts.month),
+      ]);
+      setInvestingWallet(walletPayload);
+      setInvestingWalletSummary(walletSummaryPayload);
+      setIsWalletDepositModalOpen(false);
+      setSuccessMessage(`Added ${formatCurrency(payload.amountRON, 2, 'RON')} to investing wallet.`);
+    } catch (error) {
+      if (error instanceof ApiRequestError) {
+        throw error;
+      }
+
+      throw new Error('Unable to add funds right now.');
+    } finally {
+      setIsDepositingWalletFunds(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isWalletConvertModalOpen || !accessToken) {
+      return;
+    }
+
+    if (!Number.isFinite(walletConvertInputAmount) || walletConvertInputAmount <= 0) {
+      setWalletConvertQuote(null);
+      setWalletQuoteError(null);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsLoadingWalletQuote(true);
+      setWalletQuoteError(null);
+
+      void fetchInvestingWalletConvertQuote(walletConvertInputAmount, accessToken)
+        .then((quotePayload) => {
+          setWalletConvertQuote(quotePayload);
+        })
+        .catch((error) => {
+          setWalletConvertQuote(null);
+          setWalletQuoteError(
+            error instanceof ApiRequestError
+              ? error.message
+              : 'Unable to fetch conversion quote right now.',
+          );
+        })
+        .finally(() => {
+          setIsLoadingWalletQuote(false);
+        });
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [accessToken, isWalletConvertModalOpen, walletConvertInputAmount]);
+
+  const handleConvertWalletFunds = async (amountRON: number) => {
+    if (!accessToken) {
+      throw new Error('You need to be logged in to convert funds.');
+    }
+
+    setIsConvertingWalletFunds(true);
+
+    try {
+      const conversionPayload = await convertInvestingWalletToEur(amountRON, accessToken);
+      const [walletPayload, walletSummaryPayload] = await Promise.all([
+        fetchInvestingWallet(accessToken),
+        fetchInvestingWalletSummary(accessToken, selectedMonthParts.year, selectedMonthParts.month),
+        fetchInvestAccount(accessToken),
+      ]);
+
+      setInvestingWallet(walletPayload);
+      setInvestingWalletSummary(walletSummaryPayload);
+      setIsWalletConvertModalOpen(false);
+      setWalletConvertQuote(null);
+      setWalletQuoteError(null);
+      setSuccessMessage(
+        `Converted ${formatCurrency(amountRON, 2, 'RON')} to ${formatCurrency(
+          conversionPayload.addedEUR,
+          2,
+          'EUR',
+        )} and added it to Invest cash.`,
+      );
+    } catch (error) {
+      if (error instanceof ApiRequestError) {
+        throw error;
+      }
+
+      throw new Error('Unable to convert funds right now.');
+    } finally {
+      setIsConvertingWalletFunds(false);
     }
   };
 
@@ -694,10 +823,10 @@ export function BudgetPage() {
   );
   const hasBudgetGoal = metrics.monthlyBudgetGoal !== null;
   const remainingBudgetValue = hasBudgetGoal
-    ? formatCurrency(metrics.remainingBudget ?? 0)
+    ? formatCurrency(metrics.remainingBudget ?? 0, 2, budgetCurrency)
     : 'Set budget';
   const remainingBudgetSubtitle = hasBudgetGoal
-    ? `/ ${formatCurrency(metrics.monthlyBudgetGoal ?? 0, 0)}`
+    ? `/ ${formatCurrency(metrics.monthlyBudgetGoal ?? 0, 0, budgetCurrency)}`
     : undefined;
   const remainingBudgetHelperText = hasBudgetGoal
     ? undefined
@@ -751,6 +880,12 @@ export function BudgetPage() {
           </div>
         </header>
 
+        {successMessage ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+            {successMessage}
+          </div>
+        ) : null}
+
         {loadError ? (
           <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
             {loadError}
@@ -760,7 +895,7 @@ export function BudgetPage() {
         <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <KpiCard
             title="Total Balance"
-            value={formatCurrency(metrics.totalBalance)}
+            value={formatCurrency(metrics.totalBalance, 2, budgetCurrency)}
             icon={<BankIcon />}
             iconBgClassName="bg-blue-50"
             iconClassName="text-[#2563eb]"
@@ -769,7 +904,7 @@ export function BudgetPage() {
           />
           <KpiCard
             title="Monthly Income"
-            value={formatCurrency(metrics.income)}
+            value={formatCurrency(metrics.income, 2, budgetCurrency)}
             icon={<WalletIcon />}
             iconBgClassName="bg-emerald-50"
             iconClassName="text-emerald-500"
@@ -793,16 +928,20 @@ export function BudgetPage() {
 
         <section className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           <TransactionsTable
+            title="Recent Transactions"
             transactions={visibleTransactions}
             searchValue={searchValue}
-            onSearchChange={setSearchValue}
+            onSearchChange={handleBudgetSearchChange}
             sortOption={sortOption}
-            onSortChange={(value) => setSortOption(value)}
+            onSortChange={handleBudgetSortChange}
             isLoading={isLoading}
+            emptyMessage="No transactions match this month yet."
+            heightClassName="h-[30rem] sm:h-[31rem] md:h-[32.5rem]"
+            viewAllHref="/transactions"
+            viewAllLabel="View all transactions"
             onEditTransaction={handleEditTransaction}
-            onDeleteTransaction={(transaction) => {
-              void handleDeleteTransaction(transaction);
-            }}
+            onDeleteTransaction={handleDeleteBudgetTransaction}
+            currency={budgetCurrency}
           />
 
           <div className="space-y-6 lg:col-span-4">
@@ -812,37 +951,67 @@ export function BudgetPage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-bold text-slate-900">Investing Account</h2>
-                  <p className="mt-1 text-sm text-slate-500">Track your monthly investing contribution progress.</p>
+                  <p className="mt-1 text-sm text-slate-500">RON wallet for funding your EUR investing portfolio.</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsInvestingModalOpen(true)}
-                  className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                >
-                  Set
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsWalletSettingsModalOpen(true)}
+                    className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Set
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsWalletDepositModalOpen(true)}
+                    className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Add Funds
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWalletQuoteError(null);
+                      setWalletConvertQuote(null);
+                      setIsWalletConvertModalOpen(true);
+                    }}
+                    className="inline-flex items-center rounded-xl bg-[#2563eb] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                  >
+                    Convert to EUR
+                  </button>
+                </div>
               </div>
 
               <div className="mt-6 space-y-4">
                 <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
                   <span className="text-sm font-medium text-slate-500">Monthly investing goal</span>
                   <span className="text-sm font-semibold text-slate-900">
-                    {formatCurrency(metrics.investingGoal)}
+                    {formatCurrency(metrics.investingGoal, 2, 'RON')}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
                   <span className="text-sm font-medium text-slate-500">Invested this month</span>
                   <span className="text-sm font-semibold text-slate-900">
-                    {formatCurrency(metrics.investedThisMonth)}
+                    {formatCurrency(metrics.investedThisMonth, 2, 'RON')}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
                   <span className="text-sm font-medium text-slate-500">Account balance</span>
                   <span className="text-sm font-semibold text-slate-900">
-                    {formatCurrency(metrics.investingAccountBalance)}
+                    {formatCurrency(metrics.investingAccountBalance, 2, 'RON')}
                   </span>
                 </div>
               </div>
+
+              <p className="mt-4 text-xs text-slate-500">
+                Auto-fund:{' '}
+                {investingWallet?.autoFundEnabled
+                  ? `${formatCurrency(investingWallet.autoFundAmount, 2, 'RON')} on day ${investingWallet.autoFundDayOfMonth}`
+                  : 'Disabled'}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Invested this month is based on deposits in the selected month.
+              </p>
 
               {metrics.investingGoal > 0 ? (
                 <div className="mt-5">
@@ -884,12 +1053,36 @@ export function BudgetPage() {
         onSubmit={handleSaveBudgetGoal}
       />
 
-      <SetInvestingModal
-        isOpen={isInvestingModalOpen}
-        currentValue={user?.investingMonthlyContributionGoal ?? 0}
-        isSubmitting={isSavingInvestingGoal}
-        onClose={() => setIsInvestingModalOpen(false)}
-        onSubmit={handleSaveInvestingGoal}
+      <ManageInvestingWalletModal
+        isOpen={isWalletSettingsModalOpen}
+        currentValue={{
+          monthlyGoal: investingWallet?.monthlyGoal ?? 0,
+          autoFundEnabled: investingWallet?.autoFundEnabled ?? false,
+          autoFundAmount: investingWallet?.autoFundAmount ?? 0,
+          autoFundDayOfMonth: investingWallet?.autoFundDayOfMonth ?? 1,
+        }}
+        isSubmitting={isSavingWalletSettings}
+        onClose={() => setIsWalletSettingsModalOpen(false)}
+        onSubmit={handleSaveWalletSettings}
+      />
+
+      <InvestingWalletDepositModal
+        isOpen={isWalletDepositModalOpen}
+        isSubmitting={isDepositingWalletFunds}
+        onClose={() => setIsWalletDepositModalOpen(false)}
+        onSubmit={handleDepositWalletFunds}
+      />
+
+      <InvestingWalletConvertModal
+        isOpen={isWalletConvertModalOpen}
+        isSubmitting={isConvertingWalletFunds}
+        walletBalanceRON={investingWallet?.balance ?? 0}
+        quote={walletConvertQuote}
+        isLoadingQuote={isLoadingWalletQuote}
+        quoteError={walletQuoteError}
+        onAmountChange={setWalletConvertInputAmount}
+        onClose={() => setIsWalletConvertModalOpen(false)}
+        onSubmit={handleConvertWalletFunds}
       />
 
       <AddTransactionModal

@@ -19,6 +19,17 @@ export class ValidationError extends AppError {
   }
 }
 
+export class ConflictError extends AppError {
+  constructor(message = 'Conflict', details = [], code = 'CONFLICT_ERROR') {
+    super({
+      message,
+      statusCode: 409,
+      code,
+      details,
+    });
+  }
+}
+
 export class AuthError extends AppError {
   constructor(message = 'Unauthorized', details = []) {
     super({

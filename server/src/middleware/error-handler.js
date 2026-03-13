@@ -1,14 +1,8 @@
 import { ZodError } from 'zod';
 
 import { AppError, NotFoundError, ValidationError } from '../errors/app-error.js';
-
-const toZodDetails = (error) => {
-  return error.issues.map((issue) => ({
-    path: issue.path.join('.'),
-    code: issue.code,
-    message: issue.message,
-  }));
-};
+import { logger } from '../utils/logger.js';
+import { mapZodIssues } from '../utils/validation.js';
 
 export const notFoundHandler = (req, _res, next) => {
   next(new NotFoundError(`Route ${req.method} ${req.originalUrl} not found`));
@@ -20,7 +14,7 @@ export const errorHandler = (error, req, res, _next) => {
   if (error instanceof AppError) {
     normalizedError = error;
   } else if (error instanceof ZodError) {
-    normalizedError = new ValidationError('Request validation failed', toZodDetails(error));
+    normalizedError = new ValidationError('Request validation failed', mapZodIssues(error.issues));
   } else {
     normalizedError = new AppError({
       message: 'Internal server error',
@@ -29,14 +23,16 @@ export const errorHandler = (error, req, res, _next) => {
     });
   }
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.error('[server:error]', {
-      requestId: req.requestId,
-      name: error instanceof Error ? error.name : 'UnknownError',
-      message: error instanceof Error ? error.message : 'Unknown error payload',
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-  }
+  logger.error('request.failed', {
+    requestId: req.requestId,
+    code: normalizedError.code,
+    statusCode: normalizedError.statusCode,
+    method: req.method,
+    path: req.originalUrl,
+    name: error instanceof Error ? error.name : 'UnknownError',
+    message: error instanceof Error ? error.message : 'Unknown error payload',
+    stack: process.env.NODE_ENV === 'production' ? undefined : error instanceof Error ? error.stack : undefined,
+  });
 
   res.status(normalizedError.statusCode).json({
     success: false,

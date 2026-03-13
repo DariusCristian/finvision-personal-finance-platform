@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import {
   fetchCurrentUser,
@@ -64,35 +64,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void hydrateAuth();
   }, []);
 
-  const login = async ({ email, password }: LoginArgs) => {
+  const login = useCallback(async ({ email, password }: LoginArgs) => {
     const authPayload = await loginWithPassword({ email, password });
     window.localStorage.setItem(TOKEN_STORAGE_KEY, authPayload.accessToken);
     setAccessToken(authPayload.accessToken);
     setUser(authPayload.user);
-  };
+  }, []);
 
-  const register = async ({ email, password, displayName, baseCurrency = 'RON' }: RegisterArgs) => {
-    const authPayload = await registerWithPassword({
+  const register = useCallback(async ({
+    email,
+    password,
+    displayName,
+    baseCurrency = 'RON',
+  }: RegisterArgs) => {
+    await registerWithPassword({
       email,
       password,
       displayName,
       baseCurrency,
     });
+  }, []);
 
-    window.localStorage.setItem(TOKEN_STORAGE_KEY, authPayload.accessToken);
-    setAccessToken(authPayload.accessToken);
-    setUser(authPayload.user);
-  };
-
-  const logout = () => {
+  const logout = useCallback(() => {
     window.localStorage.removeItem(TOKEN_STORAGE_KEY);
     setAccessToken(null);
     setUser(null);
-  };
+  }, []);
 
-  const setCurrentUser = (nextUser: AuthUser) => {
+  const setCurrentUser = useCallback((nextUser: AuthUser) => {
     setUser(nextUser);
-  };
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -104,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setCurrentUser,
       logout,
     }),
-    [accessToken, isAuthLoading, user],
+    [accessToken, isAuthLoading, login, logout, register, setCurrentUser, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

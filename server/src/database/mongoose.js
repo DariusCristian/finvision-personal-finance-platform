@@ -1,17 +1,21 @@
 import mongoose from 'mongoose';
 
 import { env } from '../config/env.js';
+import { logger } from '../utils/logger.js';
 
 mongoose.connection.on('connected', () => {
-  console.info('[db] MongoDB connected');
+  logger.info('db.connected');
 });
 
 mongoose.connection.on('error', (error) => {
-  console.error('[db] MongoDB connection error', error);
+  logger.error('db.error', {
+    message: error?.message ?? 'Unknown MongoDB connection error',
+    stack: error?.stack,
+  });
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.info('[db] MongoDB disconnected');
+  logger.info('db.disconnected');
 });
 
 export const connectToDatabase = async () => {

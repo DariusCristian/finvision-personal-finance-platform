@@ -1,8 +1,9 @@
 import type { FormEvent, ReactNode } from 'react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
+import { AuthShell } from '../components/AuthShell';
 import { useAuth } from '../context/AuthContext';
 
 type IconProps = {
@@ -21,21 +22,6 @@ function WalletIcon({ className = 'h-5 w-5' }: IconProps) {
       <rect x="3.5" y="6.5" width="17" height="11" rx="2.5" />
       <path d="M16 10.5h4.5v3H16a1.5 1.5 0 0 1 0-3Z" />
       <circle cx="16.75" cy="12" r="0.75" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function SparkIcon({ className = 'h-4 w-4' }: IconProps) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      className={className}
-    >
-      <path d="m5 14 4-4 3 3 7-7" />
-      <path d="M15 6h4v4" />
     </svg>
   );
 }
@@ -212,6 +198,8 @@ function SocialButton({ children, label }: { children: ReactNode; label: string 
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -219,6 +207,17 @@ export function LoginPage() {
   const [keepSignedIn, setKeepSignedIn] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showRegisteredNotice, setShowRegisteredNotice] = useState(
+    searchParams.get('registered') === '1',
+  );
+
+  const redirectPath =
+    typeof location.state === 'object' &&
+    location.state !== null &&
+    'from' in location.state &&
+    typeof (location.state as { from?: { pathname?: string } }).from?.pathname === 'string'
+      ? (location.state as { from: { pathname: string } }).from.pathname
+      : '/home';
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -232,7 +231,7 @@ export function LoginPage() {
       });
 
       console.info('Login submit', { keepSignedIn });
-      navigate('/budget');
+      navigate(redirectPath, { replace: true });
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Unable to sign in.');
     } finally {
@@ -241,124 +240,110 @@ export function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[var(--color-page-bg)] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl overflow-hidden rounded-[32px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.12)] lg:min-h-[680px] lg:flex-row">
-        <section className="relative flex w-full flex-col justify-between overflow-hidden bg-gradient-to-br from-[var(--color-left-from)] to-[var(--color-left-to)] px-6 py-7 text-[var(--color-left-text)] sm:px-8 sm:py-8 md:px-10 lg:w-[45%] lg:px-12 lg:py-10">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -left-20 bottom-8 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl" />
-            <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-cyan-300/10 blur-3xl" />
-            <div className="absolute bottom-16 left-8 h-px w-40 bg-white/10" />
-          </div>
-
-          <div className="relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/12 text-white ring-1 ring-white/8 backdrop-blur">
-                <WalletIcon className="h-6 w-6" />
-              </div>
-              <span className="text-3xl font-semibold tracking-tight">FinVision</span>
-            </div>
-
-            <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-[var(--color-pill-border)] bg-[var(--color-pill-bg)] px-4 py-2 text-sm font-medium text-[var(--color-pill-text)] backdrop-blur">
-              <SparkIcon className="h-4 w-4" />
-              <span>Daily Pick</span>
-            </div>
-
-            <div className="mt-7 max-w-xl">
-              <h1 className="text-5xl font-semibold leading-[0.95] tracking-[-0.04em] sm:text-6xl lg:text-[4.6rem]">
-                <span className="block">Compound Interest</span>
-                <span className="block text-[var(--color-left-accent)]">Magic</span>
-              </h1>
-              <p className="mt-7 max-w-md text-lg leading-9 text-[var(--color-left-muted)]">
-                Learn how your small savings can grow into a fortune over time with the power of
-                compounding. Start your financial journey today.
-              </p>
-            </div>
-          </div>
-
-          <div className="relative z-10 mt-10 lg:mt-12">
-            <div className="relative mx-auto flex w-full max-w-[320px] items-center justify-center sm:max-w-[360px] lg:max-w-[340px]">
-              <div className="absolute inset-8 rounded-[28px] bg-emerald-300/10 blur-3xl" />
-              <div className="relative h-[280px] w-full rounded-[28px] border border-white/12 bg-white/6 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_60px_rgba(0,0,0,0.24)] backdrop-blur-sm sm:h-[320px]">
-                <div className="relative flex h-full w-full items-end justify-center overflow-hidden rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_50%_28%,rgba(110,231,216,0.34),rgba(255,255,255,0.04)_42%,rgba(13,91,82,0.24)_78%)] px-6 pb-6">
-                  <div className="absolute left-0 right-0 top-0 h-16 bg-gradient-to-b from-white/6 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/10 to-transparent" />
-                  <div className="relative flex flex-col items-center">
-                    <div className="mb-2 h-3 w-3 rounded-full bg-lime-300/80" />
-                    <div className="h-16 w-[2px] rounded-full bg-lime-200/80" />
-                    <div className="relative mt-[-1px] h-12 w-20">
-                      <div className="absolute left-0 top-4 h-[2px] w-10 -rotate-[24deg] rounded-full bg-lime-200/90" />
-                      <div className="absolute right-0 top-4 h-[2px] w-10 rotate-[24deg] rounded-full bg-lime-200/90" />
-                      <div className="absolute left-1 top-7 h-[2px] w-9 -rotate-[12deg] rounded-full bg-lime-100/80" />
-                      <div className="absolute right-1 top-7 h-[2px] w-9 rotate-[12deg] rounded-full bg-lime-100/80" />
-                    </div>
-                    <div className="mt-4 flex flex-col gap-1">
-                      <div className="h-3 w-20 rounded-full bg-amber-300/85" />
-                      <div className="h-3 w-20 rounded-full bg-amber-400/85" />
-                      <div className="h-3 w-20 rounded-full bg-amber-500/85" />
-                      <div className="h-3 w-20 rounded-full bg-amber-400/85" />
-                      <div className="h-3 w-20 rounded-full bg-amber-300/85" />
-                    </div>
-                  </div>
+    <AuthShell
+      brandIcon={<WalletIcon className="h-6 w-6" />}
+      leftHeadline={
+        <>
+          <span className="block">Compound Interest</span>
+          <span className="block text-[var(--color-left-accent)]">Magic</span>
+        </>
+      }
+      leftDescription="Learn how your small savings can grow into a fortune over time with the power of compounding. Start your financial journey today."
+      leftMedia={
+        <div className="relative mx-auto flex w-full max-w-[280px] items-center justify-center sm:max-w-[320px] lg:max-w-[340px]">
+          <div className="absolute inset-8 rounded-[28px] bg-emerald-300/10 blur-3xl" />
+          <div className="relative h-[220px] w-full rounded-[28px] border border-white/12 bg-white/6 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_60px_rgba(0,0,0,0.24)] backdrop-blur-sm sm:h-[260px] md:h-[300px]">
+            <div className="relative flex h-full w-full items-end justify-center overflow-hidden rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_50%_28%,rgba(110,231,216,0.34),rgba(255,255,255,0.04)_42%,rgba(13,91,82,0.24)_78%)] px-6 pb-6">
+              <div className="absolute left-0 right-0 top-0 h-16 bg-gradient-to-b from-white/6 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/10 to-transparent" />
+              <div className="relative flex flex-col items-center">
+                <div className="mb-2 h-3 w-3 rounded-full bg-lime-300/80" />
+                <div className="h-16 w-[2px] rounded-full bg-lime-200/80" />
+                <div className="relative mt-[-1px] h-12 w-20">
+                  <div className="absolute left-0 top-4 h-[2px] w-10 -rotate-[24deg] rounded-full bg-lime-200/90" />
+                  <div className="absolute right-0 top-4 h-[2px] w-10 rotate-[24deg] rounded-full bg-lime-200/90" />
+                  <div className="absolute left-1 top-7 h-[2px] w-9 -rotate-[12deg] rounded-full bg-lime-100/80" />
+                  <div className="absolute right-1 top-7 h-[2px] w-9 rotate-[12deg] rounded-full bg-lime-100/80" />
+                </div>
+                <div className="mt-4 flex flex-col gap-1">
+                  <div className="h-3 w-20 rounded-full bg-amber-300/85" />
+                  <div className="h-3 w-20 rounded-full bg-amber-400/85" />
+                  <div className="h-3 w-20 rounded-full bg-amber-500/85" />
+                  <div className="h-3 w-20 rounded-full bg-amber-400/85" />
+                  <div className="h-3 w-20 rounded-full bg-amber-300/85" />
                 </div>
               </div>
-
-              <div className="absolute -left-4 top-1/2 flex h-16 w-16 -translate-y-1/2 items-center justify-center rounded-3xl bg-white text-blue-600 shadow-[0_18px_38px_rgba(2,132,199,0.18)] sm:h-[72px] sm:w-[72px]">
-                <ChartIcon className="h-7 w-7" />
-              </div>
-              <div className="absolute -right-2 top-8 flex h-16 w-16 items-center justify-center rounded-3xl bg-white text-emerald-500 shadow-[0_18px_38px_rgba(16,185,129,0.18)] sm:h-[72px] sm:w-[72px]">
-                <PiggyIcon className="h-7 w-7" />
-              </div>
-            </div>
-
-            <div className="mt-6 flex items-center gap-3 text-sm font-medium tracking-wide text-[var(--color-left-muted)]">
-              <ClockIcon className="h-4 w-4" />
-              <span>5 min read</span>
-              <span className="text-white/45">•</span>
-              <span>Investing 101</span>
             </div>
           </div>
-        </section>
-
-        <section className="relative flex w-full flex-col bg-[var(--color-panel-right)] px-6 py-7 sm:px-8 sm:py-8 md:px-10 lg:w-[55%] lg:px-14 lg:py-10 xl:px-16">
-          <div className="absolute right-6 top-6 sm:right-8 sm:top-8 lg:right-10 lg:top-8">
+          <div className="absolute -left-3 top-1/2 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-3xl bg-white text-blue-600 shadow-[0_18px_38px_rgba(2,132,199,0.18)] sm:h-[68px] sm:w-[68px]">
+            <ChartIcon className="h-6 w-6" />
+          </div>
+          <div className="absolute -right-1 top-6 flex h-14 w-14 items-center justify-center rounded-3xl bg-white text-emerald-500 shadow-[0_18px_38px_rgba(16,185,129,0.18)] sm:h-[68px] sm:w-[68px]">
+            <PiggyIcon className="h-6 w-6" />
+          </div>
+        </div>
+      }
+      leftMeta={
+        <>
+          <ClockIcon className="h-4 w-4" />
+          <span>5 min read</span>
+          <span className="text-white/45">•</span>
+          <span>Investing 101</span>
+        </>
+      }
+      rightTitle="Welcome!"
+      rightSubtitle="Please enter your details to sign in."
+      topRightAction={
+        <button
+          type="button"
+          aria-label="Theme settings"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl text-slate-500 transition hover:bg-slate-100"
+        >
+          <SettingsIcon className="h-5 w-5" />
+        </button>
+      }
+      notice={
+        showRegisteredNotice ? (
+          <div className="flex items-start justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+            <span>Account created. Please sign in.</span>
             <button
               type="button"
-              aria-label="Theme settings"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl text-slate-500 transition hover:bg-slate-100"
+              onClick={() => {
+                setShowRegisteredNotice(false);
+                const nextSearchParams = new URLSearchParams(searchParams);
+                nextSearchParams.delete('registered');
+                setSearchParams(nextSearchParams, { replace: true });
+              }}
+              className="shrink-0 text-emerald-600 transition hover:text-emerald-800"
+              aria-label="Dismiss message"
             >
-              <SettingsIcon className="h-5 w-5" />
+              ×
             </button>
           </div>
+        ) : null
+      }
+    >
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
+        <SocialButton label="Google">
+          <GoogleMark className="h-4 w-4" />
+        </SocialButton>
+        <SocialButton label="Apple">
+          <AppleMark className="h-4 w-4 text-slate-900" />
+        </SocialButton>
+      </div>
 
-          <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col justify-center pt-10 lg:pt-8">
-            <h2 className="text-4xl font-semibold tracking-[-0.03em] text-[var(--color-text-heading)] sm:text-[3.35rem]">
-              Welcome!
-            </h2>
-            <p className="mt-3 text-lg text-[var(--color-text-muted)] sm:text-xl">
-              Please enter your details to sign in.
-            </p>
+      <div className="relative my-8">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-[var(--color-divider)]" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-white px-4 text-sm font-medium text-[var(--color-text-muted)] sm:text-base">
+            Or sign in with email
+          </span>
+        </div>
+      </div>
 
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:gap-4">
-              <SocialButton label="Google">
-                <GoogleMark className="h-4 w-4" />
-              </SocialButton>
-              <SocialButton label="Apple">
-                <AppleMark className="h-4 w-4 text-slate-900" />
-              </SocialButton>
-            </div>
-
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[var(--color-divider)]" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-white px-4 text-sm font-medium text-[var(--color-text-muted)] sm:text-base">
-                  Or sign in with email
-                </span>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               <div>
                 <label
                   htmlFor="email"
@@ -456,20 +441,17 @@ export function LoginPage() {
               >
                 {isSubmitting ? 'Signing In...' : 'Sign In'}
               </button>
-            </form>
+      </form>
 
-            <p className="mt-8 text-center text-base text-[var(--color-text-muted)]">
-              Don&apos;t have an account?{' '}
-              <Link
-                to="/register"
-                className="font-semibold text-[var(--color-link)] hover:text-[#1D4ED8]"
-              >
-                Sign up for free
-              </Link>
-            </p>
-          </div>
-        </section>
-      </div>
-    </main>
+      <p className="mt-8 text-center text-base text-[var(--color-text-muted)]">
+        Don&apos;t have an account?{' '}
+        <Link
+          to="/register"
+          className="font-semibold text-[var(--color-link)] hover:text-[#1D4ED8]"
+        >
+          Sign up for free
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

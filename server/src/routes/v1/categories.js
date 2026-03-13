@@ -1,24 +1,13 @@
 import { Router } from 'express';
-import { z } from 'zod';
 
-import { AppError } from '../../errors/app-error.js';
+import { ConflictError } from '../../errors/app-error.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { Category, serializeCategory } from '../../models/category.js';
 import { sendSuccess } from '../../utils/response.js';
+import { createCategorySchema } from '../../validation/categories.js';
 
 const categoryRouter = Router();
-
-const createCategorySchema = z.object({
-  name: z.string().trim().min(1, 'Category name is required.').max(40, 'Category name is too long.'),
-  type: z.enum(['income', 'expense']),
-  icon: z.string().trim().max(40).optional(),
-  color: z
-    .string()
-    .trim()
-    .regex(/^#?[0-9a-f]{6}$/i, 'Use a valid 6-digit hex color.')
-    .optional(),
-});
 
 const findDuplicateCategory = async (userId, name, type) =>
   Category.findOne({
@@ -64,11 +53,11 @@ categoryRouter.post(
       const existingCategory = await findDuplicateCategory(req.authUser._id, trimmedName, type);
 
       if (existingCategory) {
-        throw new AppError({
-          message: 'You already have a category with this name and type.',
-          statusCode: 409,
-          code: 'CATEGORY_ALREADY_EXISTS',
-        });
+        throw new ConflictError(
+          'You already have a category with this name and type.',
+          [],
+          'CATEGORY_ALREADY_EXISTS',
+        );
       }
 
       const category = await Category.create({
@@ -90,11 +79,11 @@ categoryRouter.post(
     } catch (error) {
       if (error?.code === 11000) {
         next(
-          new AppError({
-            message: 'You already have a category with this name and type.',
-            statusCode: 409,
-            code: 'CATEGORY_ALREADY_EXISTS',
-          }),
+          new ConflictError(
+            'You already have a category with this name and type.',
+            [],
+            'CATEGORY_ALREADY_EXISTS',
+          ),
         );
         return;
       }

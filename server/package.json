@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "lint": "eslint \"src/**/*.js\""
+    "lint": "eslint \"src/**/*.js\"",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
+    "seed:education": "node scripts/seedEducation.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -19,6 +21,8 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "eslint": "^8.57.1"
+    "eslint": "^8.57.1",
+    "mongodb-memory-server": "^10.1.4",
+    "supertest": "^7.1.1"
   }
 }

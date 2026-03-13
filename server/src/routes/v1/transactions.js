@@ -1,93 +1,18 @@
 import { Router } from 'express';
-import { z } from 'zod';
 
 import { AppError } from '../../errors/app-error.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { Category, serializeCategory } from '../../models/category.js';
-import {
-  PAYMENT_METHOD_VALUES,
-  RECURRENCE_VALUES,
-  Transaction,
-} from '../../models/transaction.js';
+import { Transaction } from '../../models/transaction.js';
 import { sendSuccess } from '../../utils/response.js';
+import {
+  transactionMutationSchema,
+  transactionParamsSchema,
+  transactionsQuerySchema,
+} from '../../validation/transactions.js';
 
 const transactionRouter = Router();
-const SORT_VALUES = ['date', '-date', 'amount', '-amount'];
-const CURRENCY_VALUES = ['RON', 'EUR', 'USD'];
-
-const objectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, 'Invalid resource identifier.');
-const paramsSchema = z.object({
-  transactionId: objectIdSchema,
-});
-
-const querySchema = z.object({
-  from: z.string().optional(),
-  to: z.string().optional(),
-  search: z.string().trim().optional(),
-  categoryId: objectIdSchema.optional(),
-  type: z.enum(['income', 'expense']).optional(),
-  sort: z.enum(SORT_VALUES).optional(),
-});
-
-const transactionMutationSchema = z
-  .object({
-    type: z.enum(['income', 'expense']),
-    categoryId: objectIdSchema,
-    amount: z.coerce.number().positive('Amount must be greater than zero.'),
-    currency: z.enum(CURRENCY_VALUES).optional(),
-    date: z.coerce.date(),
-    description: z.string().trim().max(160).optional().default(''),
-    paymentMethod: z.enum(PAYMENT_METHOD_VALUES).nullable().optional().default(null),
-    isRecurring: z.boolean().optional().default(false),
-    recurrence: z.enum(RECURRENCE_VALUES).optional().default('none'),
-    recurrenceEndDate: z.coerce.date().nullable().optional().default(null),
-  })
-  .superRefine((value, context) => {
-    if (value.isRecurring && value.recurrence === 'none') {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['recurrence'],
-        message: 'Select a recurrence pattern for recurring transactions.',
-      });
-    }
-
-    if (!value.isRecurring && value.recurrence !== 'none') {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['recurrence'],
-        message: 'One-time transactions must use recurrence "none".',
-      });
-    }
-
-    if (value.isRecurring && !value.recurrenceEndDate) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['recurrenceEndDate'],
-        message: 'Recurring transactions require an end date.',
-      });
-    }
-
-    if (
-      value.isRecurring &&
-      value.recurrenceEndDate &&
-      value.recurrenceEndDate.getTime() < value.date.getTime()
-    ) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['recurrenceEndDate'],
-        message: 'Recurring end date must be on or after the start date.',
-      });
-    }
-
-    if (!value.isRecurring && value.recurrenceEndDate) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['recurrenceEndDate'],
-        message: 'One-time transactions cannot have a recurring end date.',
-      });
-    }
-  });
 
 const getRangeStart = (value) => (value ? new Date(`${value}T00:00:00.000Z`) : null);
 const getRangeEnd = (value) => (value ? new Date(`${value}T23:59:59.999Z`) : null);
@@ -321,10 +246,10 @@ const buildSearchFilter = async (userId, searchTerm) => {
 transactionRouter.get(
   '/',
   requireAuth,
-  validateRequest({ query: querySchema }),
+  validateRequest({ query: transactionsQuerySchema }),
   async (req, res, next) => {
     try {
-      const { from, to, search, categoryId, type, sort = '-date' } = req.query;
+      const { from, to, search, categoryId, type, sort = '-date', page, limit } = req.query;
       const filters = {
         userId: req.authUser._id,
       };
@@ -353,17 +278,30 @@ transactionRouter.get(
         transactions.flatMap((transaction) => expandTransactionForRange(transaction, rangeStart, rangeEnd)),
         sort,
       );
+      const shouldPaginate = typeof page === 'number' || typeof limit === 'number';
+      const normalizedPage = typeof page === 'number' ? page : 1;
+      const normalizedLimit = typeof limit === 'number' ? limit : 20;
+      const total = expandedTransactions.length;
+      const totalPages = shouldPaginate ? Math.max(1, Math.ceil(total / normalizedLimit)) : 1;
+      const safePage = shouldPaginate ? Math.min(normalizedPage, totalPages) : 1;
+      const paginatedTransactions = shouldPaginate
+        ? expandedTransactions.slice((safePage - 1) * normalizedLimit, safePage * normalizedLimit)
+        : expandedTransactions;
 
       sendSuccess(
         res,
         {
-          transactions: expandedTransactions,
+          transactions: paginatedTransactions,
         },
         200,
         {
-          count: expandedTransactions.length,
-          projectedCount: expandedTransactions.filter((transaction) => transaction.isProjected).length,
+          count: paginatedTransactions.length,
+          projectedCount: paginatedTransactions.filter((transaction) => transaction.isProjected).length,
           sort,
+          page: shouldPaginate ? safePage : null,
+          limit: shouldPaginate ? normalizedLimit : null,
+          total,
+          totalPages: shouldPaginate ? totalPages : null,
         },
       );
     } catch (error) {
@@ -444,7 +382,7 @@ transactionRouter.post(
 transactionRouter.patch(
   '/:transactionId',
   requireAuth,
-  validateRequest({ params: paramsSchema, body: transactionMutationSchema }),
+  validateRequest({ params: transactionParamsSchema, body: transactionMutationSchema }),
   async (req, res, next) => {
     try {
       const {
@@ -523,7 +461,7 @@ transactionRouter.patch(
 transactionRouter.delete(
   '/:transactionId',
   requireAuth,
-  validateRequest({ params: paramsSchema }),
+  validateRequest({ params: transactionParamsSchema }),
   async (req, res, next) => {
     try {
       const transaction = await Transaction.findOne({

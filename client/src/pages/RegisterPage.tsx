@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
+import { AuthShell } from '../components/AuthShell';
 import { useAuth } from '../context/AuthContext';
 
 type IconProps = {
@@ -71,21 +72,6 @@ function WalletIcon({ className = 'h-5 w-5' }: IconProps) {
       <rect x="3.5" y="6.5" width="17" height="11" rx="2.5" />
       <path d="M16 10.5h4.5v3H16a1.5 1.5 0 0 1 0-3Z" />
       <circle cx="16.75" cy="12" r="0.75" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function SparkIcon({ className = 'h-4 w-4' }: IconProps) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      className={className}
-    >
-      <path d="m5 14 4-4 3 3 7-7" />
-      <path d="M15 6h4v4" />
     </svg>
   );
 }
@@ -382,7 +368,7 @@ export function RegisterPage() {
 
       setErrors({});
       console.info('Register submit', { agreeToTerms });
-      navigate('/budget');
+      navigate('/login?registered=1', { replace: true });
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Unable to create your account.');
     } finally {
@@ -391,126 +377,93 @@ export function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[var(--color-page-bg)] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl overflow-hidden rounded-[32px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.12)] lg:min-h-[680px] lg:flex-row">
-        <section className="relative flex w-full flex-col justify-between overflow-hidden bg-gradient-to-br from-[var(--color-left-from)] to-[var(--color-left-to)] px-6 py-7 text-[var(--color-left-text)] sm:px-8 sm:py-8 md:px-10 lg:w-[45%] lg:px-12 lg:py-10">
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -left-20 bottom-8 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl" />
-            <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-cyan-300/10 blur-3xl" />
-            <div className="absolute bottom-20 left-12 h-px w-48 bg-white/10" />
-          </div>
-
-          <div className="relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/12 text-white ring-1 ring-white/8 backdrop-blur">
-                <WalletIcon className="h-6 w-6" />
-              </div>
-              <span className="text-3xl font-semibold tracking-tight">FinVision</span>
-            </div>
-
-            <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-[var(--color-pill-border)] bg-[var(--color-pill-bg)] px-4 py-2 text-sm font-medium text-[var(--color-pill-text)] backdrop-blur">
-              <SparkIcon className="h-4 w-4" />
-              <span>New Journey</span>
-            </div>
-
-            <div className="mt-7 max-w-xl">
-              <h1 className="text-5xl font-semibold leading-[0.95] tracking-[-0.04em] sm:text-6xl lg:text-[4.6rem]">
-                <span className="block">Build Smart Money</span>
-                <span className="block text-[var(--color-left-accent)]">Habits</span>
-              </h1>
-              <p className="mt-7 max-w-md text-lg leading-9 text-[var(--color-left-muted)]">
-                Create your FinVision account to track spending, learn core investing concepts, and
-                build confidence with every financial step.
-              </p>
-            </div>
-          </div>
-
-          <div className="relative z-10 mt-10 lg:mt-12">
-            <div className="relative mx-auto flex w-full max-w-[320px] items-center justify-center sm:max-w-[360px] lg:max-w-[340px]">
-              <div className="absolute inset-8 rounded-[28px] bg-emerald-300/10 blur-3xl" />
-              <div className="relative h-[280px] w-full rounded-[28px] border border-white/12 bg-white/6 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_60px_rgba(0,0,0,0.24)] backdrop-blur-sm sm:h-[320px]">
-                <div className="flex h-full w-full flex-col justify-between rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_50%_20%,rgba(110,231,216,0.24),rgba(255,255,255,0.04)_42%,rgba(13,91,82,0.24)_78%)] p-5">
-                  <div className="space-y-3">
-                    <div className="h-12 rounded-2xl bg-white/10 ring-1 ring-white/8" />
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="h-20 rounded-2xl bg-white/8 ring-1 ring-white/6" />
-                      <div className="h-20 rounded-2xl bg-white/8 ring-1 ring-white/6" />
-                    </div>
-                  </div>
-
-                  <div className="rounded-[22px] bg-white/8 p-4 ring-1 ring-white/8">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="h-3 w-20 rounded-full bg-white/20" />
-                      <div className="h-3 w-8 rounded-full bg-white/20" />
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="h-16 rounded-2xl bg-emerald-300/18" />
-                      <div className="h-16 rounded-2xl bg-white/10" />
-                      <div className="h-16 rounded-2xl bg-cyan-300/14" />
-                    </div>
-                    <div className="mt-3 h-2 w-full rounded-full bg-white/12" />
-                    <div className="mt-2 h-2 w-2/3 rounded-full bg-white/12" />
-                  </div>
+    <AuthShell
+      brandIcon={<WalletIcon className="h-6 w-6" />}
+      leftHeadline={
+        <>
+          <span className="block">Build Smart Money</span>
+          <span className="block text-[var(--color-left-accent)]">Habits</span>
+        </>
+      }
+      leftDescription="Create your FinVision account to track spending, learn core investing concepts, and build confidence with every financial step."
+      leftMedia={
+        <div className="relative mx-auto flex w-full max-w-[280px] items-center justify-center sm:max-w-[320px] lg:max-w-[340px]">
+          <div className="absolute inset-8 rounded-[28px] bg-emerald-300/10 blur-3xl" />
+          <div className="relative h-[220px] w-full rounded-[28px] border border-white/12 bg-white/6 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_60px_rgba(0,0,0,0.24)] backdrop-blur-sm sm:h-[260px] md:h-[300px]">
+            <div className="flex h-full w-full flex-col justify-between rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_50%_20%,rgba(110,231,216,0.24),rgba(255,255,255,0.04)_42%,rgba(13,91,82,0.24)_78%)] p-5">
+              <div className="space-y-3">
+                <div className="h-12 rounded-2xl bg-white/10 ring-1 ring-white/8" />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="h-20 rounded-2xl bg-white/8 ring-1 ring-white/6" />
+                  <div className="h-20 rounded-2xl bg-white/8 ring-1 ring-white/6" />
                 </div>
               </div>
 
-              <div className="absolute -left-4 top-1/2 flex h-16 w-16 -translate-y-1/2 items-center justify-center rounded-3xl bg-white text-blue-600 shadow-[0_18px_38px_rgba(2,132,199,0.18)] sm:h-[72px] sm:w-[72px]">
-                <CheckTrendIcon className="h-7 w-7" />
+              <div className="rounded-[22px] bg-white/8 p-4 ring-1 ring-white/8">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="h-3 w-20 rounded-full bg-white/20" />
+                  <div className="h-3 w-8 rounded-full bg-white/20" />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="h-16 rounded-2xl bg-emerald-300/18" />
+                  <div className="h-16 rounded-2xl bg-white/10" />
+                  <div className="h-16 rounded-2xl bg-cyan-300/14" />
+                </div>
+                <div className="mt-3 h-2 w-full rounded-full bg-white/12" />
+                <div className="mt-2 h-2 w-2/3 rounded-full bg-white/12" />
               </div>
-              <div className="absolute -right-2 top-8 flex h-16 w-16 items-center justify-center rounded-3xl bg-white text-emerald-500 shadow-[0_18px_38px_rgba(16,185,129,0.18)] sm:h-[72px] sm:w-[72px]">
-                <ShieldIcon className="h-7 w-7" />
-              </div>
-            </div>
-
-            <div className="mt-6 flex items-center gap-3 text-sm font-medium tracking-wide text-[var(--color-left-muted)]">
-              <ClockIcon className="h-4 w-4" />
-              <span>2 min setup</span>
-              <span className="text-white/45">•</span>
-              <span>Beginner friendly</span>
             </div>
           </div>
-        </section>
 
-        <section className="relative flex w-full flex-col bg-[var(--color-panel-right)] px-6 py-7 sm:px-8 sm:py-8 md:px-10 lg:w-[55%] lg:px-14 lg:py-10 xl:px-16">
-          <div className="absolute right-6 top-6 sm:right-8 sm:top-8 lg:right-10 lg:top-8">
-            <button
-              type="button"
-              aria-label="Theme settings"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl text-slate-500 transition hover:bg-slate-100"
-            >
-              <SettingsIcon className="h-5 w-5" />
-            </button>
+          <div className="absolute -left-3 top-1/2 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-3xl bg-white text-blue-600 shadow-[0_18px_38px_rgba(2,132,199,0.18)] sm:h-[68px] sm:w-[68px]">
+            <CheckTrendIcon className="h-6 w-6" />
           </div>
+          <div className="absolute -right-1 top-6 flex h-14 w-14 items-center justify-center rounded-3xl bg-white text-emerald-500 shadow-[0_18px_38px_rgba(16,185,129,0.18)] sm:h-[68px] sm:w-[68px]">
+            <ShieldIcon className="h-6 w-6" />
+          </div>
+        </div>
+      }
+      leftMeta={
+        <>
+          <ClockIcon className="h-4 w-4" />
+          <span>2 min setup</span>
+          <span className="text-white/45">•</span>
+          <span>Beginner friendly</span>
+        </>
+      }
+      rightTitle="Create Account"
+      rightSubtitle="Set up your FinVision profile to get started."
+      topRightAction={
+        <button
+          type="button"
+          aria-label="Theme settings"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl text-slate-500 transition hover:bg-slate-100"
+        >
+          <SettingsIcon className="h-5 w-5" />
+        </button>
+      }
+    >
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
+        <SocialButton label="Google">
+          <GoogleMark className="h-4 w-4" />
+        </SocialButton>
+        <SocialButton label="Apple">
+          <AppleMark className="h-4 w-4 text-slate-900" />
+        </SocialButton>
+      </div>
 
-          <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col justify-center pt-10 lg:pt-8">
-            <h2 className="text-4xl font-semibold tracking-[-0.03em] text-[var(--color-text-heading)] sm:text-[3.35rem]">
-              Create Account
-            </h2>
-            <p className="mt-3 text-lg text-[var(--color-text-muted)] sm:text-xl">
-              Set up your FinVision profile to get started.
-            </p>
+      <div className="relative my-8">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-[var(--color-divider)]" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-white px-4 text-sm font-medium text-[var(--color-text-muted)] sm:text-base">
+            Or sign up with email
+          </span>
+        </div>
+      </div>
 
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:gap-4">
-              <SocialButton label="Google">
-                <GoogleMark className="h-4 w-4" />
-              </SocialButton>
-              <SocialButton label="Apple">
-                <AppleMark className="h-4 w-4 text-slate-900" />
-              </SocialButton>
-            </div>
-
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[var(--color-divider)]" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-white px-4 text-sm font-medium text-[var(--color-text-muted)] sm:text-base">
-                  Or sign up with email
-                </span>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               <div>
                 <label
                   htmlFor="full-name"
@@ -727,20 +680,17 @@ export function RegisterPage() {
               >
                 {isSubmitting ? 'Creating Account...' : 'Create Account'}
               </button>
-            </form>
+      </form>
 
-            <p className="mt-8 text-center text-base text-[var(--color-text-muted)]">
-              Already have an account?{' '}
-              <Link
-                to="/login"
-                className="font-semibold text-[var(--color-link)] hover:text-[#1D4ED8]"
-              >
-                Sign in
-              </Link>
-            </p>
-          </div>
-        </section>
-      </div>
-    </main>
+      <p className="mt-8 text-center text-base text-[var(--color-text-muted)]">
+        Already have an account?{' '}
+        <Link
+          to="/login"
+          className="font-semibold text-[var(--color-link)] hover:text-[#1D4ED8]"
+        >
+          Sign in
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

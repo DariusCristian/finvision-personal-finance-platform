@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { BudgetCategory, BudgetTransaction } from '../lib/api';
 
@@ -46,10 +46,6 @@ const getCategoryLabel = (category: BudgetCategory) => {
     return 'Food';
   }
 
-  if (category.slug === 'entertainment') {
-    return 'Leisure';
-  }
-
   return category.name;
 };
 
@@ -62,6 +58,49 @@ const getCategoryInitials = (category: BudgetCategory) =>
     .join('');
 
 const normalizeDateValue = (value: string | null | undefined) => value?.slice(0, 10) ?? '';
+
+type CategoryOptionButtonProps = {
+  category: BudgetCategory;
+  isActive: boolean;
+  onSelect: (categoryId: string) => void;
+};
+
+const CategoryOptionButton = memo(function CategoryOptionButton({
+  category,
+  isActive,
+  onSelect,
+}: CategoryOptionButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(category.id)}
+      className={[
+        'flex min-w-0 flex-col items-center rounded-2xl border px-3 py-4 text-center transition',
+        isActive
+          ? 'border-[#2563eb] bg-blue-50 shadow-[inset_0_0_0_1px_rgba(37,99,235,0.18)]'
+          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
+      ].join(' ')}
+    >
+      <span
+        className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold"
+        style={{
+          backgroundColor: `${category.color}20`,
+          color: category.color,
+        }}
+      >
+        {getCategoryInitials(category)}
+      </span>
+      <span
+        className={[
+          'mt-3 line-clamp-2 text-sm font-medium',
+          isActive ? 'text-[#2563eb]' : 'text-slate-600',
+        ].join(' ')}
+      >
+        {getCategoryLabel(category)}
+      </span>
+    </button>
+  );
+});
 
 export function AddTransactionModal({
   isOpen,
@@ -84,6 +123,21 @@ export function AddTransactionModal({
   const availableCategories = useMemo(
     () => categories.filter((category) => category.kind === type || category.kind === 'both'),
     [categories, type],
+  );
+  const handleCategorySelect = useCallback((nextCategoryId: string) => {
+    setCategoryId(nextCategoryId);
+  }, []);
+  const categoryOptions = useMemo(
+    () =>
+      availableCategories.map((category) => (
+        <CategoryOptionButton
+          key={category.id}
+          category={category}
+          isActive={category.id === categoryId}
+          onSelect={handleCategorySelect}
+        />
+      )),
+    [availableCategories, categoryId, handleCategorySelect],
   );
 
   useEffect(() => {
@@ -162,9 +216,26 @@ export function AddTransactionModal({
     });
   }, [date, repeat]);
 
-  if (!isOpen) {
-    return null;
-  }
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   const isEditing = mode === 'edit';
 
@@ -205,179 +276,162 @@ export function AddTransactionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 px-4 py-6 backdrop-blur-[2px]">
-      <div className="w-full max-w-[40rem] overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.18)]">
-        <div className="flex items-center justify-between border-b border-slate-200 px-8 py-6">
-          <div>
-            <h2 className="text-[2rem] font-semibold tracking-[-0.03em] text-slate-900">
-              {isEditing ? 'Edit Transaction' : 'Add Transaction'}
-            </h2>
-            {initialTransaction?.isProjected ? (
-              <p className="mt-1 text-sm text-slate-500">
-                This edits the recurring source transaction for the projected entry.
-              </p>
-            ) : null}
+    <div
+      className={[
+        'fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/35 px-3 py-4 transition-opacity sm:px-4 sm:py-6',
+        isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
+      ].join(' ')}
+      onClick={onClose}
+      aria-hidden={!isOpen}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="flex max-h-[calc(100vh-3rem)] w-full max-w-[44rem] flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.18)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="shrink-0 border-b border-slate-200 px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 sm:text-[2rem]">
+                {isEditing ? 'Edit Transaction' : 'Add Transaction'}
+              </h2>
+              {initialTransaction?.isProjected ? (
+                <p className="mt-1 text-sm text-slate-500">
+                  This edits the recurring source transaction for the projected entry.
+                </p>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+              aria-label="Close"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
+                <path d="m6 6 12 12" />
+                <path d="M18 6 6 18" />
+              </svg>
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-            aria-label="Close"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
-              <path d="m6 6 12 12" />
-              <path d="M18 6 6 18" />
-            </svg>
-          </button>
         </div>
 
-        <div className="space-y-6 px-8 py-7">
-          <div className="rounded-2xl bg-slate-100 p-1">
-            <div className="grid grid-cols-2 gap-1">
-              {(['expense', 'income'] as const).map((option) => {
-                const isActive = option === type;
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
+          <div className="space-y-5 sm:space-y-6">
+            <div className="rounded-2xl bg-slate-100 p-1">
+              <div className="grid grid-cols-2 gap-1">
+                {(['expense', 'income'] as const).map((option) => {
+                  const isActive = option === type;
 
-                return (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => setType(option)}
-                    className={[
-                      'rounded-[1rem] px-4 py-3 text-lg font-medium transition',
-                      isActive
-                        ? 'bg-white text-slate-900 shadow-[0_1px_4px_rgba(15,23,42,0.08)]'
-                        : 'text-slate-500 hover:text-slate-700',
-                    ].join(' ')}
-                  >
-                    {option === 'expense' ? 'Expense' : 'Income'}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Amount</p>
-            <div className="mt-4 flex items-center justify-center gap-3">
-              <span className="text-5xl font-semibold tracking-[-0.04em] text-slate-900">$</span>
-              <input
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={amount}
-                onChange={(event) => setAmount(event.target.value)}
-                placeholder="0.00"
-                className="w-[14rem] border-none bg-transparent p-0 text-center text-6xl font-semibold tracking-[-0.05em] text-slate-400 outline-none placeholder:text-slate-300"
-              />
-            </div>
-          </div>
-
-          <div>
-            <p className="text-sm font-medium text-slate-900">Category</p>
-            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {availableCategories.map((category) => {
-                const isActive = category.id === categoryId;
-
-                return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() => setCategoryId(category.id)}
-                    className={[
-                      'flex flex-col items-center rounded-2xl border px-3 py-4 text-center transition',
-                      isActive
-                        ? 'border-[#2563eb] bg-blue-50 shadow-[inset_0_0_0_1px_rgba(37,99,235,0.18)]'
-                        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
-                    ].join(' ')}
-                  >
-                    <span
-                      className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold"
-                      style={{
-                        backgroundColor: `${category.color}20`,
-                        color: category.color,
-                      }}
-                    >
-                      {getCategoryInitials(category)}
-                    </span>
-                    <span
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setType(option)}
                       className={[
-                        'mt-3 text-sm font-medium',
-                        isActive ? 'text-[#2563eb]' : 'text-slate-600',
+                        'rounded-[1rem] px-4 py-3 text-lg font-medium transition',
+                        isActive
+                          ? 'bg-white text-slate-900 shadow-[0_1px_4px_rgba(15,23,42,0.08)]'
+                          : 'text-slate-500 hover:text-slate-700',
                       ].join(' ')}
                     >
-                      {getCategoryLabel(category)}
-                    </span>
-                  </button>
-                );
-              })}
+                      {option === 'expense' ? 'Expense' : 'Income'}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500">
-              Date
-              <input
-                type="date"
-                value={date}
-                onChange={(event) => setDate(event.target.value)}
-                className={fieldClassName}
-              />
-            </label>
-            <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500">
-              Repeat
-              <select
-                value={repeat}
-                onChange={(event) => setRepeat(event.target.value as RecurrenceValue)}
-                className={fieldClassName}
-              >
-                {REPEAT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+            <div className="text-center">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Amount</p>
+              <div className="mt-4 flex items-end justify-center gap-2 sm:gap-3">
+                <span className="text-4xl font-semibold tracking-[-0.04em] text-slate-400 sm:text-5xl">$</span>
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={amount}
+                  onChange={(event) => setAmount(event.target.value)}
+                  placeholder="0.00"
+                  className="w-full max-w-[16rem] border-none bg-transparent p-0 text-center text-4xl font-semibold tracking-[-0.05em] text-slate-900 outline-none placeholder:text-slate-300 sm:text-6xl"
+                />
+              </div>
+            </div>
 
-          {repeat !== 'none' ? (
+            <div>
+              <p className="text-sm font-medium text-slate-900">Category</p>
+              <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {categoryOptions}
+              </div>
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500 sm:col-span-1">
-                End Date
+              <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500">
+                Date
                 <input
                   type="date"
-                  value={endDate}
-                  min={date}
-                  onChange={(event) => setEndDate(event.target.value)}
+                  value={date}
+                  onChange={(event) => setDate(event.target.value)}
                   className={fieldClassName}
                 />
               </label>
-              <div className="flex items-end">
-                <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
-                  Recurring transactions are saved and projected into future months automatically.
-                </p>
-              </div>
+              <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500">
+                Repeat
+                <select
+                  value={repeat}
+                  onChange={(event) => setRepeat(event.target.value as RecurrenceValue)}
+                  className={fieldClassName}
+                >
+                  {REPEAT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
-          ) : null}
 
-          <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500">
-            Note (Optional)
-            <input
-              type="text"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="What is this for?"
-              className={fieldClassName}
-            />
-          </label>
+            {repeat !== 'none' ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500 sm:col-span-1">
+                  End Date
+                  <input
+                    type="date"
+                    value={endDate}
+                    min={date}
+                    onChange={(event) => setEndDate(event.target.value)}
+                    className={fieldClassName}
+                  />
+                </label>
+                <div className="flex items-end">
+                  <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                    Recurring transactions are saved and projected into future months automatically.
+                  </p>
+                </div>
+              </div>
+            ) : null}
 
-          {formError ? <p className="text-sm font-medium text-rose-500">{formError}</p> : null}
+            <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500">
+              Note (Optional)
+              <input
+                type="text"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                placeholder="What is this for?"
+                className={fieldClassName}
+              />
+            </label>
+
+            {formError ? <p className="text-sm font-medium text-rose-500">{formError}</p> : null}
+          </div>
         </div>
 
-        <div className="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-8 py-6 sm:flex-row sm:justify-end">
+        <div className="shrink-0 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex justify-center rounded-2xl border border-slate-300 bg-white px-7 py-3.5 text-lg font-medium text-slate-700 transition hover:bg-slate-100"
+            className="inline-flex justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3 text-base font-medium text-slate-700 transition hover:bg-slate-100 sm:px-7 sm:py-3.5 sm:text-lg"
           >
             Cancel
           </button>
@@ -385,11 +439,12 @@ export function AddTransactionModal({
             type="button"
             onClick={() => void handleSubmit()}
             disabled={isSubmitting}
-            className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#2563eb] px-8 py-3.5 text-lg font-medium text-white shadow-[0_12px_30px_rgba(37,99,235,0.22)] transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-blue-300"
+            className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#2563eb] px-6 py-3 text-base font-medium text-white shadow-[0_12px_30px_rgba(37,99,235,0.22)] transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-blue-300 sm:px-8 sm:py-3.5 sm:text-lg"
           >
             <span className="text-xl leading-none">+</span>
             {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Save Transaction'}
           </button>
+          </div>
         </div>
       </div>
     </div>

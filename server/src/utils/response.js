@@ -3,5 +3,6 @@ export const sendSuccess = (res, data, statusCode = 200, meta = null) => {
     success: true,
     data,
     meta,
+    requestId: res.req?.requestId ?? null,
   });
 };

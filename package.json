@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "concurrently -n server,client -c cyan,green \"npm run dev --workspace finvision-server\" \"npm run dev --workspace finvision-client\"",
     "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspace finvision-server",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

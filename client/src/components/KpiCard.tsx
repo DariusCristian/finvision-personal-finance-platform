@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 
 type KpiCardProps = {
   title: string;
@@ -14,7 +14,7 @@ type KpiCardProps = {
   accentDecorationClassName: string;
 };
 
-export function KpiCard({
+function KpiCardComponent({
   title,
   value,
   icon,
@@ -61,3 +61,5 @@ export function KpiCard({
     </div>
   );
 }
+
+export const KpiCard = memo(KpiCardComponent);

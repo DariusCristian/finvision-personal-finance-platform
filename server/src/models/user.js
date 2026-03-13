@@ -24,6 +24,17 @@ const userSchema = new mongoose.Schema(
       default: 'RON',
       required: true,
     },
+    locale: {
+      type: String,
+      enum: ['en-US', 'ro-RO'],
+      default: 'en-US',
+      required: true,
+    },
+    avatarUrl: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     monthlyBudgetGoal: {
       type: Number,
       default: null,

@@ -1,51 +1,18 @@
 import bcrypt from 'bcryptjs';
 import { Router } from 'express';
-import { z } from 'zod';
 
-import { AppError, AuthError } from '../../errors/app-error.js';
+import { AuthError, ConflictError } from '../../errors/app-error.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { User } from '../../models/user.js';
 import { createAccessToken } from '../../utils/jwt.js';
 import { sendSuccess } from '../../utils/response.js';
+import { serializeUser } from '../../utils/serializers.js';
+import { loginSchema, registerSchema } from '../../validation/auth.js';
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const PWD_RE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 const SALT_ROUNDS = 12;
 
 const authRouter = Router();
-
-const registerSchema = z.object({
-  email: z.string().trim().toLowerCase().regex(EMAIL_RE, 'Enter a valid email address.'),
-  password: z
-    .string()
-    .regex(
-      PWD_RE,
-      'Password must be at least 8 characters with uppercase, lowercase, and a number.',
-    ),
-  displayName: z.string().trim().min(1, 'Display name is required.'),
-  baseCurrency: z.enum(['RON', 'EUR', 'USD']).default('RON'),
-});
-
-const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().regex(EMAIL_RE, 'Enter a valid email address.'),
-  password: z.string().min(1, 'Password is required.'),
-});
-
-const serializeUser = (user) => ({
-  id: user._id.toString(),
-  email: user.email,
-  displayName: user.displayName,
-  baseCurrency: user.baseCurrency,
-  monthlyBudgetGoal:
-    typeof user.monthlyBudgetGoal === 'number' ? user.monthlyBudgetGoal : null,
-  investingMonthlyContributionGoal:
-    typeof user.investingMonthlyContributionGoal === 'number'
-      ? user.investingMonthlyContributionGoal
-      : 0,
-  investingAccountBalance:
-    typeof user.investingAccountBalance === 'number' ? user.investingAccountBalance : 0,
-});
 
 const toAuthPayload = (user) => ({
   user: serializeUser(user),
@@ -59,11 +26,11 @@ authRouter.post('/register', validateRequest({ body: registerSchema }), async (r
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      throw new AppError({
-        message: 'An account with this email already exists.',
-        statusCode: 409,
-        code: 'DUPLICATE_EMAIL',
-      });
+      throw new ConflictError(
+        'An account with this email already exists.',
+        [],
+        'DUPLICATE_EMAIL',
+      );
     }
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
@@ -78,11 +45,11 @@ authRouter.post('/register', validateRequest({ body: registerSchema }), async (r
   } catch (error) {
     if (error?.code === 11000) {
       next(
-        new AppError({
-          message: 'An account with this email already exists.',
-          statusCode: 409,
-          code: 'DUPLICATE_EMAIL',
-        }),
+        new ConflictError(
+          'An account with this email already exists.',
+          [],
+          'DUPLICATE_EMAIL',
+        ),
       );
       return;
     }
