@@ -77,13 +77,13 @@ const formatPublishedDate = (rawValue: string) => {
 
 function NewsCardSkeleton() {
   return (
-    <article className="animate-pulse rounded-[1.5rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-      <div className="h-4 w-28 rounded-full bg-slate-100" />
-      <div className="mt-4 h-5 w-full rounded-md bg-slate-100" />
-      <div className="mt-2 h-5 w-4/5 rounded-md bg-slate-100" />
-      <div className="mt-4 h-4 w-full rounded-md bg-slate-100" />
-      <div className="mt-2 h-4 w-3/4 rounded-md bg-slate-100" />
-      <div className="mt-6 h-4 w-32 rounded-md bg-slate-100" />
+    <article className="animate-pulse rounded-[1.5rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+      <div className="h-4 w-28 rounded-full bg-slate-100 dark:bg-slate-700" />
+      <div className="mt-4 h-5 w-full rounded-md bg-slate-100 dark:bg-slate-700" />
+      <div className="mt-2 h-5 w-4/5 rounded-md bg-slate-100 dark:bg-slate-700" />
+      <div className="mt-4 h-4 w-full rounded-md bg-slate-100 dark:bg-slate-700" />
+      <div className="mt-2 h-4 w-3/4 rounded-md bg-slate-100 dark:bg-slate-700" />
+      <div className="mt-6 h-4 w-32 rounded-md bg-slate-100 dark:bg-slate-700" />
     </article>
   );
 }
@@ -233,7 +233,7 @@ export function NewsPage() {
 
   const titleSummary = useMemo(() => {
     if (debouncedSearch) {
-      return `Results for “${debouncedSearch}”`;
+      return `Results for "${debouncedSearch}"`;
     }
 
     const selectedTopic = TOPIC_OPTIONS.find((option) => option.id === topic);
@@ -243,21 +243,21 @@ export function NewsPage() {
   return (
     <AppShell activeTab="news">
       <div className="space-y-6">
-        <header className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-          <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-900">News</h1>
-          <p className="mt-3 text-lg text-slate-500">
+        <header className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+          <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">News</h1>
+          <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">
             Headlines from around the web. Click to read on the source site.
           </p>
 
           <div className="mt-6 flex flex-col gap-4">
-            <label className="text-sm font-medium text-slate-600">
+            <label className="text-sm font-medium text-slate-600 dark:text-slate-400">
               Search
               <input
                 type="search"
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
                 placeholder="Search finance headlines"
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-blue-500 dark:focus:ring-blue-900/40"
               />
             </label>
 
@@ -277,8 +277,8 @@ export function NewsPage() {
                     className={[
                       'rounded-full px-4 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
                       isActive
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+                        ? 'bg-blue-600 text-white dark:bg-blue-700'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600',
                     ].join(' ')}
                   >
                     {option.label}
@@ -291,21 +291,19 @@ export function NewsPage() {
 
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">{titleSummary}</h2>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{titleSummary}</h2>
             {!isLoading ? (
-              <span className="text-sm text-slate-500">{articles.length} loaded</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400">{articles.length} loaded</span>
             ) : null}
           </div>
 
           {error ? (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-400">
               <p>{error.message}</p>
               <button
                 type="button"
-                onClick={() => {
-                  void handleRetry();
-                }}
-                className="rounded-lg border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                onClick={() => { void handleRetry(); }}
+                className="rounded-lg border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 dark:border-rose-700 dark:text-rose-400 dark:hover:bg-rose-950"
               >
                 {error.isRateLimited ? 'Retry in a minute' : 'Retry'}
               </button>
@@ -313,7 +311,7 @@ export function NewsPage() {
           ) : null}
 
           {providerNotice && !error ? (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-400">
               {providerNotice}
             </div>
           ) : null}
@@ -325,7 +323,7 @@ export function NewsPage() {
               ))}
             </div>
           ) : hasNoResults ? (
-            <div className="rounded-2xl border border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500">
+            <div className="rounded-2xl border border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
               No news articles found for this filter.
             </div>
           ) : (
@@ -338,18 +336,18 @@ export function NewsPage() {
                     onClick={() => {
                       window.open(article.url, '_blank', 'noopener,noreferrer');
                     }}
-                    className="group flex h-full flex-col rounded-[1.5rem] border border-slate-100 bg-white p-5 text-left shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-8px_rgba(37,99,235,0.35)] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                    className="group flex h-full flex-col rounded-[1.5rem] border border-slate-100 bg-white p-5 text-left shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-8px_rgba(37,99,235,0.35)] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:shadow-[0_8px_30px_-8px_rgba(59,130,246,0.3)]"
                   >
-                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">
+                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
                       {article.source} • {formatPublishedDate(article.publishedAt)}
                     </p>
-                    <h3 className="mt-3 line-clamp-2 text-xl font-semibold tracking-[-0.02em] text-slate-900">
+                    <h3 className="mt-3 line-clamp-2 text-xl font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-100">
                       {article.title}
                     </h3>
-                    <p className="mt-3 line-clamp-3 text-sm text-slate-500">
+                    <p className="mt-3 line-clamp-3 text-sm text-slate-500 dark:text-slate-400">
                       {article.snippet || 'Open the source article to read the full story.'}
                     </p>
-                    <p className="mt-6 text-sm font-semibold text-[#2563eb] transition group-hover:text-[#1d4ed8]">
+                    <p className="mt-6 text-sm font-semibold text-[#2563eb] transition group-hover:text-[#1d4ed8] dark:text-blue-400 dark:group-hover:text-blue-300">
                       Read on source →
                     </p>
                   </button>
@@ -359,15 +357,13 @@ export function NewsPage() {
               <div className="flex justify-center pt-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    void handleLoadMore();
-                  }}
+                  onClick={() => { void handleLoadMore(); }}
                   disabled={!hasMore || isLoadingMore}
                   className={[
                     'rounded-2xl px-5 py-3 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
                     !hasMore || isLoadingMore
-                      ? 'cursor-not-allowed bg-slate-100 text-slate-400'
-                      : 'bg-[#2563eb] text-white hover:bg-[#1d4ed8]',
+                      ? 'cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-500'
+                      : 'bg-[#2563eb] text-white hover:bg-[#1d4ed8] dark:bg-blue-600 dark:hover:bg-blue-700',
                   ].join(' ')}
                 >
                   {isLoadingMore ? 'Loading...' : hasMore ? 'Load more' : 'No more headlines'}

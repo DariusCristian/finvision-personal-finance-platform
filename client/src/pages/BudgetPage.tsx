@@ -842,8 +842,8 @@ export function BudgetPage() {
       <div className="space-y-6 lg:space-y-8">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-4xl font-bold tracking-[-0.04em] text-slate-900">Budget & Expenses</h1>
-            <p className="mt-2 text-lg text-slate-500">
+            <h1 className="text-4xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Budget & Expenses</h1>
+            <p className="mt-2 text-lg text-slate-500 dark:text-slate-400">
               Track your spending and manage your financial health.
             </p>
           </div>
@@ -851,14 +851,14 @@ export function BudgetPage() {
             <button
               type="button"
               onClick={() => setIsBudgetModalOpen(true)}
-              className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+              className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:bg-slate-700"
             >
               Set Budget
             </button>
             <select
               value={selectedMonth}
               onChange={(event) => setSelectedMonth(event.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-blue-900/40"
             >
               {monthOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -881,7 +881,7 @@ export function BudgetPage() {
         </header>
 
         {successMessage ? (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400">
             {successMessage}
           </div>
         ) : null}
@@ -908,7 +908,7 @@ export function BudgetPage() {
             icon={<WalletIcon />}
             iconBgClassName="bg-emerald-50"
             iconClassName="text-emerald-500"
-            badge={makeProgressBadge('Selected month', 'text-xs font-medium text-slate-500')}
+            badge={makeProgressBadge('Selected month', 'text-xs font-medium text-slate-500 dark:text-slate-400')}
             accentDecorationClassName="bg-emerald-100/70"
           />
           <KpiCard
@@ -947,24 +947,24 @@ export function BudgetPage() {
           <div className="space-y-6 lg:col-span-4">
             <CategoryDonutChart slices={categorySpend} total={metrics.expenses} isLoading={isLoading} />
 
-            <section className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+            <section className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">Investing Account</h2>
-                  <p className="mt-1 text-sm text-slate-500">RON wallet for funding your EUR investing portfolio.</p>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Investing Account</h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">RON wallet for funding your EUR investing portfolio.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => setIsWalletSettingsModalOpen(true)}
-                    className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                   >
                     Set
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsWalletDepositModalOpen(true)}
-                    className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                   >
                     Add Funds
                   </button>
@@ -975,7 +975,7 @@ export function BudgetPage() {
                       setWalletConvertQuote(null);
                       setIsWalletConvertModalOpen(true);
                     }}
-                    className="inline-flex items-center rounded-xl bg-[#2563eb] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                    className="inline-flex items-center rounded-xl bg-[#2563eb] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] dark:bg-blue-600 dark:hover:bg-blue-700"
                   >
                     Convert to EUR
                   </button>
@@ -983,43 +983,43 @@ export function BudgetPage() {
               </div>
 
               <div className="mt-6 space-y-4">
-                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
-                  <span className="text-sm font-medium text-slate-500">Monthly investing goal</span>
-                  <span className="text-sm font-semibold text-slate-900">
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/60">
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Monthly investing goal</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {formatCurrency(metrics.investingGoal, 2, 'RON')}
                   </span>
                 </div>
-                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
-                  <span className="text-sm font-medium text-slate-500">Invested this month</span>
-                  <span className="text-sm font-semibold text-slate-900">
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/60">
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Invested this month</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {formatCurrency(metrics.investedThisMonth, 2, 'RON')}
                   </span>
                 </div>
-                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
-                  <span className="text-sm font-medium text-slate-500">Account balance</span>
-                  <span className="text-sm font-semibold text-slate-900">
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/60">
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Account balance</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {formatCurrency(metrics.investingAccountBalance, 2, 'RON')}
                   </span>
                 </div>
               </div>
 
-              <p className="mt-4 text-xs text-slate-500">
+              <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
                 Auto-fund:{' '}
                 {investingWallet?.autoFundEnabled
                   ? `${formatCurrency(investingWallet.autoFundAmount, 2, 'RON')} on day ${investingWallet.autoFundDayOfMonth}`
                   : 'Disabled'}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Invested this month is based on deposits in the selected month.
               </p>
 
               {metrics.investingGoal > 0 ? (
                 <div className="mt-5">
-                  <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                  <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
                     <span>Progress</span>
                     <span>{Math.min(investingProgress ?? 0, 999)}%</span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-slate-200">
+                  <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700">
                     <div
                       className="h-2 rounded-full bg-[#0EA5A4]"
                       style={{ width: `${Math.max(0, Math.min(investingProgress ?? 0, 100))}%` }}
@@ -1027,7 +1027,7 @@ export function BudgetPage() {
                   </div>
                 </div>
               ) : (
-                <p className="mt-5 text-sm text-slate-500">
+                <p className="mt-5 text-sm text-slate-500 dark:text-slate-400">
                   Set a monthly investing goal to track progress.
                 </p>
               )}

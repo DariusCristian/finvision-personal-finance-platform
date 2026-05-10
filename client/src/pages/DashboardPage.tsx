@@ -312,22 +312,22 @@ export function DashboardPage() {
       <div className="space-y-6">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb]">Home</p>
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900">Home</h1>
-            <p className="mt-3 text-lg text-slate-500">Your financial overview in one place.</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb] dark:text-blue-400">Home</p>
+            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Home</h1>
+            <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">Your financial overview in one place.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               onClick={() => setIsTransactionModalOpen(true)}
               disabled={!canAddTransaction}
-              className="rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700"
             >
               Add Transaction
             </button>
             <Link
               to="/assistant"
-              className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               Ask Finny
             </Link>
@@ -335,75 +335,75 @@ export function DashboardPage() {
         </header>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <article className="rounded-[1.25rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-            <p className="text-sm text-slate-500">Income (this month)</p>
-            <p className="mt-2 text-3xl font-bold tracking-[-0.03em] text-emerald-600">
+          <article className="rounded-[1.25rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Income (this month)</p>
+            <p className="mt-2 text-3xl font-bold tracking-[-0.03em] text-emerald-600 dark:text-emerald-400">
               {isLoading ? '...' : formatMoney(budgetSummary.income, budgetDisplayCurrency)}
             </p>
           </article>
 
-          <article className="rounded-[1.25rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-            <p className="text-sm text-slate-500">Expenses (this month)</p>
-            <p className="mt-2 text-3xl font-bold tracking-[-0.03em] text-rose-600">
+          <article className="rounded-[1.25rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Expenses (this month)</p>
+            <p className="mt-2 text-3xl font-bold tracking-[-0.03em] text-rose-600 dark:text-rose-400">
               {isLoading ? '...' : formatMoney(budgetSummary.expenses, budgetDisplayCurrency)}
             </p>
           </article>
 
-          <article className="rounded-[1.25rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-            <p className="text-sm text-slate-500">Remaining Budget</p>
+          <article className="rounded-[1.25rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Remaining Budget</p>
             {budgetSummary.budgetGoal === null ? (
               <div className="mt-2 space-y-2">
-                <p className="text-base font-semibold text-slate-700">Set budget to see remaining.</p>
-                <Link to="/budget" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+                <p className="text-base font-semibold text-slate-700 dark:text-slate-300">Set budget to see remaining.</p>
+                <Link to="/budget" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8] dark:text-blue-400 dark:hover:text-blue-300">
                   Set budget
                 </Link>
               </div>
             ) : (
               <>
-                <p className="mt-2 text-3xl font-bold tracking-[-0.03em] text-slate-900">
+                <p className="mt-2 text-3xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
                   {isLoading ? '...' : formatMoney(budgetSummary.remainingBudget ?? 0, budgetDisplayCurrency)}
                 </p>
-                <div className="mt-3 h-2 w-full rounded-full bg-slate-100">
+                <div className="mt-3 h-2 w-full rounded-full bg-slate-100 dark:bg-slate-700">
                   <div
                     className="h-2 rounded-full bg-[#f97316]"
                     style={{ width: `${Math.max(0, Math.min(100, budgetSummary.percentSpent ?? 0))}%` }}
                   />
                 </div>
-                <p className="mt-2 text-xs font-medium text-slate-500">
+                <p className="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
                   {isLoading ? '...' : `${Math.round(budgetSummary.percentSpent ?? 0)}% spent`}
                 </p>
               </>
             )}
           </article>
 
-          <article className="rounded-[1.25rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-            <p className="text-sm text-slate-500">Portfolio Value</p>
-            <p className="mt-2 text-3xl font-bold tracking-[-0.03em] text-slate-900">
+          <article className="rounded-[1.25rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Portfolio Value</p>
+            <p className="mt-2 text-3xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
               {isLoading ? '...' : formatMoney(portfolioTotals.totalValue, portfolioDisplayCurrency)}
             </p>
           </article>
         </section>
 
         <section className="grid gap-6 xl:grid-cols-2">
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900">Spending by Category</h2>
-              <Link to="/budget" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Spending by Category</h2>
+              <Link to="/budget" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8] dark:text-blue-400 dark:hover:text-blue-300">
                 Open Budget
               </Link>
             </div>
             {widgetErrors.budget ? (
-              <p className="mt-4 text-sm text-rose-600">{widgetErrors.budget}</p>
+              <p className="mt-4 text-sm text-rose-600 dark:text-rose-400">{widgetErrors.budget}</p>
             ) : isLoading ? (
-              <div className="mt-6 h-52 animate-pulse rounded-2xl bg-slate-100" />
+              <div className="mt-6 h-52 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-700" />
             ) : budgetSummary.donutSlices.length === 0 ? (
-              <p className="mt-6 text-sm text-slate-500">No expense activity yet for this month.</p>
+              <p className="mt-6 text-sm text-slate-500 dark:text-slate-400">No expense activity yet for this month.</p>
             ) : (
               <div className="mt-6 grid gap-5 sm:grid-cols-[13rem_1fr] sm:items-center">
                 <div className="relative mx-auto h-44 w-44 rounded-full" style={{ background: buildDonutBackground(budgetSummary.donutSlices) }}>
-                  <div className="absolute inset-6 flex flex-col items-center justify-center rounded-full bg-white text-center">
-                    <span className="text-xs text-slate-500">Total</span>
-                    <span className="mt-1 text-lg font-bold text-slate-900">
+                  <div className="absolute inset-6 flex flex-col items-center justify-center rounded-full bg-white text-center dark:bg-slate-800">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Total</span>
+                    <span className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">
                       {formatMoney(budgetSummary.expenses, budgetDisplayCurrency)}
                     </span>
                   </div>
@@ -415,11 +415,11 @@ export function DashboardPage() {
 
                     return (
                       <div key={slice.label} className="flex items-center justify-between gap-3 text-sm">
-                        <div className="flex items-center gap-2 text-slate-600">
+                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                           <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: slice.color }} />
                           <span>{slice.label}</span>
                         </div>
-                        <span className="font-semibold text-slate-900">{Math.round(percentage)}%</span>
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">{Math.round(percentage)}%</span>
                       </div>
                     );
                   })}
@@ -428,64 +428,64 @@ export function DashboardPage() {
             )}
           </article>
 
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900">Portfolio Snapshot</h2>
-              <Link to="/invest" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Portfolio Snapshot</h2>
+              <Link to="/invest" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8] dark:text-blue-400 dark:hover:text-blue-300">
                 Open Portfolio
               </Link>
             </div>
             {widgetErrors.invest ? (
-              <p className="mt-4 text-sm text-rose-600">{widgetErrors.invest}</p>
+              <p className="mt-4 text-sm text-rose-600 dark:text-rose-400">{widgetErrors.invest}</p>
             ) : (
               <div className="mt-4 space-y-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Total value</span>
-                  <span className="font-semibold text-slate-900">
+                  <span className="text-slate-500 dark:text-slate-400">Total value</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">
                     {isLoading ? '...' : formatMoney(portfolioTotals.totalValue, portfolioDisplayCurrency)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Cash</span>
-                  <span className="font-semibold text-slate-900">
+                  <span className="text-slate-500 dark:text-slate-400">Cash</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">
                     {isLoading ? '...' : formatMoney(portfolioTotals.cashBalance, portfolioDisplayCurrency)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Top holding</span>
-                  <span className="font-semibold text-slate-900">
+                  <span className="text-slate-500 dark:text-slate-400">Top holding</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">
                     {topHolding ? `${topHolding.symbol} (${formatPct(topHolding.allocationPct, 1)})` : 'No holdings yet'}
                   </span>
                 </div>
               </div>
             )}
 
-            <div className="mt-6 border-t border-slate-100 pt-4">
+            <div className="mt-6 border-t border-slate-100 pt-4 dark:border-slate-700">
               <div className="mb-2 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-slate-800">Market Snapshot</h3>
-                <Link to="/market" className="text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Market Snapshot</h3>
+                <Link to="/market" className="text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8] dark:text-blue-400 dark:hover:text-blue-300">
                   Open Market
                 </Link>
               </div>
               {widgetErrors.market ? (
-                <p className="text-sm text-rose-600">{widgetErrors.market}</p>
+                <p className="text-sm text-rose-600 dark:text-rose-400">{widgetErrors.market}</p>
               ) : isLoading ? (
                 <div className="space-y-2">
                   {Array.from({ length: 3 }).map((_, index) => (
-                    <div key={index} className="h-8 animate-pulse rounded-lg bg-slate-100" />
+                    <div key={index} className="h-8 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-700" />
                   ))}
                 </div>
               ) : (
                 <div className="space-y-2">
                   {marketQuotes.slice(0, 5).map((quote) => (
-                    <div key={quote.symbol} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm">
-                      <span className="font-medium text-slate-800">{quote.symbol}</span>
+                    <div key={quote.symbol} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm dark:bg-slate-700/60">
+                      <span className="font-medium text-slate-800 dark:text-slate-200">{quote.symbol}</span>
                       <span
                         className={[
                           'font-semibold',
                           typeof quote.changePct === 'number' && quote.changePct < 0
-                            ? 'text-rose-600'
-                            : 'text-emerald-600',
+                            ? 'text-rose-600 dark:text-rose-400'
+                            : 'text-emerald-600 dark:text-emerald-400',
                         ].join(' ')}
                       >
                         {formatPct(quote.changePct, 2)}
@@ -499,36 +499,38 @@ export function DashboardPage() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-3">
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900">Recent Transactions</h2>
-              <Link to="/budget" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Recent Transactions</h2>
+              <Link to="/budget" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8] dark:text-blue-400 dark:hover:text-blue-300">
                 Go to Budget
               </Link>
             </div>
             {widgetErrors.budget ? (
-              <p className="mt-4 text-sm text-rose-600">{widgetErrors.budget}</p>
+              <p className="mt-4 text-sm text-rose-600 dark:text-rose-400">{widgetErrors.budget}</p>
             ) : (
               <div className="mt-4 space-y-3">
                 {isLoading ? (
                   Array.from({ length: 5 }).map((_, index) => (
-                    <div key={index} className="h-12 animate-pulse rounded-xl bg-slate-100" />
+                    <div key={index} className="h-12 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-700" />
                   ))
                 ) : budgetSummary.recentTransactions.length === 0 ? (
-                  <p className="text-sm text-slate-500">No transactions this month yet.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No transactions this month yet.</p>
                 ) : (
                   budgetSummary.recentTransactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5">
+                    <div key={transaction.id} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5 dark:bg-slate-700/60">
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-slate-900">
+                        <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                           {transaction.description || transaction.category?.name || 'Transaction'}
                         </p>
-                        <p className="text-xs text-slate-500">{formatTransactionDate(transaction.date)}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{formatTransactionDate(transaction.date)}</p>
                       </div>
                       <span
                         className={[
                           'text-sm font-semibold',
-                          transaction.type === 'income' ? 'text-emerald-600' : 'text-rose-600',
+                          transaction.type === 'income'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-rose-600 dark:text-rose-400',
                         ].join(' ')}
                       >
                         {transaction.type === 'income' ? '+' : '-'}
@@ -541,33 +543,33 @@ export function DashboardPage() {
             )}
           </article>
 
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900">Latest News</h2>
-              <Link to="/news" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Latest News</h2>
+              <Link to="/news" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8] dark:text-blue-400 dark:hover:text-blue-300">
                 Open News
               </Link>
             </div>
             {widgetErrors.news ? (
-              <p className="mt-4 text-sm text-rose-600">News unavailable.</p>
+              <p className="mt-4 text-sm text-rose-600 dark:text-rose-400">News unavailable.</p>
             ) : (
               <div className="mt-4 space-y-3">
                 {isLoading ? (
                   Array.from({ length: 3 }).map((_, index) => (
-                    <div key={index} className="h-16 animate-pulse rounded-xl bg-slate-100" />
+                    <div key={index} className="h-16 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-700" />
                   ))
                 ) : newsItems.length === 0 ? (
-                  <p className="text-sm text-slate-500">No headlines available right now.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No headlines available right now.</p>
                 ) : (
                   newsItems.map((article) => (
                     <button
                       key={article.id}
                       type="button"
                       onClick={() => window.open(article.url, '_blank', 'noopener,noreferrer')}
-                      className="w-full rounded-xl bg-slate-50 px-3 py-2.5 text-left transition hover:bg-slate-100"
+                      className="w-full rounded-xl bg-slate-50 px-3 py-2.5 text-left transition hover:bg-slate-100 dark:bg-slate-700/60 dark:hover:bg-slate-700"
                     >
-                      <p className="line-clamp-2 text-sm font-medium text-slate-900">{article.title}</p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="line-clamp-2 text-sm font-medium text-slate-900 dark:text-slate-100">{article.title}</p>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                         {article.source} • {new Date(article.publishedAt || Date.now()).toLocaleDateString()}
                       </p>
                     </button>
@@ -577,38 +579,38 @@ export function DashboardPage() {
             )}
           </article>
 
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900">Learning Progress</h2>
-              <Link to="/learn" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Learning Progress</h2>
+              <Link to="/learn" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8] dark:text-blue-400 dark:hover:text-blue-300">
                 Continue Learning
               </Link>
             </div>
             {widgetErrors.learn ? (
-              <p className="mt-4 text-sm text-rose-600">{widgetErrors.learn}</p>
+              <p className="mt-4 text-sm text-rose-600 dark:text-rose-400">{widgetErrors.learn}</p>
             ) : (
               <div className="mt-4 space-y-3">
-                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5">
-                  <span className="text-sm text-slate-500">XP</span>
-                  <span className="text-sm font-semibold text-slate-900">
+                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5 dark:bg-slate-700/60">
+                  <span className="text-sm text-slate-500 dark:text-slate-400">XP</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {isLoading ? '...' : learningProgress?.xp ?? 0}
                   </span>
                 </div>
-                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5">
-                  <span className="text-sm text-slate-500">Level</span>
-                  <span className="text-sm font-semibold text-slate-900">
+                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5 dark:bg-slate-700/60">
+                  <span className="text-sm text-slate-500 dark:text-slate-400">Level</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {isLoading ? '...' : learningProgress?.level ?? 1}
                   </span>
                 </div>
-                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5">
-                  <span className="text-sm text-slate-500">Streak</span>
-                  <span className="text-sm font-semibold text-slate-900">
+                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5 dark:bg-slate-700/60">
+                  <span className="text-sm text-slate-500 dark:text-slate-400">Streak</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {isLoading ? '...' : `${learningProgress?.streakDays ?? 0} days`}
                   </span>
                 </div>
-                <div className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm">
-                  <p className="text-slate-500">Last quiz score</p>
-                  <p className="mt-1 font-semibold text-slate-900">
+                <div className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-600">
+                  <p className="text-slate-500 dark:text-slate-400">Last quiz score</p>
+                  <p className="mt-1 font-semibold text-slate-900 dark:text-slate-100">
                     {isLoading ? '...' : lastQuizAttempt ? `${lastQuizAttempt.score}%` : 'No attempts yet'}
                   </p>
                 </div>

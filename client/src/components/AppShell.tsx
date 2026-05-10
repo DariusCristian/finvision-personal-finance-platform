@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 type AppShellProps = {
   activeTab: 'home' | 'budget' | 'learning' | 'news' | 'settings' | 'invest' | 'market';
@@ -32,6 +33,23 @@ function BellIcon() {
   );
 }
 
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+    </svg>
+  );
+}
+
 const getInitials = (displayName?: string) => {
   if (!displayName) {
     return 'FV';
@@ -47,17 +65,18 @@ const getInitials = (displayName?: string) => {
 
 export function AppShell({ activeTab, children }: AppShellProps) {
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const initials = getInitials(user?.displayName);
 
   return (
-    <div className="min-h-screen bg-[#f3f4f6] text-slate-900">
-      <nav className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95">
+    <div className="min-h-screen bg-[#f3f4f6] text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <nav className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/95">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2563eb] text-xl font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
               F
             </div>
-            <span className="text-2xl font-bold tracking-[-0.03em]">FinVision</span>
+            <span className="text-2xl font-bold tracking-[-0.03em] dark:text-white">FinVision</span>
           </div>
 
           <div className="hidden items-center gap-8 md:flex">
@@ -65,7 +84,9 @@ export function AppShell({ activeTab, children }: AppShellProps) {
               const isActive = item.id === activeTab;
               const className = [
                 'text-base font-medium transition-colors',
-                isActive ? 'text-[#2563eb]' : 'text-slate-500 hover:text-[#2563eb]',
+                isActive
+                  ? 'text-[#2563eb] dark:text-blue-400'
+                  : 'text-slate-500 hover:text-[#2563eb] dark:text-slate-400 dark:hover:text-blue-400',
               ].join(' ');
 
               if (item.href) {
@@ -84,25 +105,35 @@ export function AppShell({ activeTab, children }: AppShellProps) {
             })}
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              className="relative rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              onClick={toggleTheme}
+              className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+            </button>
+
+            <button
+              type="button"
+              className="relative rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
               aria-label="Notifications"
             >
               <BellIcon />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-red-500" />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-red-500 dark:border-slate-900" />
             </button>
+
             <Link
               to="/settings"
-              className="flex items-center gap-3 rounded-xl border-l border-slate-200 pl-4 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+              className="flex items-center gap-3 rounded-xl border-l border-slate-200 pl-4 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 dark:border-slate-700 dark:hover:bg-slate-800"
               aria-label="Open account settings"
             >
               <div className="hidden text-right sm:block">
-                <p className="text-sm font-semibold text-slate-900">{user?.displayName ?? 'FinVision User'}</p>
-                <p className="text-xs text-slate-500">Free plan</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.displayName ?? 'FinVision User'}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Free plan</p>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-[#0d5b52] to-[#2563eb] text-sm font-semibold text-white shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-[#0d5b52] to-[#2563eb] text-sm font-semibold text-white shadow-sm dark:border-slate-800">
                 {initials}
               </div>
             </Link>

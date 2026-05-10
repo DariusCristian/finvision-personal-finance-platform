@@ -62,10 +62,12 @@ const resolveDisplayCurrency = (currency: string | null | undefined): 'USD' | 'E
 
 const getChangeTextClassName = (value: number | null | undefined) => {
   if (typeof value !== 'number') {
-    return 'text-slate-500';
+    return 'text-slate-500 dark:text-slate-400';
   }
 
-  return value >= 0 ? 'text-emerald-600' : 'text-rose-600';
+  return value >= 0
+    ? 'text-emerald-600 dark:text-emerald-400'
+    : 'text-rose-600 dark:text-rose-400';
 };
 
 function StockChart({ points, isLoading }: { points: StockCandlePoint[]; isLoading: boolean }) {
@@ -97,19 +99,19 @@ function StockChart({ points, isLoading }: { points: StockCandlePoint[]; isLoadi
   }, [points]);
 
   if (isLoading) {
-    return <div className="h-72 animate-pulse rounded-2xl bg-slate-100" />;
+    return <div className="h-72 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-700" />;
   }
 
   if (points.length === 0) {
     return (
-      <div className="flex h-72 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500">
+      <div className="flex h-72 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-400">
         No chart data for this symbol/time range. Try 1M or another symbol.
       </div>
     );
   }
 
   return (
-    <div className="h-72 rounded-2xl border border-slate-200 bg-slate-50 p-2">
+    <div className="h-72 rounded-2xl border border-slate-200 bg-slate-50 p-2 dark:border-slate-600 dark:bg-slate-700/60">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full">
         <polyline points={polyline} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" />
       </svg>
@@ -341,15 +343,9 @@ export function MarketPage() {
     setIsLoadingDetail(true);
 
     void Promise.allSettled([
-      fetchStockProfile(selectedSymbol, accessToken, {
-        signal: controller.signal,
-      }),
-      fetchStockQuotes([selectedSymbol], accessToken, {
-        signal: controller.signal,
-      }),
-      fetchStockCandles(selectedSymbol, selectedRange, accessToken, {
-        signal: controller.signal,
-      }),
+      fetchStockProfile(selectedSymbol, accessToken, { signal: controller.signal }),
+      fetchStockQuotes([selectedSymbol], accessToken, { signal: controller.signal }),
+      fetchStockCandles(selectedSymbol, selectedRange, accessToken, { signal: controller.signal }),
     ])
       .then((results) => {
         if (detailRequestIdRef.current !== requestId) {
@@ -445,15 +441,7 @@ export function MarketPage() {
     setIsSubmittingOrder(true);
 
     try {
-      await placeInvestStockOrder(
-        {
-          symbol: selectedSymbol,
-          side,
-          quantity,
-        },
-        accessToken,
-      );
-
+      await placeInvestStockOrder({ symbol: selectedSymbol, side, quantity }, accessToken);
       await refreshPortfolioContext();
       setIsTradeModalOpen(false);
       setSuccessMessage('Stock demo order executed.');
@@ -466,30 +454,30 @@ export function MarketPage() {
     <AppShell activeTab="market">
       <div className="space-y-6">
         <header>
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb]">Market</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900">Stocks Discovery</h1>
-          <p className="mt-3 text-lg text-slate-500">Browse live stock data, compare movers, and inspect trend charts.</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb] dark:text-blue-400">Market</p>
+          <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Stocks Discovery</h1>
+          <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">Browse live stock data, compare movers, and inspect trend charts.</p>
         </header>
 
         {error ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-400">{error}</div>
         ) : null}
         {successMessage ? (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400">
             {successMessage}
           </div>
         ) : null}
 
         <section className="grid gap-6 xl:grid-cols-[360px_1fr]">
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-            <label className="block text-sm font-medium text-slate-600">
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-400">
               Search stocks
               <input
                 type="search"
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
                 placeholder="Search Apple, Tesla, AAPL..."
-                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-blue-500 dark:focus:ring-blue-900/40"
               />
             </label>
 
@@ -502,8 +490,8 @@ export function MarketPage() {
                   className={[
                     'rounded-full px-3 py-1.5 text-xs font-semibold transition',
                     tab.id === 'stocks'
-                      ? 'bg-[#2563eb] text-white'
-                      : 'bg-slate-100 text-slate-500 disabled:cursor-not-allowed disabled:opacity-70',
+                      ? 'bg-[#2563eb] text-white dark:bg-blue-600'
+                      : 'bg-slate-100 text-slate-500 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-slate-700 dark:text-slate-400',
                   ].join(' ')}
                 >
                   {tab.label}
@@ -514,10 +502,10 @@ export function MarketPage() {
             <div className="mt-4 max-h-[560px] space-y-2 overflow-y-auto pr-1">
               {isSearching || isLoadingListQuotes ? (
                 Array.from({ length: 7 }).map((_, index) => (
-                  <div key={index} className="h-16 animate-pulse rounded-xl bg-slate-100" />
+                  <div key={index} className="h-16 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-700" />
                 ))
               ) : displayedStocks.length === 0 ? (
-                <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-4 text-sm text-slate-500">
+                <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-4 text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-400">
                   No stocks found for this search.
                 </p>
               ) : (
@@ -533,25 +521,23 @@ export function MarketPage() {
                       className={[
                         'flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition',
                         isActive
-                          ? 'border-[#2563eb] bg-blue-50'
-                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
+                          ? 'border-[#2563eb] bg-blue-50 dark:border-blue-500 dark:bg-blue-950/60'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700/40 dark:hover:border-slate-500 dark:hover:bg-slate-700',
                       ].join(' ')}
                     >
                       <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-xs font-semibold text-slate-600">
+                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-xs font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300">
                           {stock.symbol.slice(0, 2)}
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-900">{stock.symbol}</p>
-                          <p className="truncate text-xs text-slate-500">{stock.name}</p>
+                          <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{stock.symbol}</p>
+                          <p className="truncate text-xs text-slate-500 dark:text-slate-400">{stock.name}</p>
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <p className="text-sm font-semibold text-slate-900">
-                          {typeof quote?.price === 'number'
-                            ? formatPrice(quote.price, 'USD')
-                            : '--'}
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          {typeof quote?.price === 'number' ? formatPrice(quote.price, 'USD') : '--'}
                         </p>
                         <p className={['text-xs font-semibold', getChangeTextClassName(quote?.changePct)].join(' ')}>
                           {formatPct(quote?.changePct, 2)}
@@ -564,9 +550,9 @@ export function MarketPage() {
             </div>
           </article>
 
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
             {!selectedStock ? (
-              <div className="flex h-full min-h-[520px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
+              <div className="flex h-full min-h-[520px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-400">
                 Select a stock from the list to view details.
               </div>
             ) : (
@@ -574,21 +560,21 @@ export function MarketPage() {
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-3xl font-semibold tracking-[-0.03em] text-slate-900">
+                      <h2 className="text-3xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
                         {selectedProfile?.name || selectedStock.name}
                       </h2>
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
                         {selectedStock.symbol}
                       </span>
                     </div>
-                    <p className="mt-2 text-sm text-slate-500">
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                       {selectedProfile?.exchange || 'Exchange unavailable'}
                       {selectedProfile?.finnhubIndustry ? ` • ${selectedProfile.finnhubIndustry}` : ''}
                     </p>
                   </div>
 
                   <div className="text-right">
-                    <p className="text-3xl font-bold text-slate-900">
+                    <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
                       {typeof selectedQuote?.price === 'number'
                         ? formatPrice(selectedQuote.price, detailSourceCurrency)
                         : '--'}
@@ -610,8 +596,8 @@ export function MarketPage() {
                       className={[
                         'rounded-full px-3 py-1.5 text-xs font-semibold transition',
                         range.id === selectedRange
-                          ? 'bg-[#2563eb] text-white'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+                          ? 'bg-[#2563eb] text-white dark:bg-blue-600'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600',
                       ].join(' ')}
                     >
                       {range.label}
@@ -623,26 +609,26 @@ export function MarketPage() {
                   <StockChart points={selectedSeries} isLoading={isLoadingDetail} />
                 </div>
 
-                <div className="mt-5 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-3">
+                <div className="mt-5 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-3 dark:border-slate-600 dark:bg-slate-700/40">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Market Cap</p>
-                    <p className="mt-1 text-lg font-semibold text-slate-900">
+                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Market Cap</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
                       {marketCapValue !== null
                         ? formatMoney(marketCapValue, detailSourceCurrency)
                         : '—'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Volume</p>
-                    <p className="mt-1 text-lg font-semibold text-slate-900">
+                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Volume</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
                       {typeof selectedQuote?.volume === 'number'
                         ? formatCompactNumber(selectedQuote.volume)
                         : '—'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500">P/E</p>
-                    <p className="mt-1 text-lg font-semibold text-slate-900">—</p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">P/E</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">—</p>
                   </div>
                 </div>
 
@@ -663,9 +649,9 @@ export function MarketPage() {
                   >
                     Demo Sell
                   </button>
-                  <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                  <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-400">
                     Buying power:{' '}
-                    <span className="ml-1 font-semibold text-slate-900">
+                    <span className="ml-1 font-semibold text-slate-900 dark:text-slate-100">
                       {formatMoney(portfolioAccount?.cashBalance ?? 0, portfolioSourceCurrency)}
                     </span>
                   </div>
@@ -683,9 +669,7 @@ export function MarketPage() {
         coinId={selectedStock?.symbol ?? ''}
         symbol={selectedStock?.symbol ?? ''}
         coinName={selectedProfile?.name || selectedStock?.name || ''}
-        currentPrice={
-          typeof selectedQuote?.price === 'number' ? selectedQuote.price : null
-        }
+        currentPrice={typeof selectedQuote?.price === 'number' ? selectedQuote.price : null}
         cashBalance={portfolioAccount?.cashBalance ?? 0}
         maxQuantity={selectedStockHolding?.quantity ?? 0}
         pricingCurrency={detailSourceCurrency}

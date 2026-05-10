@@ -56,8 +56,8 @@ const emptySecurityForm: SecurityFormState = {
 
 const noticeClassByKind = (kind: 'success' | 'error') =>
   kind === 'success'
-    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-    : 'border-rose-200 bg-rose-50 text-rose-700';
+    ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400'
+    : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-400';
 
 const getInitials = (displayName: string, email: string) => {
   const source = displayName.trim() || email.trim() || 'FinVision';
@@ -389,24 +389,36 @@ export function SettingsPage() {
     }
   };
 
+  const inputClass = 'mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-blue-500 dark:focus:ring-blue-900/40';
+  const selectClass = 'mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:focus:border-blue-500 dark:focus:ring-blue-900/40';
+  const labelClass = 'text-sm font-medium text-slate-600 dark:text-slate-400';
+  const sectionClass = 'scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] sm:p-7 dark:border-slate-700 dark:bg-slate-800';
+  const primaryBtnClass = (disabled: boolean) =>
+    [
+      'inline-flex items-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40',
+      disabled
+        ? 'cursor-not-allowed bg-blue-300 dark:bg-blue-900'
+        : 'bg-[#2563eb] hover:bg-[#1d4ed8] dark:bg-blue-600 dark:hover:bg-blue-700',
+    ].join(' ');
+
   return (
     <AppShell activeTab="settings">
       <div className="space-y-6">
         <header>
-          <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-900">Account Settings</h1>
-          <p className="mt-3 text-lg text-slate-500">
+          <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Account Settings</h1>
+          <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">
             Manage your profile details, preferences, and security settings.
           </p>
         </header>
 
         {loadError ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-400">
             {loadError}
           </div>
         ) : null}
 
         <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)]">
-          <aside className="self-start rounded-3xl border border-slate-100 bg-white p-3 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] lg:sticky lg:top-24">
+          <aside className="self-start rounded-3xl border border-slate-100 bg-white p-3 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] lg:sticky lg:top-24 dark:border-slate-700 dark:bg-slate-800">
             <nav aria-label="Settings sections" className="space-y-1">
               {SECTION_ITEMS.map((item) => (
                 <button
@@ -416,12 +428,12 @@ export function SettingsPage() {
                   className={[
                     'w-full rounded-2xl px-4 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-blue-400',
                     activeSection === item.id
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200',
                   ].join(' ')}
                 >
                   <p className="text-sm font-semibold">{item.label}</p>
-                  <p className="mt-1 text-xs text-slate-500">{item.description}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">{item.description}</p>
                 </button>
               ))}
             </nav>
@@ -430,43 +442,41 @@ export function SettingsPage() {
           <div className="space-y-6">
             <section
               id="profile"
-              ref={(node) => {
-                sectionRefs.current.profile = node;
-              }}
-              className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] sm:p-7"
+              ref={(node) => { sectionRefs.current.profile = node; }}
+              className={sectionClass}
             >
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900">Profile</h2>
-                  <p className="mt-2 text-sm text-slate-500">Update your personal details.</p>
+                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Profile</h2>
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Update your personal details.</p>
                 </div>
-                <div className="inline-flex items-center gap-3 self-start rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700">
+                <div className="inline-flex items-center gap-3 self-start rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300">
                   <span>Plan</span>
-                  <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                  <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/60 dark:text-blue-400">
                     Free plan
                   </span>
                 </div>
               </div>
 
               <form className="mt-6 space-y-5" onSubmit={handleProfileSubmit}>
-                <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+                <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-700/40">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#0d5b52] to-[#2563eb] text-lg font-semibold text-white">
                     {initials}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">Profile photo</p>
-                    <p className="text-xs text-slate-500">Placeholder avatar for MVP.</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Profile photo</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Placeholder avatar for MVP.</p>
                   </div>
                   <button
                     type="button"
-                    className="ml-auto rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                    className="ml-auto rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
                   >
                     Upload photo
                   </button>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className={labelClass}>
                     Full Name
                     <input
                       type="text"
@@ -475,11 +485,11 @@ export function SettingsPage() {
                         setProfileForm((current) => ({ ...current, displayName: event.target.value }));
                         setProfileNotice(null);
                       }}
-                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                      className={inputClass}
                     />
                   </label>
 
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className={labelClass}>
                     Email Address
                     <input
                       type="email"
@@ -488,11 +498,11 @@ export function SettingsPage() {
                         setProfileForm((current) => ({ ...current, email: event.target.value }));
                         setProfileNotice(null);
                       }}
-                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                      className={inputClass}
                     />
                   </label>
 
-                  <label className="text-sm font-medium text-slate-600 md:col-span-2">
+                  <label className={`${labelClass} md:col-span-2`}>
                     Avatar URL (optional)
                     <input
                       type="url"
@@ -502,30 +512,18 @@ export function SettingsPage() {
                         setProfileNotice(null);
                       }}
                       placeholder="https://example.com/avatar.png"
-                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                      className={inputClass}
                     />
                   </label>
                 </div>
 
                 {profileNotice ? (
-                  <p className={[
-                    'rounded-xl border px-3 py-2 text-sm font-medium',
-                    noticeClassByKind(profileNotice.kind),
-                  ].join(' ')}>
+                  <p className={['rounded-xl border px-3 py-2 text-sm font-medium', noticeClassByKind(profileNotice.kind)].join(' ')}>
                     {profileNotice.message}
                   </p>
                 ) : null}
 
-                <button
-                  type="submit"
-                  disabled={isLoading || isSavingProfile}
-                  className={[
-                    'inline-flex items-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition focus:outline-none focus:ring-4 focus:ring-blue-100',
-                    isLoading || isSavingProfile
-                      ? 'cursor-not-allowed bg-blue-300'
-                      : 'bg-[#2563eb] hover:bg-[#1d4ed8]',
-                  ].join(' ')}
-                >
+                <button type="submit" disabled={isLoading || isSavingProfile} className={primaryBtnClass(isLoading || isSavingProfile)}>
                   {isSavingProfile ? 'Saving...' : 'Save Changes'}
                 </button>
               </form>
@@ -533,16 +531,14 @@ export function SettingsPage() {
 
             <section
               id="preferences"
-              ref={(node) => {
-                sectionRefs.current.preferences = node;
-              }}
-              className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] sm:p-7"
+              ref={(node) => { sectionRefs.current.preferences = node; }}
+              className={sectionClass}
             >
-              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900">Preferences</h2>
-              <p className="mt-2 text-sm text-slate-500">Customize defaults used across your dashboard.</p>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Preferences</h2>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Customize defaults used across your dashboard.</p>
 
               <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={handlePreferencesSubmit}>
-                <label className="text-sm font-medium text-slate-600">
+                <label className={labelClass}>
                   Primary currency
                   <select
                     value={prefsForm.baseCurrency}
@@ -553,7 +549,7 @@ export function SettingsPage() {
                       }));
                       setPrefsNotice(null);
                     }}
-                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                    className={selectClass}
                   >
                     <option value="RON">RON</option>
                     <option value="EUR">EUR</option>
@@ -561,7 +557,7 @@ export function SettingsPage() {
                   </select>
                 </label>
 
-                <label className="text-sm font-medium text-slate-600">
+                <label className={labelClass}>
                   Language
                   <select
                     value={prefsForm.locale}
@@ -572,7 +568,7 @@ export function SettingsPage() {
                       }));
                       setPrefsNotice(null);
                     }}
-                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                    className={selectClass}
                   >
                     <option value="en-US">English (US)</option>
                     <option value="ro-RO">Romanian</option>
@@ -580,25 +576,13 @@ export function SettingsPage() {
                 </label>
 
                 {prefsNotice ? (
-                  <p className={[
-                    'md:col-span-2 rounded-xl border px-3 py-2 text-sm font-medium',
-                    noticeClassByKind(prefsNotice.kind),
-                  ].join(' ')}>
+                  <p className={['md:col-span-2 rounded-xl border px-3 py-2 text-sm font-medium', noticeClassByKind(prefsNotice.kind)].join(' ')}>
                     {prefsNotice.message}
                   </p>
                 ) : null}
 
                 <div className="md:col-span-2">
-                  <button
-                    type="submit"
-                    disabled={isLoading || isSavingPreferences}
-                    className={[
-                      'inline-flex items-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition focus:outline-none focus:ring-4 focus:ring-blue-100',
-                      isLoading || isSavingPreferences
-                        ? 'cursor-not-allowed bg-blue-300'
-                        : 'bg-[#2563eb] hover:bg-[#1d4ed8]',
-                    ].join(' ')}
-                  >
+                  <button type="submit" disabled={isLoading || isSavingPreferences} className={primaryBtnClass(isLoading || isSavingPreferences)}>
                     {isSavingPreferences ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
@@ -607,42 +591,37 @@ export function SettingsPage() {
 
             <section
               id="security"
-              ref={(node) => {
-                sectionRefs.current.security = node;
-              }}
-              className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] sm:p-7"
+              ref={(node) => { sectionRefs.current.security = node; }}
+              className={sectionClass}
             >
-              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900">Security</h2>
-              <p className="mt-2 text-sm text-slate-500">Change your password.</p>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Security</h2>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Change your password.</p>
 
               <form className="mt-6 space-y-4" onSubmit={handlePasswordSubmit}>
-                <label className="block text-sm font-medium text-slate-600">
+                <label className={`block ${labelClass}`}>
                   Current password
                   <input
                     type="password"
                     value={securityForm.currentPassword}
                     onChange={(event) => {
-                      setSecurityForm((current) => ({
-                        ...current,
-                        currentPassword: event.target.value,
-                      }));
+                      setSecurityForm((current) => ({ ...current, currentPassword: event.target.value }));
                       setPasswordErrors((current) => ({ ...current, currentPassword: undefined }));
                       setSecurityNotice(null);
                     }}
                     className={[
-                      'mt-2 w-full rounded-xl bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-4',
+                      'mt-2 w-full rounded-xl bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-4 dark:bg-slate-700 dark:text-slate-200',
                       passwordErrors.currentPassword
-                        ? 'border border-rose-300 focus:border-rose-500 focus:ring-rose-100'
-                        : 'border border-slate-200 focus:border-[#2563eb] focus:ring-blue-100',
+                        ? 'border border-rose-300 focus:border-rose-500 focus:ring-rose-100 dark:border-rose-700 dark:focus:ring-rose-900/40'
+                        : 'border border-slate-200 focus:border-[#2563eb] focus:ring-blue-100 dark:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-900/40',
                     ].join(' ')}
                   />
                   {passwordErrors.currentPassword ? (
-                    <p className="mt-2 text-xs font-medium text-rose-600">{passwordErrors.currentPassword}</p>
+                    <p className="mt-2 text-xs font-medium text-rose-600 dark:text-rose-400">{passwordErrors.currentPassword}</p>
                   ) : null}
                 </label>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className={labelClass}>
                     New password
                     <input
                       type="password"
@@ -653,39 +632,36 @@ export function SettingsPage() {
                         setSecurityNotice(null);
                       }}
                       className={[
-                        'mt-2 w-full rounded-xl bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-4',
+                        'mt-2 w-full rounded-xl bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-4 dark:bg-slate-700 dark:text-slate-200',
                         passwordErrors.newPassword
-                          ? 'border border-rose-300 focus:border-rose-500 focus:ring-rose-100'
-                          : 'border border-slate-200 focus:border-[#2563eb] focus:ring-blue-100',
+                          ? 'border border-rose-300 focus:border-rose-500 focus:ring-rose-100 dark:border-rose-700 dark:focus:ring-rose-900/40'
+                          : 'border border-slate-200 focus:border-[#2563eb] focus:ring-blue-100 dark:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-900/40',
                       ].join(' ')}
                     />
                     {passwordErrors.newPassword ? (
-                      <p className="mt-2 text-xs font-medium text-rose-600">{passwordErrors.newPassword}</p>
+                      <p className="mt-2 text-xs font-medium text-rose-600 dark:text-rose-400">{passwordErrors.newPassword}</p>
                     ) : null}
                   </label>
 
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className={labelClass}>
                     Confirm new password
                     <input
                       type="password"
                       value={securityForm.confirmNewPassword}
                       onChange={(event) => {
-                        setSecurityForm((current) => ({
-                          ...current,
-                          confirmNewPassword: event.target.value,
-                        }));
+                        setSecurityForm((current) => ({ ...current, confirmNewPassword: event.target.value }));
                         setPasswordErrors((current) => ({ ...current, confirmNewPassword: undefined }));
                         setSecurityNotice(null);
                       }}
                       className={[
-                        'mt-2 w-full rounded-xl bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-4',
+                        'mt-2 w-full rounded-xl bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-4 dark:bg-slate-700 dark:text-slate-200',
                         passwordErrors.confirmNewPassword
-                          ? 'border border-rose-300 focus:border-rose-500 focus:ring-rose-100'
-                          : 'border border-slate-200 focus:border-[#2563eb] focus:ring-blue-100',
+                          ? 'border border-rose-300 focus:border-rose-500 focus:ring-rose-100 dark:border-rose-700 dark:focus:ring-rose-900/40'
+                          : 'border border-slate-200 focus:border-[#2563eb] focus:ring-blue-100 dark:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-900/40',
                       ].join(' ')}
                     />
                     {passwordErrors.confirmNewPassword ? (
-                      <p className="mt-2 text-xs font-medium text-rose-600">
+                      <p className="mt-2 text-xs font-medium text-rose-600 dark:text-rose-400">
                         {passwordErrors.confirmNewPassword}
                       </p>
                     ) : null}
@@ -693,24 +669,12 @@ export function SettingsPage() {
                 </div>
 
                 {securityNotice ? (
-                  <p className={[
-                    'rounded-xl border px-3 py-2 text-sm font-medium',
-                    noticeClassByKind(securityNotice.kind),
-                  ].join(' ')}>
+                  <p className={['rounded-xl border px-3 py-2 text-sm font-medium', noticeClassByKind(securityNotice.kind)].join(' ')}>
                     {securityNotice.message}
                   </p>
                 ) : null}
 
-                <button
-                  type="submit"
-                  disabled={isLoading || isSavingPassword}
-                  className={[
-                    'inline-flex items-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition focus:outline-none focus:ring-4 focus:ring-blue-100',
-                    isLoading || isSavingPassword
-                      ? 'cursor-not-allowed bg-blue-300'
-                      : 'bg-[#2563eb] hover:bg-[#1d4ed8]',
-                  ].join(' ')}
-                >
+                <button type="submit" disabled={isLoading || isSavingPassword} className={primaryBtnClass(isLoading || isSavingPassword)}>
                   {isSavingPassword ? 'Updating...' : 'Update Password'}
                 </button>
               </form>
@@ -718,23 +682,21 @@ export function SettingsPage() {
 
             <section
               id="billing"
-              ref={(node) => {
-                sectionRefs.current.billing = node;
-              }}
-              className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] sm:p-7"
+              ref={(node) => { sectionRefs.current.billing = node; }}
+              className={sectionClass}
             >
-              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900">Billing</h2>
-              <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
-                <p className="text-sm text-slate-600">
-                  Current plan: <span className="font-semibold text-slate-900">Free plan</span>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Billing</h2>
+              <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 dark:border-slate-700 dark:bg-slate-700/40">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Current plan: <span className="font-semibold text-slate-900 dark:text-slate-100">Free plan</span>
                 </p>
-                <p className="mt-2 text-sm text-slate-600">
-                  Next billing date: <span className="font-medium text-slate-900">—</span>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                  Next billing date: <span className="font-medium text-slate-900 dark:text-slate-100">—</span>
                 </p>
-                <p className="mt-2 text-sm text-slate-600">
-                  Payment method: <span className="font-medium text-slate-900">—</span>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                  Payment method: <span className="font-medium text-slate-900 dark:text-slate-100">—</span>
                 </p>
-                <p className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+                <p className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-700 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-400">
                   Billing will be handled via Stripe in a future update. This section will show invoices,
                   payment methods, and plan upgrades.
                 </p>
@@ -742,14 +704,14 @@ export function SettingsPage() {
                   <button
                     type="button"
                     disabled
-                    className="cursor-not-allowed rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-400"
+                    className="cursor-not-allowed rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-500"
                   >
                     Upgrade (coming soon)
                   </button>
                   <button
                     type="button"
                     disabled
-                    className="cursor-not-allowed rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-400"
+                    className="cursor-not-allowed rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-500"
                   >
                     Manage billing (coming soon)
                   </button>

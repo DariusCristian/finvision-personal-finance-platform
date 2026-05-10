@@ -40,7 +40,7 @@ type AllocationSlice = {
 
 const getPriceColorClassName = (value: number | null) => {
   if (typeof value !== 'number') {
-    return 'text-slate-500';
+    return 'text-slate-500 dark:text-slate-400';
   }
 
   return value >= 0 ? 'text-emerald-600' : 'text-rose-600';
@@ -138,11 +138,11 @@ function PerformanceChart({ points, isLoading }: { points: PortfolioSnapshot[]; 
   }, [points]);
 
   if (isLoading) {
-    return <div className="h-60 animate-pulse rounded-2xl bg-slate-100" />;
+    return <div className="h-60 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-700" />;
   }
 
   return (
-    <div className="h-60 rounded-2xl border border-slate-200 bg-slate-50 p-2">
+    <div className="h-60 rounded-2xl border border-slate-200 bg-slate-50 p-2 dark:border-slate-600 dark:bg-slate-700/60">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full">
         <polyline points={pathData} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" />
       </svg>
@@ -420,12 +420,12 @@ export function PortfolioPage() {
       <div className="space-y-6">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb]">Demo Invest</p>
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900">Portfolio</h1>
-            <p className="mt-3 max-w-2xl text-lg text-slate-500">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb] dark:text-blue-400">Demo Invest</p>
+            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Portfolio</h1>
+            <p className="mt-3 max-w-2xl text-lg text-slate-500 dark:text-slate-400">
               Track your demo investments in EUR, monitor allocation, and practice orders risk-free.
             </p>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Fund your investing balance from Budget → Investing Account.
             </p>
           </div>
@@ -433,7 +433,7 @@ export function PortfolioPage() {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/invest/discovery"
-              className="inline-flex items-center rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+              className="inline-flex items-center rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] dark:bg-blue-600 dark:hover:bg-blue-700"
             >
               Crypto Discovery
             </Link>
@@ -459,7 +459,7 @@ export function PortfolioPage() {
             <button
               type="button"
               disabled
-              className="inline-flex cursor-not-allowed items-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-500"
+              className="inline-flex cursor-not-allowed items-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-500 dark:border-slate-600 dark:text-slate-400"
             >
               Export Report (Soon)
             </button>
@@ -467,26 +467,26 @@ export function PortfolioPage() {
         </header>
 
         {successMessage ? (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400">
             {successMessage}
           </div>
         ) : null}
 
         {error ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-400">
             {error}
           </div>
         ) : null}
 
         <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-            <p className="text-sm text-slate-500">Portfolio Value (EUR)</p>
-            <p className="mt-2 text-3xl font-bold tracking-[-0.03em] text-slate-900">
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Portfolio Value (EUR)</p>
+            <p className="mt-2 text-3xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
               {formatMoney(totals.totalValue, displayCurrency)}
             </p>
           </article>
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-            <p className="text-sm text-slate-500">Day&apos;s P/L</p>
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Day&apos;s P/L</p>
             <p
               className={[
                 'mt-2 text-3xl font-bold tracking-[-0.03em]',
@@ -496,32 +496,32 @@ export function PortfolioPage() {
               {formatMoney(totals.unrealizedPnL, displayCurrency)}
             </p>
           </article>
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-            <p className="text-sm text-slate-500">Buying Power (EUR)</p>
-            <p className="mt-2 text-3xl font-bold tracking-[-0.03em] text-slate-900">
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Buying Power (EUR)</p>
+            <p className="mt-2 text-3xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
               {formatMoney(totals.cashBalance, displayCurrency)}
             </p>
           </article>
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[2fr_1fr]">
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-900">Performance (7D)</h2>
-              <span className="text-sm text-slate-500">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Performance (7D)</h2>
+              <span className="text-sm text-slate-500 dark:text-slate-400">
                 {hasEnoughHistory ? 'Snapshot history' : 'Not enough history yet'}
               </span>
             </div>
             <PerformanceChart points={chartPoints} isLoading={isLoading} />
             {!hasEnoughHistory ? (
-              <p className="mt-3 text-xs text-slate-500">
+              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
                 Place a few trades over time to generate a fuller performance line.
               </p>
             ) : null}
           </article>
 
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-            <h2 className="text-xl font-semibold text-slate-900">Allocation</h2>
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Allocation</h2>
             <div className="mt-6 flex items-center justify-center">
               <div
                 className="relative h-44 w-44 rounded-full"
@@ -529,16 +529,16 @@ export function PortfolioPage() {
                   background: buildDonutBackground(allocationSlices),
                 }}
               >
-                <div className="absolute inset-6 flex items-center justify-center rounded-full bg-white text-center">
+                <div className="absolute inset-6 flex items-center justify-center rounded-full bg-white text-center dark:bg-slate-800">
                   {largestSlice ? (
                     <div>
-                      <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Top</p>
-                      <p className="text-base font-semibold text-slate-900">{largestSlice.label}</p>
-                      <p className="text-sm text-slate-600">{formatPct(largestSlice.pct, 1)}</p>
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Top</p>
+                      <p className="text-base font-semibold text-slate-900 dark:text-slate-100">{largestSlice.label}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">{formatPct(largestSlice.pct, 1)}</p>
                     </div>
                   ) : (
                     <div>
-                      <p className="text-xs text-slate-500">No allocation yet</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">No allocation yet</p>
                     </div>
                   )}
                 </div>
@@ -547,19 +547,19 @@ export function PortfolioPage() {
 
             <div className="mt-6 space-y-3 text-sm">
               {allocationSlices.length === 0 ? (
-                <p className="text-slate-500">Place demo trades to see allocation.</p>
+                <p className="text-slate-500 dark:text-slate-400">Place demo trades to see allocation.</p>
               ) : (
                 allocationSlices.map((slice) => (
                   <div key={slice.label} className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2">
                       <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: slice.color }} />
-                      <span className="truncate text-slate-600">{slice.label}</span>
+                      <span className="truncate text-slate-600 dark:text-slate-400">{slice.label}</span>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-slate-900">
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">
                         {formatMoney(slice.value, displayCurrency)}
                       </p>
-                      <p className="text-xs text-slate-500">{formatPct(slice.pct, 1)}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{formatPct(slice.pct, 1)}</p>
                     </div>
                   </div>
                 ))
@@ -568,10 +568,10 @@ export function PortfolioPage() {
           </article>
         </section>
 
-        <section className="rounded-[1.5rem] border border-slate-100 bg-white shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-6 py-4">
-            <h2 className="text-xl font-semibold text-slate-900">Holdings</h2>
-            <div className="flex items-center gap-2 rounded-xl bg-slate-100 p-1">
+        <section className="rounded-[1.5rem] border border-slate-100 bg-white shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-600">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Holdings</h2>
+            <div className="flex items-center gap-2 rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
               {([
                 { id: 'all', label: 'All' },
                 { id: 'crypto', label: 'Crypto' },
@@ -583,7 +583,9 @@ export function PortfolioPage() {
                   onClick={() => setAssetFilter(option.id)}
                   className={[
                     'rounded-lg px-3 py-1.5 text-xs font-semibold transition',
-                    assetFilter === option.id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-800',
+                    assetFilter === option.id
+                      ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-600 dark:text-slate-100'
+                      : 'text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200',
                   ].join(' ')}
                 >
                   {option.label}
@@ -593,7 +595,7 @@ export function PortfolioPage() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[780px] text-left">
-              <thead className="bg-slate-50 text-xs uppercase tracking-[0.14em] text-slate-500">
+              <thead className="bg-slate-50 text-xs uppercase tracking-[0.14em] text-slate-500 dark:bg-slate-700/60 dark:text-slate-400">
                 <tr>
                   <th className="px-6 py-3">Asset</th>
                   <th className="px-6 py-3">Price</th>
@@ -607,16 +609,16 @@ export function PortfolioPage() {
               <tbody>
                 {filteredHoldings.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-10 text-center text-sm text-slate-500">
+                    <td colSpan={7} className="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
                       No holdings for this filter yet. Use Invest for crypto and Market for stocks.
                     </td>
                   </tr>
                 ) : (
                   filteredHoldings.map((holding) => (
-                    <tr key={holding.id} className="border-t border-slate-100 text-sm">
+                    <tr key={holding.id} className="border-t border-slate-100 text-sm dark:border-slate-700">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <p className="font-semibold text-slate-900">{holding.symbol}</p>
+                          <p className="font-semibold text-slate-900 dark:text-slate-100">{holding.symbol}</p>
                           <span
                             className={[
                               'rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em]',
@@ -628,21 +630,21 @@ export function PortfolioPage() {
                             {holding.assetType}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                           {holding.assetType === 'crypto' ? holding.coinId : 'stock asset'}
                         </p>
                       </td>
-                      <td className="px-6 py-4 text-slate-700">
+                      <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
                         {formatPrice(holding.currentPrice, displayCurrency)}
                       </td>
                       <td className={['px-6 py-4 font-semibold', getPriceColorClassName(holding.change24h)].join(' ')}>
                         {formatPct(holding.change24h)}
                       </td>
-                      <td className="px-6 py-4 text-slate-700">{formatQty(holding.quantity, holding.symbol)}</td>
-                      <td className="px-6 py-4 font-semibold text-slate-900">
+                      <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{formatQty(holding.quantity, holding.symbol)}</td>
+                      <td className="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100">
                         {formatMoney(holding.marketValue, displayCurrency)}
                       </td>
-                      <td className="px-6 py-4 text-slate-700">{formatPct(holding.allocationPct, 1)}</td>
+                      <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{formatPct(holding.allocationPct, 1)}</td>
                       <td className="px-6 py-4">
                         <button
                           type="button"
@@ -650,7 +652,7 @@ export function PortfolioPage() {
                             setSelectedHolding(holding);
                             setTradeSide('sell');
                           }}
-                          className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                          className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
                         >
                           Sell
                         </button>
@@ -663,22 +665,22 @@ export function PortfolioPage() {
           </div>
         </section>
 
-        <section className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-          <h2 className="text-lg font-semibold text-slate-900">Recent Trades</h2>
+        <section className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Recent Trades</h2>
           <div className="mt-4 space-y-3">
             {trades.length === 0 ? (
-              <p className="text-sm text-slate-500">No trades yet.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">No trades yet.</p>
             ) : (
               trades.map((trade) => (
                 <div
                   key={trade.id}
-                  className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm"
+                  className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-700/60"
                 >
                   <div>
-                    <p className="font-semibold text-slate-900">
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">
                       {trade.side.toUpperCase()} {trade.symbol}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {trade.assetType.toUpperCase()} • {new Date(trade.createdAt || Date.now()).toLocaleString()}
                     </p>
                   </div>
@@ -692,7 +694,7 @@ export function PortfolioPage() {
                       {trade.side === 'buy' ? '-' : '+'}
                       {formatMoney(trade.total, displayCurrency)}
                     </p>
-                    <p className="text-xs text-slate-500">Qty {formatQty(trade.quantity, trade.symbol)}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Qty {formatQty(trade.quantity, trade.symbol)}</p>
                   </div>
                 </div>
               ))
@@ -703,11 +705,11 @@ export function PortfolioPage() {
 
       {isTopUpOpen ? (
         <div className="fixed inset-0 z-[95] flex items-center justify-center bg-slate-900/50 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-600 dark:bg-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-600">
               <div>
-                <h3 className="text-xl font-semibold text-slate-900">Top up investing</h3>
-                <p className="mt-1 text-sm text-slate-500">Convert RON to EUR and add funds to your invest cash.</p>
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Top up investing</h3>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Convert RON to EUR and add funds to your invest cash.</p>
               </div>
               <button
                 type="button"
@@ -716,7 +718,7 @@ export function PortfolioPage() {
                     setIsTopUpOpen(false);
                   }
                 }}
-                className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
                 aria-label="Close top-up modal"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
@@ -725,7 +727,7 @@ export function PortfolioPage() {
               </button>
             </div>
             <div className="space-y-4 px-6 py-5">
-              <label className="block text-sm font-medium text-slate-600">
+              <label className="block text-sm font-medium text-slate-600 dark:text-slate-400">
                 Amount (RON)
                 <input
                   type="number"
@@ -733,14 +735,14 @@ export function PortfolioPage() {
                   step="0.01"
                   value={topUpAmountInput}
                   onChange={(event) => setTopUpAmountInput(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:focus:ring-blue-900/40"
                 />
               </label>
 
-              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
-                <div className="flex items-center justify-between text-slate-600">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-600 dark:bg-slate-700/60">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                   <span>Rate (EUR per 1 RON)</span>
-                  <span className="font-semibold text-slate-900">
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">
                     {isTopUpQuoteLoading
                       ? 'Loading...'
                       : topUpQuote
@@ -748,9 +750,9 @@ export function PortfolioPage() {
                         : '--'}
                   </span>
                 </div>
-                <div className="mt-2 flex items-center justify-between text-slate-600">
+                <div className="mt-2 flex items-center justify-between text-slate-600 dark:text-slate-400">
                   <span>Estimated EUR</span>
-                  <span className="font-semibold text-slate-900">
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">
                     {isTopUpQuoteLoading
                       ? 'Loading...'
                       : topUpQuote
@@ -761,7 +763,7 @@ export function PortfolioPage() {
               </div>
 
               {topUpError ? (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-400">
                   {topUpError}
                 </div>
               ) : null}
@@ -774,7 +776,7 @@ export function PortfolioPage() {
                       setIsTopUpOpen(false);
                     }
                   }}
-                  className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
                 >
                   Cancel
                 </button>
@@ -784,7 +786,7 @@ export function PortfolioPage() {
                     void handleTopUpSubmit();
                   }}
                   disabled={isTopUpSubmitting || parsedTopUpAmount <= 0}
-                  className="rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700"
                 >
                   {isTopUpSubmitting ? 'Adding...' : 'Confirm top-up'}
                 </button>

@@ -124,45 +124,45 @@ export function LearningQuizAttemptPage() {
   return (
     <AppShell activeTab="learning">
       <div className="space-y-5">
-        <Link to="/learn" className="inline-flex text-sm font-medium text-[#2563eb] hover:text-[#1d4ed8]">
+        <Link to="/learn" className="inline-flex text-sm font-medium text-[#2563eb] hover:text-[#1d4ed8] dark:text-blue-400 dark:hover:text-blue-300">
           ← Back to Learning Center
         </Link>
 
         {isLoading ? (
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white p-8 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+          <div className="rounded-[1.5rem] border border-slate-100 bg-white p-8 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
             <div className="space-y-3">
-              <div className="h-6 w-2/3 animate-pulse rounded bg-slate-100" />
-              <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
-              <div className="h-24 w-full animate-pulse rounded bg-slate-100" />
+              <div className="h-6 w-2/3 animate-pulse rounded bg-slate-100 dark:bg-slate-700" />
+              <div className="h-4 w-full animate-pulse rounded bg-slate-100 dark:bg-slate-700" />
+              <div className="h-24 w-full animate-pulse rounded bg-slate-100 dark:bg-slate-700" />
             </div>
           </div>
         ) : errorMessage ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-400">
             {errorMessage}
           </div>
         ) : quiz && currentQuestion ? (
-          <section className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] md:p-8">
+          <section className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800 md:p-8">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h1 className="text-3xl font-semibold tracking-[-0.04em] text-slate-900">{quiz.title}</h1>
-                <p className="mt-2 text-sm text-slate-500">
+                <h1 className="text-3xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">{quiz.title}</h1>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                   {quiz.category} • {quiz.difficulty} • Passing score {quiz.passingScore}%
                 </p>
               </div>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
                 {currentIndex + 1}/{quiz.questions.length}
               </span>
             </div>
 
-            <div className="mt-6 h-2 overflow-hidden rounded-full bg-slate-100">
+            <div className="mt-6 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
               <div
-                className="h-full rounded-full bg-[#2563eb] transition-all"
+                className="h-full rounded-full bg-[#2563eb] transition-all dark:bg-blue-600"
                 style={{ width: `${((currentIndex + 1) / quiz.questions.length) * 100}%` }}
               />
             </div>
 
             <div className="mt-8 space-y-4">
-              <h2 className="text-2xl font-semibold tracking-[-0.02em] text-slate-900">{currentQuestion.prompt}</h2>
+              <h2 className="text-2xl font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-100">{currentQuestion.prompt}</h2>
               <div className="space-y-3">
                 {currentQuestion.options.map((option) => {
                   const isSelected = selectedAnswers[currentQuestion.id] === option.id;
@@ -175,8 +175,8 @@ export function LearningQuizAttemptPage() {
                       className={[
                         'w-full rounded-xl border px-4 py-3 text-left text-sm transition',
                         isSelected
-                          ? 'border-[#2563eb] bg-blue-50 text-[#1d4ed8]'
-                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
+                          ? 'border-[#2563eb] bg-blue-50 text-[#1d4ed8] dark:border-blue-500 dark:bg-blue-950/60 dark:text-blue-300'
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700',
                       ].join(' ')}
                     >
                       {option.text}
@@ -186,12 +186,12 @@ export function LearningQuizAttemptPage() {
               </div>
             </div>
 
-            <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-slate-700">
               <button
                 type="button"
                 onClick={() => setCurrentIndex((value) => Math.max(0, value - 1))}
                 disabled={currentIndex === 0}
-                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300"
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:disabled:text-slate-600"
               >
                 Previous
               </button>
@@ -200,7 +200,7 @@ export function LearningQuizAttemptPage() {
                 <button
                   type="button"
                   onClick={() => setCurrentIndex((value) => Math.min(quiz.questions.length - 1, value + 1))}
-                  className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                  className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] dark:bg-blue-600 dark:hover:bg-blue-700"
                 >
                   Next
                 </button>
@@ -211,7 +211,7 @@ export function LearningQuizAttemptPage() {
                   onClick={() => {
                     void handleSubmit();
                   }}
-                  className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-blue-300"
+                  className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700"
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
                 </button>
