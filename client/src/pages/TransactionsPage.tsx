@@ -294,13 +294,13 @@ export function TransactionsPage() {
       <div className="space-y-6">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb]">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb] dark:text-blue-400">
               Transactions
             </p>
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900">
+            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
               All Transactions
             </h1>
-            <p className="mt-3 text-lg text-slate-500">
+            <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">
               Review every income and expense entry with filtering, sorting, and quick edits.
             </p>
           </div>
@@ -308,16 +308,16 @@ export function TransactionsPage() {
           <button
             type="button"
             onClick={handleOpenCreateModal}
-            className="inline-flex items-center gap-2 rounded-2xl bg-[#2563eb] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+            className="inline-flex items-center gap-2 rounded-2xl bg-[#2563eb] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] dark:bg-blue-600 dark:hover:bg-blue-700"
           >
             <span className="text-base leading-none">+</span>
             Add Transaction
           </button>
         </header>
 
-        <section className="rounded-[1.5rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] sm:p-6">
+        <section className="rounded-[1.5rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800 sm:p-6">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <label className="block text-sm font-medium text-slate-600">
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-400">
               Month
               <select
                 value={selectedMonth}
@@ -325,7 +325,7 @@ export function TransactionsPage() {
                   setSelectedMonth(event.target.value);
                   setPage(1);
                 }}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:focus:ring-blue-900/40"
               >
                 {monthOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -335,7 +335,7 @@ export function TransactionsPage() {
               </select>
             </label>
 
-            <label className="block text-sm font-medium text-slate-600">
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-400">
               Type
               <select
                 value={typeFilter}
@@ -343,7 +343,7 @@ export function TransactionsPage() {
                   setTypeFilter(event.target.value as 'all' | 'income' | 'expense');
                   setPage(1);
                 }}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:focus:ring-blue-900/40"
               >
                 <option value="all">All types</option>
                 <option value="income">Income</option>
@@ -351,7 +351,7 @@ export function TransactionsPage() {
               </select>
             </label>
 
-            <label className="block text-sm font-medium text-slate-600 md:col-span-2 xl:col-span-1">
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 md:col-span-2 xl:col-span-1">
               Category
               <select
                 value={selectedCategoryId}
@@ -359,7 +359,7 @@ export function TransactionsPage() {
                   setSelectedCategoryId(event.target.value);
                   setPage(1);
                 }}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:focus:ring-blue-900/40"
               >
                 <option value="all">All categories</option>
                 {availableCategoryOptions.map((category) => (
@@ -371,7 +371,7 @@ export function TransactionsPage() {
             </label>
 
             <div className="flex items-end">
-              <div className="w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+              <div className="w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:bg-slate-700/60 dark:text-slate-400">
                 Showing {meta.count} of {meta.total} results
               </div>
             </div>
@@ -379,7 +379,7 @@ export function TransactionsPage() {
         </section>
 
         {loadError ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-400">
             {loadError}
           </div>
         ) : null}
@@ -400,8 +400,8 @@ export function TransactionsPage() {
           virtualizedRows
         />
 
-        <div className="flex flex-col gap-3 rounded-[1.5rem] border border-slate-100 bg-white px-5 py-4 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p className="text-sm font-medium text-slate-500">
+        <div className="flex flex-col gap-3 rounded-[1.5rem] border border-slate-100 bg-white px-5 py-4 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
             Page {meta.page ?? 1} of {meta.totalPages ?? 1}
           </p>
           <div className="flex items-center gap-3">
@@ -409,7 +409,7 @@ export function TransactionsPage() {
               type="button"
               onClick={() => setPage((current) => Math.max(1, current - 1))}
               disabled={(meta.page ?? 1) <= 1 || isLoading}
-              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300"
+              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:disabled:text-slate-600"
             >
               Previous
             </button>
@@ -424,7 +424,7 @@ export function TransactionsPage() {
                 isLoading ||
                 (meta.totalPages !== null && (meta.page ?? 1) >= meta.totalPages)
               }
-              className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-blue-300"
+              className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700"
             >
               Next
             </button>

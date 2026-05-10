@@ -65,19 +65,19 @@ function AssetChart({ points, isLoading }: { points: CryptoChartPoint[]; isLoadi
   }, [points]);
 
   if (isLoading) {
-    return <div className="h-64 animate-pulse rounded-2xl bg-slate-100" />;
+    return <div className="h-64 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-700" />;
   }
 
   if (points.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500">
+      <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-400">
         No chart data available.
       </div>
     );
   }
 
   return (
-    <div className="h-64 rounded-2xl border border-slate-200 bg-slate-50 p-2">
+    <div className="h-64 rounded-2xl border border-slate-200 bg-slate-50 p-2 dark:border-slate-600 dark:bg-slate-700/60">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full">
         <polyline points={polyline} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" />
       </svg>
@@ -315,65 +315,65 @@ export function InvestDiscoveryPage() {
       <div className="space-y-6">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb]">{PAGE_TITLE}</p>
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900">Crypto Discovery</h1>
-            <p className="mt-3 text-lg text-slate-500">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb] dark:text-blue-400">{PAGE_TITLE}</p>
+            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Crypto Discovery</h1>
+            <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">
               Explore crypto assets, inspect live quotes, and place demo buy/sell orders.
             </p>
           </div>
           <Link
             to="/invest"
-            className="inline-flex items-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            className="inline-flex items-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
           >
             Back to Portfolio
           </Link>
         </header>
 
         {error ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-400">
             {error}
           </div>
         ) : null}
 
         {successMessage ? (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400">
             {successMessage}
           </div>
         ) : null}
 
         <section className="grid gap-6 xl:grid-cols-[360px_1fr]">
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
             <div className="mb-4 flex items-center gap-2">
-              <button type="button" className="rounded-full bg-[#2563eb] px-3 py-1.5 text-xs font-semibold text-white">
+              <button type="button" className="rounded-full bg-[#2563eb] px-3 py-1.5 text-xs font-semibold text-white dark:bg-blue-600">
                 Crypto
               </button>
               <button
                 type="button"
                 disabled
-                className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-500"
+                className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-400"
               >
                 All Assets (Soon)
               </button>
             </div>
 
-            <label className="block text-sm font-medium text-slate-600">
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-400">
               Search assets
               <input
                 type="search"
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
                 placeholder="Search bitcoin, ethereum..."
-                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:focus:ring-blue-900/40"
               />
             </label>
 
             <div className="mt-4 max-h-[560px] space-y-2 overflow-y-auto pr-1">
               {isLoadingSearch ? (
                 Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className="h-16 animate-pulse rounded-xl bg-slate-100" />
+                  <div key={index} className="h-16 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-700" />
                 ))
               ) : coins.length === 0 ? (
-                <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-4 text-sm text-slate-500">
+                <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-4 text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-400">
                   No assets found for this search.
                 </p>
               ) : (
@@ -388,18 +388,18 @@ export function InvestDiscoveryPage() {
                       className={[
                         'flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition',
                         isActive
-                          ? 'border-[#2563eb] bg-blue-50'
-                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
+                          ? 'border-[#2563eb] bg-blue-50 dark:border-blue-500 dark:bg-blue-950/60'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-slate-500 dark:hover:bg-slate-700',
                       ].join(' ')}
                     >
-                      <div className="h-9 w-9 overflow-hidden rounded-full border border-slate-200 bg-slate-50">
+                      <div className="h-9 w-9 overflow-hidden rounded-full border border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-700">
                         {coin.thumb ? (
                           <img src={coin.thumb} alt={`${coin.name} logo`} className="h-full w-full object-cover" />
                         ) : null}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">{coin.name}</p>
-                        <p className="text-xs uppercase text-slate-500">{coin.symbol}</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{coin.name}</p>
+                        <p className="text-xs uppercase text-slate-500 dark:text-slate-400">{coin.symbol}</p>
                       </div>
                     </button>
                   );
@@ -408,19 +408,19 @@ export function InvestDiscoveryPage() {
             </div>
           </article>
 
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
             {selectedCoin ? (
               <>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <p className="text-sm uppercase tracking-[0.18em] text-slate-500">{selectedCoin.symbol}</p>
-                    <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-slate-900">
+                    <p className="text-sm uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{selectedCoin.symbol}</p>
+                    <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
                       {selectedCoin.name}
                     </h2>
-                    <p className="mt-2 text-sm text-slate-500">CoinGecko ID: {selectedCoin.coinId}</p>
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">CoinGecko ID: {selectedCoin.coinId}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-3xl font-bold text-slate-900">
+                    <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
                       {selectedQuote
                         ? formatPrice(selectedQuote.price, sourcePricingCurrency)
                         : '--'}
@@ -447,8 +447,8 @@ export function InvestDiscoveryPage() {
                       className={[
                         'rounded-full px-3 py-1.5 text-xs font-semibold transition',
                         range.id === chartRange
-                          ? 'bg-[#2563eb] text-white'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+                          ? 'bg-[#2563eb] text-white dark:bg-blue-600'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-400 dark:hover:bg-slate-600',
                       ].join(' ')}
                     >
                       {range.label}
@@ -460,16 +460,16 @@ export function InvestDiscoveryPage() {
                   <AssetChart points={chartPoints} isLoading={isLoadingDetail} />
                 </div>
 
-                <div className="mt-5 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2">
+                <div className="mt-5 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-700/60 sm:grid-cols-2">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Your Balance</p>
-                    <p className="mt-1 text-lg font-semibold text-slate-900">
+                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Your Balance</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
                       {formatMoney(totals.cashBalance, sourcePricingCurrency)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Holding Quantity</p>
-                    <p className="mt-1 text-lg font-semibold text-slate-900">
+                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Holding Quantity</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
                       {selectedHolding ? formatQty(selectedHolding.quantity, selectedHolding.symbol) : '0'}
                     </p>
                   </div>
@@ -499,7 +499,7 @@ export function InvestDiscoveryPage() {
                 </div>
               </>
             ) : (
-              <div className="flex h-full min-h-[420px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
+              <div className="flex h-full min-h-[420px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-400">
                 Select a crypto asset to view quote and chart.
               </div>
             )}

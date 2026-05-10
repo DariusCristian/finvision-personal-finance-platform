@@ -27,10 +27,10 @@ const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
 const getInputClassName = (error?: string) =>
   [
-    'h-14 w-full rounded-2xl bg-slate-50/70 pl-12 pr-12 text-base text-slate-700 outline-none transition',
+    'h-14 w-full rounded-2xl bg-slate-50/70 pl-12 pr-12 text-base text-slate-700 outline-none transition dark:bg-slate-900/60 dark:text-slate-200',
     error
       ? 'border border-rose-300 focus:border-rose-400 focus:ring-4 focus:ring-rose-100'
-      : 'border border-[var(--color-input-border)] focus:border-blue-500 focus:ring-4 focus:ring-blue-100',
+      : 'border border-[var(--color-input-border)] focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40',
   ].join(' ');
 
 const validateField = (field: FieldName, values: FormValues): string => {
@@ -264,9 +264,9 @@ function SocialButton({ label, children }: { label: string; children: ReactNode 
   return (
     <button
       type="button"
-      className="flex flex-1 items-center justify-center gap-3 rounded-2xl border border-[var(--color-input-border)] bg-white px-4 py-3 text-base font-medium text-slate-900 transition hover:bg-slate-50"
+      className="flex flex-1 items-center justify-center gap-3 rounded-2xl border border-[var(--color-input-border)] bg-white px-4 py-3 text-base font-medium text-slate-900 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
     >
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 ring-1 ring-slate-200">
+      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-600">
         {children}
       </span>
       <span>{label}</span>
@@ -437,7 +437,7 @@ export function RegisterPage() {
         <button
           type="button"
           aria-label="Theme settings"
-          className="flex h-10 w-10 items-center justify-center rounded-2xl text-slate-500 transition hover:bg-slate-100"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl text-slate-500 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
         >
           <SettingsIcon className="h-5 w-5" />
         </button>
@@ -457,7 +457,7 @@ export function RegisterPage() {
           <div className="w-full border-t border-[var(--color-divider)]" />
         </div>
         <div className="relative flex justify-center">
-          <span className="bg-white px-4 text-sm font-medium text-[var(--color-text-muted)] sm:text-base">
+          <span className="bg-white px-4 text-sm font-medium text-[var(--color-text-muted)] dark:bg-slate-900 sm:text-base">
             Or sign up with email
           </span>
         </div>
@@ -472,7 +472,7 @@ export function RegisterPage() {
                   Full Name
                 </label>
                 <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 dark:text-slate-400">
                     <UserIcon className="h-5 w-5" />
                   </span>
                   <input
@@ -486,7 +486,7 @@ export function RegisterPage() {
                       }
                     }}
                     placeholder="Enter Your Full Name"
-                    className="h-14 w-full rounded-2xl border border-[var(--color-input-border)] bg-slate-50/70 pl-12 pr-4 text-base text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    className="h-14 w-full rounded-2xl border border-[var(--color-input-border)] bg-slate-50/70 pl-12 pr-4 text-base text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:bg-slate-900/60 dark:text-slate-200 dark:focus:ring-blue-900/40"
                   />
                 </div>
               </div>
@@ -499,7 +499,7 @@ export function RegisterPage() {
                   Email Address
                 </label>
                 <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 dark:text-slate-400">
                     <MailIcon className="h-5 w-5" />
                   </span>
                   <input
@@ -538,12 +538,12 @@ export function RegisterPage() {
                   >
                     Password
                   </label>
-                  <span className="text-sm font-medium text-slate-400">
+                  <span className="text-sm font-medium text-slate-400 dark:text-slate-500">
                     Use at least 8 characters
                   </span>
                 </div>
                 <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 dark:text-slate-400">
                     <LockIcon className="h-5 w-5" />
                   </span>
                   <input
@@ -578,7 +578,7 @@ export function RegisterPage() {
                     type="button"
                     onClick={() => setShowPassword((current) => !current)}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700"
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                   >
                     <EyeIcon open={showPassword} className="h-5 w-5" />
                   </button>
@@ -596,7 +596,7 @@ export function RegisterPage() {
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 dark:text-slate-400">
                     <LockIcon className="h-5 w-5" />
                   </span>
                   <input
@@ -625,7 +625,7 @@ export function RegisterPage() {
                     type="button"
                     onClick={() => setShowConfirmPassword((current) => !current)}
                     aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700"
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                   >
                     <EyeIcon open={showConfirmPassword} className="h-5 w-5" />
                   </button>
@@ -641,7 +641,7 @@ export function RegisterPage() {
                     type="checkbox"
                     checked={agreeToTerms}
                     onChange={(event) => setAgreeToTerms(event.target.checked)}
-                    className="peer h-5 w-5 appearance-none rounded-md border border-slate-300 bg-white checked:border-blue-600 checked:bg-blue-600"
+                    className="peer h-5 w-5 appearance-none rounded-md border border-slate-300 bg-white checked:border-blue-600 checked:bg-blue-600 dark:border-slate-600 dark:bg-slate-900"
                   />
                   <span className="pointer-events-none absolute text-white opacity-0 transition peer-checked:opacity-100">
                     <CheckBadgeIcon className="h-3.5 w-3.5" />

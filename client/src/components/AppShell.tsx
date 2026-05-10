@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 type AppShellProps = {
   activeTab: 'home' | 'budget' | 'learning' | 'news' | 'settings' | 'invest' | 'market';
@@ -22,6 +23,23 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'learning', label: 'Learning Center', href: '/learn' },
   { id: 'news', label: 'News', href: '/news' },
 ];
+
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+    </svg>
+  );
+}
 
 function BellIcon() {
   return (
@@ -47,6 +65,7 @@ const getInitials = (displayName?: string) => {
 
 export function AppShell({ activeTab, children }: AppShellProps) {
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const initials = getInitials(user?.displayName);
   const [logoLoadFailed, setLogoLoadFailed] = useState(false);
 
@@ -98,7 +117,15 @@ export function AppShell({ activeTab, children }: AppShellProps) {
             })}
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+            </button>
             <button
               type="button"
               className="relative rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"

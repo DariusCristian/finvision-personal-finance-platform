@@ -14,7 +14,7 @@ import {
 const renderBlock = (block: EducationContentBlock, index: number) => {
   if (block.type === 'bulletList') {
     return (
-      <ul key={index} className="list-disc space-y-2 pl-6 text-slate-700">
+      <ul key={index} className="list-disc space-y-2 pl-6 text-slate-700 dark:text-slate-300">
         {(block.items ?? []).map((item, itemIndex) => (
           <li key={itemIndex}>{item}</li>
         ))}
@@ -24,14 +24,14 @@ const renderBlock = (block: EducationContentBlock, index: number) => {
 
   if (block.type === 'callout') {
     return (
-      <div key={index} className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-slate-700">
+      <div key={index} className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-slate-700 dark:border-blue-900/50 dark:bg-blue-950/60 dark:text-slate-300">
         {block.text}
       </div>
     );
   }
 
   return (
-    <p key={index} className="text-slate-700">
+    <p key={index} className="text-slate-700 dark:text-slate-300">
       {block.text}
     </p>
   );
@@ -101,35 +101,35 @@ export function LearningArticlePage() {
   return (
     <AppShell activeTab="learning">
       <div className="space-y-5">
-        <Link to="/learn" className="inline-flex text-sm font-medium text-[#2563eb] hover:text-[#1d4ed8]">
+        <Link to="/learn" className="inline-flex text-sm font-medium text-[#2563eb] hover:text-[#1d4ed8] dark:text-blue-400 dark:hover:text-blue-300">
           ← Back to Learning Center
         </Link>
 
         {isLoading ? (
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white p-8 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+          <div className="rounded-[1.5rem] border border-slate-100 bg-white p-8 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
             <div className="space-y-3">
-              <div className="h-6 w-2/3 animate-pulse rounded bg-slate-100" />
-              <div className="h-4 w-1/3 animate-pulse rounded bg-slate-100" />
-              <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
-              <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
+              <div className="h-6 w-2/3 animate-pulse rounded bg-slate-100 dark:bg-slate-700" />
+              <div className="h-4 w-1/3 animate-pulse rounded bg-slate-100 dark:bg-slate-700" />
+              <div className="h-4 w-full animate-pulse rounded bg-slate-100 dark:bg-slate-700" />
+              <div className="h-4 w-full animate-pulse rounded bg-slate-100 dark:bg-slate-700" />
             </div>
           </div>
         ) : errorMessage ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-400">
             {errorMessage}
           </div>
         ) : article ? (
-          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-8 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-            <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.14em] text-slate-500">
+          <article className="rounded-[1.5rem] border border-slate-100 bg-white p-8 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
+            <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
               <span>{article.category}</span>
-              <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600">
+              <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
                 {article.difficulty}
               </span>
               <span>{article.estimatedMinutes} min read</span>
             </div>
 
-            <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-slate-900">{article.title}</h1>
-            <p className="mt-3 text-lg text-slate-500">{article.excerpt}</p>
+            <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">{article.title}</h1>
+            <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">{article.excerpt}</p>
 
             <div className="mt-8 space-y-5 leading-relaxed">
               {article.contentBlocks.map((block, index) => renderBlock(block, index))}
@@ -142,11 +142,11 @@ export function LearningArticlePage() {
                 onClick={() => {
                   void handleMarkCompleted();
                 }}
-                className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-blue-300"
+                className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700"
               >
                 {isCompleting ? 'Saving...' : 'Mark as completed'}
               </button>
-              {statusMessage ? <p className="text-sm text-slate-500">{statusMessage}</p> : null}
+              {statusMessage ? <p className="text-sm text-slate-500 dark:text-slate-400">{statusMessage}</p> : null}
             </div>
           </article>
         ) : null}

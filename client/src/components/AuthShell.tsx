@@ -44,7 +44,7 @@ export function AuthShell({
   return (
     <main className="min-h-screen overflow-y-auto bg-[var(--color-page-bg)] p-4 md:p-6">
       <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-6xl items-start lg:items-center">
-        <div className="grid w-full overflow-hidden rounded-[32px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.12)] lg:max-h-[calc(100vh-3rem)] lg:grid-cols-[0.45fr_0.55fr]">
+        <div className="grid w-full overflow-hidden rounded-[32px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.12)] dark:bg-slate-900 dark:shadow-[0_24px_80px_rgba(0,0,0,0.5)] lg:max-h-[calc(100vh-3rem)] lg:grid-cols-[0.45fr_0.55fr]">
           <section className="relative flex min-h-[18rem] flex-col justify-between overflow-hidden bg-gradient-to-br from-[var(--color-left-from)] to-[var(--color-left-to)] px-5 py-5 text-[var(--color-left-text)] sm:min-h-[20rem] sm:px-6 sm:py-6 md:px-8 md:py-7 lg:min-h-0 lg:px-10 lg:py-8 xl:px-12 xl:py-10">
             <div className="pointer-events-none absolute inset-0">
               <div className="absolute -left-20 bottom-8 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl" />
