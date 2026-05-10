@@ -29,7 +29,7 @@ profileRouter.patch(
   validateRequest({ body: updateProfileSchema }),
   async (req, res, next) => {
     try {
-      const { displayName, email, avatarUrl, baseCurrency, locale } = req.body;
+      const { displayName, email, baseCurrency, locale, investCryptoMode, marketStocksMode } = req.body;
 
       if (email !== undefined) {
         const existingUser = await User.findOne({
@@ -48,16 +48,20 @@ profileRouter.patch(
         req.authUser.displayName = displayName;
       }
 
-      if (avatarUrl !== undefined) {
-        req.authUser.avatarUrl = avatarUrl;
-      }
-
       if (baseCurrency !== undefined) {
         req.authUser.baseCurrency = baseCurrency;
       }
 
       if (locale !== undefined) {
         req.authUser.locale = locale;
+      }
+
+      if (investCryptoMode !== undefined) {
+        req.authUser.investCryptoMode = investCryptoMode;
+      }
+
+      if (marketStocksMode !== undefined) {
+        req.authUser.marketStocksMode = marketStocksMode;
       }
 
       await req.authUser.save();

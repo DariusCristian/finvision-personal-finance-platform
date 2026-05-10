@@ -51,6 +51,8 @@ export const updateProfileSchema = z
     avatarUrl: avatarUrlSchema,
     baseCurrency: z.enum(['RON', 'EUR', 'USD']).optional(),
     locale: z.enum(['en-US', 'ro-RO']).optional(),
+    investCryptoMode: z.enum(['funded', 'demo']).nullable().optional(),
+    marketStocksMode: z.enum(['funded', 'demo']).nullable().optional(),
   })
   .refine((payload) => Object.values(payload).some((value) => value !== undefined), {
     message: 'At least one profile field must be provided.',

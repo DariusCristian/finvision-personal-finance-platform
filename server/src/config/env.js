@@ -13,6 +13,13 @@ const envSchema = z.object({
   MARKETAUX_API_KEY: z.string().optional().default(''),
   FINNHUB_API_KEY: z.string().optional().default(''),
   COINGECKO_API_KEY: z.string().optional().default(''),
+  OPENAI_API_KEY: z.string().optional().default(''),
+  OPENAI_MODEL: z.string().optional().default('gpt-4.1-mini'),
+  ENABLE_FINNHUB_CANDLES_FALLBACK: z
+    .string()
+    .optional()
+    .default('false')
+    .transform((value) => ['1', 'true', 'yes', 'on'].includes(String(value).trim().toLowerCase())),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

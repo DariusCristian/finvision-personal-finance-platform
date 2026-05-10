@@ -15,11 +15,31 @@ const portfolioHoldingSchema = new mongoose.Schema(
       default: 'crypto',
       index: true,
     },
+    accountType: {
+      type: String,
+      enum: ['crypto', 'stocks'],
+      required: true,
+      default: 'crypto',
+      index: true,
+    },
+    mode: {
+      type: String,
+      enum: ['funded', 'demo'],
+      required: true,
+      default: 'funded',
+      index: true,
+    },
     symbol: {
       type: String,
       required: true,
       trim: true,
       uppercase: true,
+    },
+    name: {
+      type: String,
+      required: false,
+      default: null,
+      trim: true,
     },
     coinId: {
       type: String,
@@ -35,6 +55,7 @@ const portfolioHoldingSchema = new mongoose.Schema(
     },
     avgCost: {
       type: Number,
+      alias: 'avgCostEUR',
       required: true,
       min: 0,
     },
@@ -45,15 +66,36 @@ const portfolioHoldingSchema = new mongoose.Schema(
 );
 
 portfolioHoldingSchema.index(
-  { userId: 1, assetType: 1, coinId: 1 },
-  { unique: true, partialFilterExpression: { assetType: 'crypto', coinId: { $type: 'string' } } },
+  { userId: 1, accountType: 1, mode: 1, assetType: 1, coinId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      accountType: 'crypto',
+      assetType: 'crypto',
+      coinId: { $type: 'string' },
+    },
+  },
 );
 portfolioHoldingSchema.index(
-  { userId: 1, assetType: 1, symbol: 1 },
-  { unique: true, partialFilterExpression: { assetType: 'stock' } },
+  { userId: 1, accountType: 1, mode: 1, assetType: 1, symbol: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      accountType: 'stocks',
+      assetType: 'stock',
+    },
+  },
 );
 
 portfolioHoldingSchema.pre('validate', function normalizeAssetIdentity(next) {
+  if (this.assetType === 'stock') {
+    this.accountType = 'stocks';
+  }
+
+  if (this.assetType === 'crypto') {
+    this.accountType = 'crypto';
+  }
+
   if (this.assetType === 'stock') {
     this.coinId = null;
   }
@@ -76,6 +118,39 @@ export const backfillPortfolioHoldingAssetType = async () => {
     },
     {
       $set: { assetType: 'crypto' },
+    },
+  );
+};
+
+export const backfillPortfolioHoldingAccountType = async () => {
+  await PortfolioHolding.updateMany(
+    {
+      accountType: { $exists: false },
+      assetType: 'stock',
+    },
+    {
+      $set: { accountType: 'stocks' },
+    },
+  );
+
+  await PortfolioHolding.updateMany(
+    {
+      accountType: { $exists: false },
+      $or: [{ assetType: { $exists: false } }, { assetType: 'crypto' }],
+    },
+    {
+      $set: { accountType: 'crypto' },
+    },
+  );
+};
+
+export const backfillPortfolioHoldingMode = async () => {
+  await PortfolioHolding.updateMany(
+    {
+      mode: { $exists: false },
+    },
+    {
+      $set: { mode: 'funded' },
     },
   );
 };

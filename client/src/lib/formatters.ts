@@ -4,6 +4,11 @@ const FALLBACK_CURRENCY_SYMBOL: Record<string, string> = {
   RON: 'RON',
 };
 
+export const currencyIndicator = (currency: string | null | undefined): string => {
+  const normalized = String(currency ?? '').trim().toUpperCase();
+  return FALLBACK_CURRENCY_SYMBOL[normalized] ?? '$';
+};
+
 const toFiniteNumber = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) ? value : null;
 
@@ -22,7 +27,7 @@ export const formatMoney = (value: number | null | undefined, currency = 'USD'):
   const numericValue = toFiniteNumber(value);
 
   if (numericValue === null) {
-    return `${FALLBACK_CURRENCY_SYMBOL[currency] ?? '$'}0.00`;
+    return `${currencyIndicator(currency)}0.00`;
   }
 
   return new Intl.NumberFormat('en-US', {

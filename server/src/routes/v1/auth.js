@@ -85,4 +85,10 @@ authRouter.get('/me', requireAuth, (req, res) => {
   });
 });
 
+authRouter.post('/logout', (_req, res) => {
+  sendSuccess(res, {
+    loggedOut: true,
+  });
+});
+
 export { authRouter };

@@ -88,11 +88,7 @@ const createProviderNotConfiguredError = () =>
     details: [{ reason: 'MISSING_FINNHUB_API_KEY' }],
   });
 
-const fetchFinnhub = async ({ path, query = {} }) => {
-  if (!isFinnhubConfigured()) {
-    throw createProviderNotConfiguredError();
-  }
-
+const buildFinnhubUrls = ({ path, query = {} }) => {
   const params = new URLSearchParams();
 
   Object.entries(query).forEach(([key, value]) => {
@@ -105,6 +101,19 @@ const fetchFinnhub = async ({ path, query = {} }) => {
 
   const endpointUrl = `${FINNHUB_API_BASE_URL}${path}?${params.toString()}`;
   const redactedUrl = endpointUrl.replace(env.FINNHUB_API_KEY, '[REDACTED]');
+
+  return {
+    endpointUrl,
+    redactedUrl,
+  };
+};
+
+const fetchFinnhub = async ({ path, query = {} }) => {
+  if (!isFinnhubConfigured()) {
+    throw createProviderNotConfiguredError();
+  }
+
+  const { endpointUrl, redactedUrl } = buildFinnhubUrls({ path, query });
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -324,6 +333,16 @@ export const getCandles = async (symbol, resolution, from, to) => {
   const cacheKey = `finnhub:candles:${normalizedSymbol}:${normalizedResolution}:${normalizedFrom}:${normalizedTo}`;
 
   return withCachedRequest(cacheKey, CANDLES_CACHE_TTL_MS, async () => {
+    const { redactedUrl } = buildFinnhubUrls({
+      path: '/stock/candle',
+      query: {
+        symbol: normalizedSymbol,
+        resolution: normalizedResolution,
+        from: normalizedFrom,
+        to: normalizedTo,
+      },
+    });
+
     const payload = await fetchFinnhub({
       path: '/stock/candle',
       query: {
@@ -349,6 +368,7 @@ export const getCandles = async (symbol, resolution, from, to) => {
               ? 'INVALID_CANDLES_ARRAY'
               : 'PROVIDER_STATUS_NOT_OK',
         finnhubStatus,
+        requestUrlWithoutToken: redactedUrl,
       };
     }
 
@@ -358,12 +378,15 @@ export const getCandles = async (symbol, resolution, from, to) => {
         status: 'no_data',
         reason: 'INVALID_TIMESTAMPS_ARRAY',
         finnhubStatus,
+        requestUrlWithoutToken: redactedUrl,
       };
     }
 
     const size = Math.min(timestamps.length, closes.length);
-    const series = Array.from({ length: size }, (_, index) => ({
-        t: Number(timestamps[index]) * 1000,
+    const series = timestamps
+      .slice(0, size)
+      .map((timestampSeconds, index) => ({
+        t: Number(timestampSeconds) * 1000,
         c: Number(closes[index]),
       }))
       .filter((point) => Number.isFinite(point.t) && Number.isFinite(point.c));
@@ -374,6 +397,7 @@ export const getCandles = async (symbol, resolution, from, to) => {
         status: 'no_data',
         reason: 'EMPTY_SERIES',
         finnhubStatus,
+        requestUrlWithoutToken: redactedUrl,
       };
     }
 
@@ -382,6 +406,7 @@ export const getCandles = async (symbol, resolution, from, to) => {
       status: 'ok',
       reason: null,
       finnhubStatus,
+      requestUrlWithoutToken: redactedUrl,
     };
   });
 };

@@ -8,6 +8,13 @@ const investFundingSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    mode: {
+      type: String,
+      enum: ['funded', 'demo'],
+      required: true,
+      default: 'funded',
+      index: true,
+    },
     fromCurrency: {
       type: String,
       enum: ['RON'],
@@ -51,7 +58,18 @@ const investFundingSchema = new mongoose.Schema(
   },
 );
 
-investFundingSchema.index({ userId: 1, createdAt: -1 });
+investFundingSchema.index({ userId: 1, mode: 1, createdAt: -1 });
 
 export const InvestFunding =
   mongoose.models.InvestFunding ?? mongoose.model('InvestFunding', investFundingSchema);
+
+export const backfillInvestFundingMode = async () => {
+  await InvestFunding.updateMany(
+    {
+      mode: { $exists: false },
+    },
+    {
+      $set: { mode: 'funded' },
+    },
+  );
+};

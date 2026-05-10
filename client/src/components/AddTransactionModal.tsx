@@ -1,5 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
+import { useAuth } from '../context/AuthContext';
+import { currencyIndicator } from '../lib/formatters';
 import type { BudgetCategory, BudgetTransaction } from '../lib/api';
 
 type RecurrenceValue = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'annually' | 'none';
@@ -33,7 +35,7 @@ const REPEAT_OPTIONS = [
 ] as const;
 
 const fieldClassName =
-  'mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100';
+  'mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-blue-900/40';
 
 const addMonthsToDateString = (dateString: string, monthCount: number) => {
   const date = new Date(`${dateString}T12:00:00.000Z`);
@@ -77,8 +79,8 @@ const CategoryOptionButton = memo(function CategoryOptionButton({
       className={[
         'flex min-w-0 flex-col items-center rounded-2xl border px-3 py-4 text-center transition',
         isActive
-          ? 'border-[#2563eb] bg-blue-50 shadow-[inset_0_0_0_1px_rgba(37,99,235,0.18)]'
-          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
+          ? 'border-[#2563eb] bg-blue-50 shadow-[inset_0_0_0_1px_rgba(37,99,235,0.18)] dark:bg-blue-900/30'
+          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600 dark:hover:bg-slate-800',
       ].join(' ')}
     >
       <span
@@ -93,7 +95,7 @@ const CategoryOptionButton = memo(function CategoryOptionButton({
       <span
         className={[
           'mt-3 line-clamp-2 text-sm font-medium',
-          isActive ? 'text-[#2563eb]' : 'text-slate-600',
+          isActive ? 'text-[#2563eb]' : 'text-slate-600 dark:text-slate-300',
         ].join(' ')}
       >
         {getCategoryLabel(category)}
@@ -111,6 +113,7 @@ export function AddTransactionModal({
   onClose,
   onSubmit,
 }: AddTransactionModalProps) {
+  const { user } = useAuth();
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState('');
@@ -238,6 +241,12 @@ export function AddTransactionModal({
   }, [isOpen, onClose]);
 
   const isEditing = mode === 'edit';
+  const amountCurrencyIndicator = currencyIndicator(user?.baseCurrency);
+  const isTextCurrencyIndicator = amountCurrencyIndicator.length > 1;
+
+  if (!isOpen) {
+    return null;
+  }
 
   const handleSubmit = async () => {
     const parsedAmount = Number(amount);
@@ -277,27 +286,24 @@ export function AddTransactionModal({
 
   return (
     <div
-      className={[
-        'fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/35 px-3 py-4 transition-opacity sm:px-4 sm:py-6',
-        isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
-      ].join(' ')}
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 px-3 py-4 sm:px-4 sm:py-6 dark:bg-black/60"
       onClick={onClose}
-      aria-hidden={!isOpen}
+      aria-hidden={false}
     >
       <div
         role="dialog"
         aria-modal="true"
-        className="flex max-h-[calc(100vh-3rem)] w-full max-w-[44rem] flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.18)]"
+        className="flex max-h-[calc(100vh-3rem)] w-full max-w-[44rem] flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="shrink-0 border-b border-slate-200 px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
+        <div className="shrink-0 border-b border-slate-200 px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6 dark:border-slate-700">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 sm:text-[2rem]">
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100 sm:text-[2rem]">
                 {isEditing ? 'Edit Transaction' : 'Add Transaction'}
               </h2>
               {initialTransaction?.isProjected ? (
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                   This edits the recurring source transaction for the projected entry.
                 </p>
               ) : null}
@@ -305,7 +311,7 @@ export function AddTransactionModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+              className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
               aria-label="Close"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
@@ -318,7 +324,7 @@ export function AddTransactionModal({
 
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
           <div className="space-y-5 sm:space-y-6">
-            <div className="rounded-2xl bg-slate-100 p-1">
+            <div className="rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
               <div className="grid grid-cols-2 gap-1">
                 {(['expense', 'income'] as const).map((option) => {
                   const isActive = option === type;
@@ -331,8 +337,8 @@ export function AddTransactionModal({
                       className={[
                         'rounded-[1rem] px-4 py-3 text-lg font-medium transition',
                         isActive
-                          ? 'bg-white text-slate-900 shadow-[0_1px_4px_rgba(15,23,42,0.08)]'
-                          : 'text-slate-500 hover:text-slate-700',
+                          ? 'bg-white text-slate-900 shadow-[0_1px_4px_rgba(15,23,42,0.08)] dark:bg-slate-900 dark:text-slate-100'
+                          : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
                       ].join(' ')}
                     >
                       {option === 'expense' ? 'Expense' : 'Income'}
@@ -343,9 +349,16 @@ export function AddTransactionModal({
             </div>
 
             <div className="text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Amount</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Amount</p>
               <div className="mt-4 flex items-end justify-center gap-2 sm:gap-3">
-                <span className="text-4xl font-semibold tracking-[-0.04em] text-slate-400 sm:text-5xl">$</span>
+                <span
+                  className={[
+                    'font-semibold tracking-[-0.04em] text-slate-400',
+                    isTextCurrencyIndicator ? 'text-2xl sm:text-3xl' : 'text-4xl sm:text-5xl',
+                  ].join(' ')}
+                >
+                  {amountCurrencyIndicator}
+                </span>
                 <input
                   type="number"
                   min="0.01"
@@ -353,20 +366,20 @@ export function AddTransactionModal({
                   value={amount}
                   onChange={(event) => setAmount(event.target.value)}
                   placeholder="0.00"
-                  className="w-full max-w-[16rem] border-none bg-transparent p-0 text-center text-4xl font-semibold tracking-[-0.05em] text-slate-900 outline-none placeholder:text-slate-300 sm:text-6xl"
+                  className="w-full max-w-[16rem] border-none bg-transparent p-0 text-center text-4xl font-semibold tracking-[-0.05em] text-slate-900 outline-none placeholder:text-slate-300 dark:text-slate-100 dark:placeholder:text-slate-600 sm:text-6xl"
                 />
               </div>
             </div>
 
             <div>
-              <p className="text-sm font-medium text-slate-900">Category</p>
+              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Category</p>
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {categoryOptions}
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500">
+              <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">
                 Date
                 <input
                   type="date"
@@ -375,7 +388,7 @@ export function AddTransactionModal({
                   className={fieldClassName}
                 />
               </label>
-              <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500">
+              <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">
                 Repeat
                 <select
                   value={repeat}
@@ -393,7 +406,7 @@ export function AddTransactionModal({
 
             {repeat !== 'none' ? (
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500 sm:col-span-1">
+                <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400 sm:col-span-1">
                   End Date
                   <input
                     type="date"
@@ -404,14 +417,14 @@ export function AddTransactionModal({
                   />
                 </label>
                 <div className="flex items-end">
-                  <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                  <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                     Recurring transactions are saved and projected into future months automatically.
                   </p>
                 </div>
               </div>
             ) : null}
 
-            <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500">
+            <label className="block text-sm font-medium uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">
               Note (Optional)
               <input
                 type="text"
@@ -426,12 +439,12 @@ export function AddTransactionModal({
           </div>
         </div>
 
-        <div className="shrink-0 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
+        <div className="shrink-0 border-t border-slate-200 bg-slate-50 px-4 py-4 dark:border-slate-700 dark:bg-slate-800 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3 text-base font-medium text-slate-700 transition hover:bg-slate-100 sm:px-7 sm:py-3.5 sm:text-lg"
+            className="inline-flex justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3 text-base font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:px-7 sm:py-3.5 sm:text-lg"
           >
             Cancel
           </button>

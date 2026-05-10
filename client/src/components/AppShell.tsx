@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useAuth } from '../context/AuthContext';
@@ -17,10 +17,10 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { id: 'home', label: 'Home', href: '/home' },
   { id: 'budget', label: 'Budget', href: '/budget' },
-  { id: 'news', label: 'News', href: '/news' },
-  { id: 'learning', label: 'Learning Center', href: '/learn' },
   { id: 'invest', label: 'Invest', href: '/invest' },
   { id: 'market', label: 'Market', href: '/market' },
+  { id: 'learning', label: 'Learning Center', href: '/learn' },
+  { id: 'news', label: 'News', href: '/news' },
 ];
 
 function BellIcon() {
@@ -48,24 +48,38 @@ const getInitials = (displayName?: string) => {
 export function AppShell({ activeTab, children }: AppShellProps) {
   const { user } = useAuth();
   const initials = getInitials(user?.displayName);
+  const [logoLoadFailed, setLogoLoadFailed] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#f3f4f6] text-slate-900">
-      <nav className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <nav className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 dark:border-slate-800 dark:bg-slate-900/95">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
+          <Link
+            to="/home"
+            className="flex items-center gap-3 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+            aria-label="Go to Home"
+          >
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2563eb] text-xl font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
-              F
+              {logoLoadFailed ? (
+                <span aria-hidden="true">F</span>
+              ) : (
+                <img
+                  src="/finvision-logo.png"
+                  alt="FinVision"
+                  className="h-10 w-10 rounded-xl object-cover"
+                  onError={() => setLogoLoadFailed(true)}
+                />
+              )}
             </div>
-            <span className="text-2xl font-bold tracking-[-0.03em]">FinVision</span>
-          </div>
+            <span className="text-2xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">FinVision</span>
+          </Link>
 
           <div className="hidden items-center gap-8 md:flex">
             {NAV_ITEMS.map((item) => {
               const isActive = item.id === activeTab;
               const className = [
                 'text-base font-medium transition-colors',
-                isActive ? 'text-[#2563eb]' : 'text-slate-500 hover:text-[#2563eb]',
+                isActive ? 'text-[#2563eb]' : 'text-slate-500 hover:text-[#2563eb] dark:text-slate-400',
               ].join(' ');
 
               if (item.href) {
@@ -87,22 +101,22 @@ export function AppShell({ activeTab, children }: AppShellProps) {
           <div className="flex items-center gap-4">
             <button
               type="button"
-              className="relative rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              className="relative rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
               aria-label="Notifications"
             >
               <BellIcon />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-red-500" />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-red-500 dark:border-slate-900" />
             </button>
             <Link
               to="/settings"
-              className="flex items-center gap-3 rounded-xl border-l border-slate-200 pl-4 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+              className="flex items-center gap-3 rounded-xl border-l border-slate-200 pl-4 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 dark:border-slate-700 dark:hover:bg-slate-800"
               aria-label="Open account settings"
             >
               <div className="hidden text-right sm:block">
-                <p className="text-sm font-semibold text-slate-900">{user?.displayName ?? 'FinVision User'}</p>
-                <p className="text-xs text-slate-500">Free plan</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.displayName ?? 'FinVision User'}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Free plan</p>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-[#0d5b52] to-[#2563eb] text-sm font-semibold text-white shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-[#0d5b52] to-[#2563eb] text-sm font-semibold text-white shadow-sm dark:border-slate-700">
                 {initials}
               </div>
             </Link>

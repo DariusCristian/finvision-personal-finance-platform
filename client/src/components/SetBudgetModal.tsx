@@ -9,7 +9,7 @@ type SetBudgetModalProps = {
 };
 
 const inputClassName =
-  'mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100';
+  'mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-blue-900/40';
 
 export function SetBudgetModal({
   isOpen,
@@ -52,17 +52,17 @@ export function SetBudgetModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-[1.75rem] bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.18)] sm:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 backdrop-blur-sm dark:bg-black/60">
+      <div className="w-full max-w-md rounded-[1.75rem] bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.18)] dark:bg-slate-900 sm:p-8">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-[-0.03em] text-slate-900">Set Monthly Budget</h2>
-            <p className="mt-1 text-sm text-slate-500">Update the goal used for remaining budget and spend tracking.</p>
+            <h2 className="text-2xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Set Monthly Budget</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Update the goal used for remaining budget and spend tracking.</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+            className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             aria-label="Close"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
@@ -72,7 +72,7 @@ export function SetBudgetModal({
           </button>
         </div>
 
-        <label className="mt-6 block text-sm font-medium text-slate-700">
+        <label className="mt-6 block text-sm font-medium text-slate-700 dark:text-slate-200">
           Budget amount
           <input
             type="number"
@@ -91,7 +91,7 @@ export function SetBudgetModal({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex justify-center rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+            className="inline-flex justify-center rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             Cancel
           </button>

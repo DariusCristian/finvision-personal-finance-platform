@@ -50,6 +50,16 @@ const userSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    investCryptoMode: {
+      type: String,
+      enum: ['funded', 'demo'],
+      default: null,
+    },
+    marketStocksMode: {
+      type: String,
+      enum: ['funded', 'demo'],
+      default: null,
+    },
   },
   {
     timestamps: {

@@ -228,9 +228,9 @@ export const convert = async ({ from, to, amount }) => {
     });
 
     const rates = payload?.rates || {};
-    const resultValue = Number(rates?.[normalizedTo]);
+    const convertedAmount = Number(rates?.[normalizedTo]);
 
-    if (!Number.isFinite(resultValue)) {
+    if (!Number.isFinite(convertedAmount)) {
       throw new FxProviderError('FX conversion result is unavailable.', {
         status: 502,
         code: 'FX_PROVIDER_ERROR',
@@ -238,12 +238,18 @@ export const convert = async ({ from, to, amount }) => {
       });
     }
 
+    const rateToPerFrom = convertedAmount / numericAmount;
+    const rateFromPerTo = convertedAmount > 0 ? numericAmount / convertedAmount : null;
+
     return {
       from: normalizedFrom,
       to: normalizedTo,
       amount: numericAmount,
-      rate: resultValue / numericAmount,
-      result: resultValue,
+      convertedAmount,
+      rateToPerFrom,
+      rateFromPerTo,
+      rate: rateToPerFrom,
+      result: convertedAmount,
       date: String(payload?.date || ''),
       provider: 'frankfurter',
     };

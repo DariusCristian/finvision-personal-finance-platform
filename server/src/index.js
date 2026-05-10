@@ -1,19 +1,39 @@
+import 'dotenv/config';
+
 import { app } from './app.js';
 import { env } from './config/env.js';
 import { connectToDatabase, disconnectFromDatabase } from './database/mongoose.js';
 import { Article } from './models/article.js';
 import { ensureSystemCategories } from './models/category.js';
-import { InvestFunding } from './models/invest-funding.js';
+import { backfillInvestFundingMode, InvestFunding } from './models/invest-funding.js';
+import { Insight } from './models/insight.js';
 import { InvestingWalletLedger } from './models/investing-wallet-ledger.js';
 import { InvestingWallet } from './models/investing-wallet.js';
 import { Question } from './models/question.js';
-import { PortfolioAccount } from './models/portfolio-account.js';
 import {
+  backfillPortfolioAccountMode,
+  backfillPortfolioAccountType,
+  ensureStockPortfolioAccounts,
+  PortfolioAccount,
+} from './models/portfolio-account.js';
+import {
+  backfillPortfolioHoldingAccountType,
   backfillPortfolioHoldingAssetType,
+  backfillPortfolioHoldingMode,
   PortfolioHolding,
 } from './models/portfolio-holding.js';
-import { PortfolioSnapshot } from './models/portfolio-snapshot.js';
-import { backfillPortfolioTradeAssetType, PortfolioTrade } from './models/portfolio-trade.js';
+import {
+  backfillPortfolioSnapshotAccountType,
+  backfillPortfolioSnapshotMode,
+  PortfolioSnapshot,
+} from './models/portfolio-snapshot.js';
+import {
+  backfillPortfolioTradeAccountType,
+  backfillPortfolioTradeAssetType,
+  backfillPortfolioTradeExecutedAt,
+  backfillPortfolioTradeMode,
+  PortfolioTrade,
+} from './models/portfolio-trade.js';
 import { QuizAttempt } from './models/quiz-attempt.js';
 import { Quiz } from './models/quiz.js';
 import { Transaction } from './models/transaction.js';
@@ -21,6 +41,75 @@ import { UserProgress } from './models/user-progress.js';
 import { logger } from './utils/logger.js';
 
 let server;
+
+const normalizeLegacyFundedCryptoCashBalances = async () => {
+  const fundedAccounts = await PortfolioAccount.find(
+    {
+      accountType: 'crypto',
+      mode: 'funded',
+      cashBalance: { $gt: 0 },
+    },
+    {
+      _id: 1,
+      userId: 1,
+      cashBalance: 1,
+    },
+  ).lean();
+
+  if (fundedAccounts.length === 0) {
+    return;
+  }
+
+  const candidateUserIds = [...new Set(fundedAccounts.map((account) => String(account.userId)))];
+  const [fundingUserIds, walletLedgerUserIds] = await Promise.all([
+    InvestFunding.distinct('userId', {
+      userId: { $in: candidateUserIds },
+      mode: 'funded',
+      toAmount: { $gt: 0 },
+    }),
+    InvestingWalletLedger.distinct('userId', {
+      userId: { $in: candidateUserIds },
+      type: 'fx_convert_to_eur',
+      $and: [
+        {
+          $or: [{ 'meta.targetAccountType': 'crypto' }, { 'meta.targetAccountType': { $exists: false } }],
+        },
+        {
+          $or: [{ 'meta.targetMode': 'funded' }, { 'meta.targetMode': { $exists: false } }],
+        },
+      ],
+    }),
+  ]);
+  const usersWithTopupHistory = new Set([...fundingUserIds, ...walletLedgerUserIds].map((value) => String(value)));
+
+  const accountsToReset = fundedAccounts.filter((account) => !usersWithTopupHistory.has(String(account.userId)));
+
+  if (accountsToReset.length === 0) {
+    return;
+  }
+
+  await PortfolioAccount.bulkWrite(
+    accountsToReset.map((account) => ({
+      updateOne: {
+        filter: { _id: account._id },
+        update: {
+          $set: {
+            cashBalance: 0,
+          },
+        },
+      },
+    })),
+    {
+      ordered: false,
+    },
+  );
+
+  logger.warn('invest.funded_cash_legacy_backfill', {
+    scannedAccounts: fundedAccounts.length,
+    correctedAccounts: accountsToReset.length,
+    correctedUserIds: [...new Set(accountsToReset.map((account) => String(account.userId)))],
+  });
+};
 
 const start = async () => {
   try {
@@ -45,7 +134,21 @@ const start = async () => {
     }
 
     await connectToDatabase();
-    await Promise.all([backfillPortfolioHoldingAssetType(), backfillPortfolioTradeAssetType()]);
+    await Promise.all([
+      backfillPortfolioAccountType(),
+      backfillPortfolioAccountMode(),
+      backfillPortfolioHoldingAssetType(),
+      backfillPortfolioHoldingAccountType(),
+      backfillPortfolioHoldingMode(),
+      backfillPortfolioTradeAssetType(),
+      backfillPortfolioTradeAccountType(),
+      backfillPortfolioTradeMode(),
+      backfillPortfolioTradeExecutedAt(),
+      backfillPortfolioSnapshotAccountType(),
+      backfillPortfolioSnapshotMode(),
+      backfillInvestFundingMode(),
+    ]);
+    await normalizeLegacyFundedCryptoCashBalances();
     await Promise.all([
       ensureSystemCategories(),
       Article.syncIndexes(),
@@ -58,10 +161,12 @@ const start = async () => {
       InvestFunding.syncIndexes(),
       InvestingWallet.syncIndexes(),
       InvestingWalletLedger.syncIndexes(),
+      Insight.syncIndexes(),
       PortfolioHolding.syncIndexes(),
       PortfolioTrade.syncIndexes(),
       PortfolioSnapshot.syncIndexes(),
     ]);
+    await ensureStockPortfolioAccounts();
 
     server = app.listen(env.PORT, () => {
       logger.info('server.started', {

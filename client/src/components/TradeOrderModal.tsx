@@ -13,6 +13,8 @@ type TradeOrderModalProps = {
   coinName?: string;
   currentPrice?: number | null;
   pricingCurrency?: 'USD' | 'EUR';
+  marketPrice?: number | null;
+  marketPriceCurrency?: 'USD' | 'EUR';
   cashBalance?: number;
   maxQuantity?: number | null;
   isSubmitting?: boolean;
@@ -29,6 +31,8 @@ export function TradeOrderModal({
   coinName,
   currentPrice,
   pricingCurrency = 'USD',
+  marketPrice = null,
+  marketPriceCurrency = 'USD',
   cashBalance,
   maxQuantity,
   isSubmitting = false,
@@ -64,6 +68,14 @@ export function TradeOrderModal({
 
     return parsedQuantity > 0 ? parsedQuantity * currentPrice : 0;
   }, [currentPrice, parsedQuantity]);
+
+  const estimatedTotalMarket = useMemo(() => {
+    if (typeof marketPrice !== 'number' || !Number.isFinite(marketPrice) || parsedQuantity <= 0) {
+      return null;
+    }
+
+    return parsedQuantity * marketPrice;
+  }, [marketPrice, parsedQuantity]);
 
   const postTradeCash = useMemo(() => {
     if (typeof cashBalance !== 'number' || !Number.isFinite(cashBalance) || estimatedTotal === null) {
@@ -122,17 +134,17 @@ export function TradeOrderModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/50 p-4">
-      <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/45 p-4 dark:bg-black/65">
+      <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-700">
           <div>
-            <h3 className="text-xl font-semibold text-slate-900">Trade {symbol}</h3>
-            <p className="mt-1 text-sm text-slate-500">{coinName || coinId}</p>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Trade {symbol}</h3>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{coinName || coinId}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+            className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             aria-label="Close order modal"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
@@ -142,7 +154,7 @@ export function TradeOrderModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5 px-6 py-5">
-          <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1.5">
+          <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1.5 dark:bg-slate-800">
             {(['buy', 'sell'] as const).map((option) => (
               <button
                 key={option}
@@ -150,7 +162,9 @@ export function TradeOrderModal({
                 onClick={() => onSideChange?.(option)}
                 className={[
                   'rounded-lg px-3 py-2 text-sm font-semibold capitalize transition',
-                  side === option ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700',
+                  side === option
+                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
+                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
                 ].join(' ')}
               >
                 {option}
@@ -158,7 +172,7 @@ export function TradeOrderModal({
             ))}
           </div>
 
-          <label className="block text-sm font-medium text-slate-600">
+          <label className="block text-sm font-medium text-slate-600 dark:text-slate-300">
             Quantity
             <input
               type="number"
@@ -166,31 +180,58 @@ export function TradeOrderModal({
               step="0.000001"
               value={quantityInput}
               onChange={(event) => setQuantityInput(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-blue-900/40"
             />
           </label>
 
-          <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
-            <div className="flex items-center justify-between text-slate-600">
+          <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
               <span>Current price</span>
-              <span className="font-medium text-slate-900">{formatPrice(currentPrice, pricingCurrency)}</span>
+              <span className="font-medium text-slate-900 dark:text-slate-100">
+                {formatPrice(
+                  typeof marketPrice === 'number' && Number.isFinite(marketPrice)
+                    ? marketPrice
+                    : currentPrice,
+                  typeof marketPrice === 'number' && Number.isFinite(marketPrice)
+                    ? marketPriceCurrency
+                    : pricingCurrency,
+                )}
+              </span>
             </div>
-            <div className="flex items-center justify-between text-slate-600">
+            {typeof marketPrice === 'number' &&
+            Number.isFinite(marketPrice) &&
+            marketPriceCurrency !== pricingCurrency ? (
+              <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                <span>Settlement price ({pricingCurrency})</span>
+                <span className="font-medium text-slate-900 dark:text-slate-100">{formatPrice(currentPrice, pricingCurrency)}</span>
+              </div>
+            ) : null}
+            <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
               <span>Est. total</span>
-              <span className="font-medium text-slate-900">{formatMoney(estimatedTotal, pricingCurrency)}</span>
+              <span className="font-medium text-slate-900 dark:text-slate-100">{formatMoney(estimatedTotal, pricingCurrency)}</span>
             </div>
-            <div className="flex items-center justify-between text-slate-600">
+            {typeof estimatedTotalMarket === 'number' &&
+            Number.isFinite(estimatedTotalMarket) &&
+            marketPriceCurrency !== pricingCurrency ? (
+              <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                <span>Est. total ({marketPriceCurrency})</span>
+                <span className="font-medium text-slate-900 dark:text-slate-100">
+                  {formatMoney(estimatedTotalMarket, marketPriceCurrency)}
+                </span>
+              </div>
+            ) : null}
+            <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
               <span>Available cash</span>
-              <span className="font-medium text-slate-900">{formatMoney(cashBalance, pricingCurrency)}</span>
+              <span className="font-medium text-slate-900 dark:text-slate-100">{formatMoney(cashBalance, pricingCurrency)}</span>
             </div>
-            <div className="flex items-center justify-between text-slate-600">
+            <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
               <span>Post-trade cash</span>
-              <span className="font-semibold text-slate-900">{formatMoney(postTradeCash, pricingCurrency)}</span>
+              <span className="font-semibold text-slate-900 dark:text-slate-100">{formatMoney(postTradeCash, pricingCurrency)}</span>
             </div>
             {side === 'sell' ? (
-              <div className="flex items-center justify-between text-slate-600">
+              <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                 <span>Available quantity</span>
-                <span className="font-medium text-slate-900">
+                <span className="font-medium text-slate-900 dark:text-slate-100">
                   {formatQty(maxQuantity, symbol)} {symbol}
                 </span>
               </div>
@@ -213,7 +254,7 @@ export function TradeOrderModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               Cancel
             </button>

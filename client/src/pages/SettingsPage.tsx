@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { AppShell } from '../components/AppShell';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +11,7 @@ import {
   updateProfile,
   type AuthUser,
 } from '../lib/api';
+import { applyTheme, getInitialTheme, type Theme } from '../lib/theme';
 
 type SectionId = 'profile' | 'preferences' | 'security' | 'billing';
 type PasswordField = 'currentPassword' | 'newPassword' | 'confirmNewPassword';
@@ -17,7 +19,6 @@ type PasswordField = 'currentPassword' | 'newPassword' | 'confirmNewPassword';
 type ProfileFormState = {
   displayName: string;
   email: string;
-  avatarUrl: string;
 };
 
 type PreferencesFormState = {
@@ -42,7 +43,7 @@ const PASSWORD_RE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 const SECTION_ITEMS: { id: SectionId; label: string; description: string }[] = [
-  { id: 'profile', label: 'Profile', description: 'Name, email, and avatar URL' },
+  { id: 'profile', label: 'Profile', description: 'Name and email' },
   { id: 'preferences', label: 'Preferences', description: 'Currency and language' },
   { id: 'security', label: 'Security', description: 'Password update' },
   { id: 'billing', label: 'Billing', description: 'Plan details' },
@@ -76,7 +77,6 @@ const getInitials = (displayName: string, email: string) => {
 const toProfileState = (user: AuthUser): ProfileFormState => ({
   displayName: user.displayName ?? '',
   email: user.email ?? '',
-  avatarUrl: user.avatarUrl ?? '',
 });
 
 const toPreferencesState = (user: AuthUser): PreferencesFormState => ({
@@ -85,16 +85,17 @@ const toPreferencesState = (user: AuthUser): PreferencesFormState => ({
 });
 
 export function SettingsPage() {
-  const { accessToken, setCurrentUser, user } = useAuth();
+  const { accessToken, logout, setCurrentUser, user } = useAuth();
+  const navigate = useNavigate();
 
   const [activeSection, setActiveSection] = useState<SectionId>('profile');
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [profileForm, setProfileForm] = useState<ProfileFormState>({
     displayName: '',
     email: '',
-    avatarUrl: '',
   });
   const [prefsForm, setPrefsForm] = useState<PreferencesFormState>({
     baseCurrency: 'RON',
@@ -110,6 +111,7 @@ export function SettingsPage() {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingPreferences, setIsSavingPreferences] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [theme, setTheme] = useState<Theme>(() => getInitialTheme());
 
   const hasLoadedProfileForTokenRef = useRef<string | null>(null);
   const lastProfileFetchAtRef = useRef<number>(0);
@@ -224,6 +226,10 @@ export function SettingsPage() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
   const scrollToSection = useCallback((sectionId: SectionId) => {
     const section = sectionRefs.current[sectionId];
 
@@ -245,7 +251,6 @@ export function SettingsPage() {
 
     const displayName = profileForm.displayName.trim();
     const email = profileForm.email.trim().toLowerCase();
-    const avatarUrl = profileForm.avatarUrl.trim();
 
     if (displayName.length < 2 || displayName.length > 50) {
       setProfileNotice({
@@ -273,7 +278,6 @@ export function SettingsPage() {
         {
           displayName,
           email,
-          avatarUrl,
         },
         accessToken,
       );
@@ -389,12 +393,23 @@ export function SettingsPage() {
     }
   };
 
+  const handleLogout = useCallback(async () => {
+    setIsLoggingOut(true);
+
+    try {
+      await logout();
+    } finally {
+      setIsLoggingOut(false);
+      navigate('/login', { replace: true });
+    }
+  }, [logout, navigate]);
+
   return (
     <AppShell activeTab="settings">
-      <div className="space-y-6">
+      <div className="fv-page space-y-6">
         <header>
-          <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-900">Account Settings</h1>
-          <p className="mt-3 text-lg text-slate-500">
+          <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Account Settings</h1>
+          <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">
             Manage your profile details, preferences, and security settings.
           </p>
         </header>
@@ -406,7 +421,7 @@ export function SettingsPage() {
         ) : null}
 
         <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)]">
-          <aside className="self-start rounded-3xl border border-slate-100 bg-white p-3 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] lg:sticky lg:top-24">
+          <aside className="self-start rounded-3xl border border-slate-100 bg-white p-3 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-800 dark:bg-slate-900 lg:sticky lg:top-24">
             <nav aria-label="Settings sections" className="space-y-1">
               {SECTION_ITEMS.map((item) => (
                 <button
@@ -417,11 +432,11 @@ export function SettingsPage() {
                     'w-full rounded-2xl px-4 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-blue-400',
                     activeSection === item.id
                       ? 'bg-blue-50 text-blue-700'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                   ].join(' ')}
                 >
                   <p className="text-sm font-semibold">{item.label}</p>
-                  <p className="mt-1 text-xs text-slate-500">{item.description}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{item.description}</p>
                 </button>
               ))}
             </nav>
@@ -433,14 +448,14 @@ export function SettingsPage() {
               ref={(node) => {
                 sectionRefs.current.profile = node;
               }}
-              className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] sm:p-7"
+              className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-800 dark:bg-slate-900 sm:p-7"
             >
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900">Profile</h2>
-                  <p className="mt-2 text-sm text-slate-500">Update your personal details.</p>
+                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Profile</h2>
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Update your personal details.</p>
                 </div>
-                <div className="inline-flex items-center gap-3 self-start rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700">
+                <div className="inline-flex items-center gap-3 self-start rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
                   <span>Plan</span>
                   <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
                     Free plan
@@ -454,19 +469,13 @@ export function SettingsPage() {
                     {initials}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">Profile photo</p>
-                    <p className="text-xs text-slate-500">Placeholder avatar for MVP.</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Profile avatar</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Generated from your initials.</p>
                   </div>
-                  <button
-                    type="button"
-                    className="ml-auto rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-                  >
-                    Upload photo
-                  </button>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
                     Full Name
                     <input
                       type="text"
@@ -475,11 +484,11 @@ export function SettingsPage() {
                         setProfileForm((current) => ({ ...current, displayName: event.target.value }));
                         setProfileNotice(null);
                       }}
-                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-blue-900/40"
                     />
                   </label>
 
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
                     Email Address
                     <input
                       type="email"
@@ -488,23 +497,10 @@ export function SettingsPage() {
                         setProfileForm((current) => ({ ...current, email: event.target.value }));
                         setProfileNotice(null);
                       }}
-                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-blue-900/40"
                     />
                   </label>
 
-                  <label className="text-sm font-medium text-slate-600 md:col-span-2">
-                    Avatar URL (optional)
-                    <input
-                      type="url"
-                      value={profileForm.avatarUrl}
-                      onChange={(event) => {
-                        setProfileForm((current) => ({ ...current, avatarUrl: event.target.value }));
-                        setProfileNotice(null);
-                      }}
-                      placeholder="https://example.com/avatar.png"
-                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
-                    />
-                  </label>
                 </div>
 
                 {profileNotice ? (
@@ -536,13 +532,13 @@ export function SettingsPage() {
               ref={(node) => {
                 sectionRefs.current.preferences = node;
               }}
-              className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] sm:p-7"
+              className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-800 dark:bg-slate-900 sm:p-7"
             >
-              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900">Preferences</h2>
-              <p className="mt-2 text-sm text-slate-500">Customize defaults used across your dashboard.</p>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Preferences</h2>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Customize defaults used across your dashboard.</p>
 
               <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={handlePreferencesSubmit}>
-                <label className="text-sm font-medium text-slate-600">
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
                   Primary currency
                   <select
                     value={prefsForm.baseCurrency}
@@ -553,7 +549,7 @@ export function SettingsPage() {
                       }));
                       setPrefsNotice(null);
                     }}
-                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-blue-900/40"
                   >
                     <option value="RON">RON</option>
                     <option value="EUR">EUR</option>
@@ -561,7 +557,7 @@ export function SettingsPage() {
                   </select>
                 </label>
 
-                <label className="text-sm font-medium text-slate-600">
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
                   Language
                   <select
                     value={prefsForm.locale}
@@ -572,12 +568,40 @@ export function SettingsPage() {
                       }));
                       setPrefsNotice(null);
                     }}
-                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-blue-900/40"
                   >
                     <option value="en-US">English (US)</option>
                     <option value="ro-RO">Romanian</option>
                   </select>
                 </label>
+
+                <div className="md:col-span-2">
+                  <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+                    <div>
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Dark mode</p>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Reduce eye strain in low light.</p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={theme === 'dark'}
+                      onClick={() => {
+                        setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
+                      }}
+                      className={[
+                        'relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-2 dark:focus:ring-offset-slate-900',
+                        theme === 'dark' ? 'bg-[#2563eb]' : 'bg-slate-300',
+                      ].join(' ')}
+                    >
+                      <span
+                        className={[
+                          'inline-block h-5 w-5 transform rounded-full bg-white transition-transform',
+                          theme === 'dark' ? 'translate-x-6' : 'translate-x-1',
+                        ].join(' ')}
+                      />
+                    </button>
+                  </div>
+                </div>
 
                 {prefsNotice ? (
                   <p className={[
@@ -610,10 +634,29 @@ export function SettingsPage() {
               ref={(node) => {
                 sectionRefs.current.security = node;
               }}
-              className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] sm:p-7"
+              className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-800 dark:bg-slate-900 sm:p-7"
             >
-              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900">Security</h2>
-              <p className="mt-2 text-sm text-slate-500">Change your password.</p>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Security</h2>
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Change your password.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void handleLogout();
+                  }}
+                  disabled={isLoggingOut}
+                  className={[
+                    'inline-flex items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-4 focus:ring-slate-200',
+                    isLoggingOut
+                      ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500'
+                      : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800',
+                  ].join(' ')}
+                >
+                  {isLoggingOut ? 'Logging out...' : 'Log out'}
+                </button>
+              </div>
 
               <form className="mt-6 space-y-4" onSubmit={handlePasswordSubmit}>
                 <label className="block text-sm font-medium text-slate-600">
@@ -721,9 +764,9 @@ export function SettingsPage() {
               ref={(node) => {
                 sectionRefs.current.billing = node;
               }}
-              className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] sm:p-7"
+              className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-800 dark:bg-slate-900 sm:p-7"
             >
-              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900">Billing</h2>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Billing</h2>
               <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
                 <p className="text-sm text-slate-600">
                   Current plan: <span className="font-semibold text-slate-900">Free plan</span>
@@ -752,6 +795,32 @@ export function SettingsPage() {
                     className="cursor-not-allowed rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-400"
                   >
                     Manage billing (coming soon)
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50/60 px-4 py-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-rose-700">Danger Zone</h3>
+                    <p className="mt-1 text-sm text-rose-600">
+                      End the current session on this device.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleLogout();
+                    }}
+                    disabled={isLoggingOut}
+                    className={[
+                      'inline-flex items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-4 focus:ring-rose-200',
+                      isLoggingOut
+                        ? 'cursor-not-allowed border-rose-200 bg-rose-100 text-rose-400'
+                        : 'border-rose-300 bg-white text-rose-700 hover:bg-rose-100',
+                    ].join(' ')}
+                  >
+                    {isLoggingOut ? 'Logging out...' : 'Log out'}
                   </button>
                 </div>
               </div>

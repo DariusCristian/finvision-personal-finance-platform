@@ -19,7 +19,7 @@ type ManageInvestingWalletModalProps = {
 };
 
 const inputClassName =
-  'mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100';
+  'mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-blue-900/40';
 
 export function ManageInvestingWalletModal({
   isOpen,
@@ -85,17 +85,17 @@ export function ManageInvestingWalletModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-[1.75rem] bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.18)] sm:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 backdrop-blur-sm dark:bg-black/60">
+      <div className="w-full max-w-md rounded-[1.75rem] bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.18)] dark:bg-slate-900 sm:p-8">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-[-0.03em] text-slate-900">Investing Wallet</h2>
-            <p className="mt-1 text-sm text-slate-500">Set your RON goal and optional monthly auto-fund settings.</p>
+            <h2 className="text-2xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Investing Wallet</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Set your RON goal and optional monthly auto-fund settings.</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+            className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             aria-label="Close"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
@@ -105,7 +105,7 @@ export function ManageInvestingWalletModal({
           </button>
         </div>
 
-        <label className="mt-6 block text-sm font-medium text-slate-700">
+        <label className="mt-6 block text-sm font-medium text-slate-700 dark:text-slate-200">
           Monthly goal (RON)
           <input
             type="number"
@@ -117,18 +117,18 @@ export function ManageInvestingWalletModal({
           />
         </label>
 
-        <label className="mt-4 flex items-center gap-3 text-sm font-medium text-slate-700">
+        <label className="mt-4 flex items-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-200">
           <input
             type="checkbox"
             checked={autoFundEnabled}
             onChange={(event) => setAutoFundEnabled(event.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-[#2563eb] focus:ring-[#2563eb]"
+            className="h-4 w-4 rounded border-slate-300 text-[#2563eb] focus:ring-[#2563eb] dark:border-slate-600 dark:bg-slate-900"
           />
           Enable monthly auto-fund
         </label>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
             Auto-fund amount (RON)
             <input
               type="number"
@@ -139,7 +139,7 @@ export function ManageInvestingWalletModal({
               className={inputClassName}
             />
           </label>
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
             Auto-fund day
             <input
               type="number"
@@ -159,7 +159,7 @@ export function ManageInvestingWalletModal({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex justify-center rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+            className="inline-flex justify-center rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             Cancel
           </button>

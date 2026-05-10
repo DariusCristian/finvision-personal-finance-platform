@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { AddTransactionModal } from '../components/AddTransactionModal';
 import { AppShell } from '../components/AppShell';
@@ -82,6 +83,7 @@ const DEFAULT_META: TransactionListMeta = {
 
 export function TransactionsPage() {
   const { accessToken } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const monthOptions = useMemo(() => buildMonthOptions(12, 12), []);
   const currentMonth = getMonthKey(new Date());
   const [categories, setCategories] = useState<BudgetCategory[]>([]);
@@ -98,6 +100,7 @@ export function TransactionsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<BudgetTransaction | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const editTransactionId = searchParams.get('edit');
 
   useEffect(() => {
     if (!accessToken) {
@@ -161,6 +164,27 @@ export function TransactionsPage() {
   useEffect(() => {
     void loadTransactions();
   }, [loadTransactions]);
+
+  useEffect(() => {
+    if (!editTransactionId || isModalOpen || transactions.length === 0) {
+      return;
+    }
+
+    const matchingTransaction = transactions.find(
+      (transaction) =>
+        transaction.originalTransactionId === editTransactionId || transaction.id === editTransactionId,
+    );
+
+    if (!matchingTransaction) {
+      return;
+    }
+
+    setEditingTransaction(matchingTransaction);
+    setIsModalOpen(true);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('edit');
+    setSearchParams(nextParams, { replace: true });
+  }, [editTransactionId, isModalOpen, searchParams, setSearchParams, transactions]);
 
   const availableCategoryOptions = useMemo(() => {
     if (typeFilter === 'all') {

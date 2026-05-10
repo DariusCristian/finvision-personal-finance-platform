@@ -12,20 +12,22 @@ import { TransactionsTable } from '../components/TransactionsTable';
 import { useAuth } from '../context/AuthContext';
 import {
   ApiRequestError,
-  convertInvestingWalletToEur,
   createTransaction,
   depositInvestingWallet,
   deleteTransaction,
+  exportBudgetCsv,
   fetchCategories,
-  fetchInvestAccount,
+  fetchBudgetSummary,
   fetchInvestingWallet,
   fetchInvestingWalletConvertQuote,
   fetchInvestingWalletSummary,
   fetchTransactions,
+  topUpInvestCryptoFromWallet,
   updateTransaction,
   updateInvestingWallet,
   updateMonthlyBudgetGoal,
   type BudgetCategory,
+  type BudgetSummary,
   type BudgetTransaction,
   type InvestingWallet,
   type InvestingWalletConvertQuote,
@@ -34,6 +36,7 @@ import {
 
 type RecurrenceValue = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'annually' | 'none';
 type SortOption = 'date' | '-date' | 'amount' | '-amount';
+type ChipTone = 'positive' | 'negative' | 'neutral';
 
 type CreateTransactionArgs = {
   type: 'income' | 'expense';
@@ -127,17 +130,86 @@ const getMonthRange = (month: string) => {
   };
 };
 
+const buildBudgetSummaryFromTransactions = ({
+  transactions,
+  year,
+  month,
+  currency,
+  budgetGoal,
+}: {
+  transactions: BudgetTransaction[];
+  year: number;
+  month: number;
+  currency: 'RON' | 'EUR' | 'USD';
+  budgetGoal: number;
+}): BudgetSummary => {
+  const monthStart = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
+  const monthEnd = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
+
+  const totals = transactions.reduce(
+    (accumulator, transaction) => {
+      const amount = Math.abs(Number(transaction.amount || 0));
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        return accumulator;
+      }
+
+      if (transaction.type === 'income') {
+        accumulator.income += amount;
+        return accumulator;
+      }
+
+      if (transaction.type === 'expense') {
+        accumulator.expense += amount;
+      }
+
+      return accumulator;
+    },
+    { income: 0, expense: 0 },
+  );
+
+  const normalizedBudgetGoal = Number.isFinite(budgetGoal) && budgetGoal > 0 ? budgetGoal : 0;
+
+  return {
+    monthStart: monthStart.toISOString(),
+    monthEnd: monthEnd.toISOString(),
+    currency,
+    budgetGoal: normalizedBudgetGoal,
+    incomeTotal: totals.income,
+    expenseTotal: totals.expense,
+    remainingBudget: Math.max(0, normalizedBudgetGoal - totals.expense),
+  };
+};
+
 const formatCurrency = (
   value: number,
   fractionDigits = 2,
   currency: 'RON' | 'EUR' | 'USD' = 'RON',
-) =>
-  new Intl.NumberFormat('en-US', {
+) => {
+  const normalizedCurrency = String(currency || 'RON').trim().toUpperCase();
+  const safeCurrency =
+    normalizedCurrency === 'RON' || normalizedCurrency === 'EUR' || normalizedCurrency === 'USD'
+      ? normalizedCurrency
+      : 'RON';
+
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency,
+    currency: safeCurrency,
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   }).format(value);
+};
+
+const downloadCsvBlob = (blob: Blob, filename: string) => {
+  const objectUrl = window.URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = objectUrl;
+  anchor.download = filename;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  window.URL.revokeObjectURL(objectUrl);
+};
 
 const addMonths = (date: Date, count: number) => {
   const nextDate = new Date(date.getTime());
@@ -262,8 +334,65 @@ const buildMockTransactions = (
   ].sort((left, right) => new Date(right.occurrenceDate).getTime() - new Date(left.occurrenceDate).getTime());
 };
 
-const makeProgressBadge = (label: string, className: string) => (
-  <span className={className}>{label}</span>
+const getPreviousMonthKey = (month: string) => {
+  const [year, monthNumber] = month.split('-').map(Number);
+  const date = new Date(year, monthNumber - 2, 1);
+  return getMonthKey(date);
+};
+
+const getDeltaPercent = (current: number, previous: number) => {
+  if (!Number.isFinite(previous) || previous === 0) {
+    return null;
+  }
+
+  const delta = ((current - previous) / Math.abs(previous)) * 100;
+
+  if (!Number.isFinite(delta)) {
+    return null;
+  }
+
+  return delta;
+};
+
+const chipToneClassMap: Record<ChipTone, string> = {
+  positive: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+  negative: 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
+  neutral: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+};
+
+const getDeltaTone = (value: number): ChipTone => {
+  if (value > 0) {
+    return 'positive';
+  }
+
+  if (value < 0) {
+    return 'negative';
+  }
+
+  return 'neutral';
+};
+
+const getSpentTone = (value: number): ChipTone => {
+  if (value > 100) {
+    return 'negative';
+  }
+
+  if (value < 50) {
+    return 'positive';
+  }
+
+  return 'neutral';
+};
+
+const renderChip = (label: string, tone: ChipTone) => (
+  <span
+    className={[
+      'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium',
+      chipToneClassMap[tone],
+    ].join(' ')}
+  >
+    {label}
+  </span>
 );
 
 const sortTransactionsByOption = (
@@ -305,6 +434,9 @@ export function BudgetPage() {
   const [sortOption, setSortOption] = useState<SortOption>('-date');
   const [categories, setCategories] = useState<BudgetCategory[]>([]);
   const [transactions, setTransactions] = useState<BudgetTransaction[]>([]);
+  const [previousMonthTransactions, setPreviousMonthTransactions] = useState<BudgetTransaction[]>([]);
+  const [budgetSummary, setBudgetSummary] = useState<BudgetSummary | null>(null);
+  const [previousMonthBudgetSummary, setPreviousMonthBudgetSummary] = useState<BudgetSummary | null>(null);
   const [searchValue, setSearchValue] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -319,10 +451,12 @@ export function BudgetPage() {
   const [isSavingWalletSettings, setIsSavingWalletSettings] = useState(false);
   const [isDepositingWalletFunds, setIsDepositingWalletFunds] = useState(false);
   const [isConvertingWalletFunds, setIsConvertingWalletFunds] = useState(false);
+  const [isExportingBudgetCsv, setIsExportingBudgetCsv] = useState(false);
   const [isLoadingWalletQuote, setIsLoadingWalletQuote] = useState(false);
   const [walletQuoteError, setWalletQuoteError] = useState<string | null>(null);
   const [walletConvertQuote, setWalletConvertQuote] = useState<InvestingWalletConvertQuote | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isUsingMockData, setIsUsingMockData] = useState(false);
   const [investingWallet, setInvestingWallet] = useState<InvestingWallet | null>(null);
@@ -346,24 +480,76 @@ export function BudgetPage() {
     setLoadError(null);
 
     const range = getMonthRange(selectedMonth);
+    const previousMonthKey = getPreviousMonthKey(selectedMonth);
+    const previousRange = getMonthRange(previousMonthKey);
+    const [previousYear, previousMonthNumber] = previousMonthKey.split('-').map(Number);
 
     try {
-      const [categoriesPayload, transactionsPayload, walletPayload, walletSummaryPayload] = await Promise.all([
+      const [
+        categoriesPayload,
+        transactionsPayload,
+        previousTransactionsPayload,
+        budgetSummaryPayload,
+        previousBudgetSummaryPayload,
+        walletPayload,
+        walletSummaryPayload,
+      ] = await Promise.all([
         fetchCategories(accessToken),
         fetchTransactions({ ...range, sort: sortOption }, accessToken),
+        fetchTransactions({ ...previousRange, sort: sortOption }, accessToken),
+        fetchBudgetSummary(accessToken, selectedMonthParts.year, selectedMonthParts.month),
+        fetchBudgetSummary(accessToken, previousYear, previousMonthNumber),
         fetchInvestingWallet(accessToken),
         fetchInvestingWalletSummary(accessToken, selectedMonthParts.year, selectedMonthParts.month),
       ]);
 
       setCategories(categoriesPayload.categories);
       setTransactions(sortTransactionsByOption(transactionsPayload.transactions, sortOption));
+      setPreviousMonthTransactions(
+        sortTransactionsByOption(previousTransactionsPayload.transactions, sortOption),
+      );
+      setBudgetSummary(budgetSummaryPayload);
+      setPreviousMonthBudgetSummary(previousBudgetSummaryPayload);
       setInvestingWallet(walletPayload);
       setInvestingWalletSummary(walletSummaryPayload);
       setIsUsingMockData(false);
     } catch {
       const fallbackCategories = MOCK_CATEGORIES;
+      const fallbackTransactions = sortTransactionsByOption(
+        buildMockTransactions(selectedMonth, fallbackCategories),
+        sortOption,
+      );
+      const fallbackPreviousTransactions = sortTransactionsByOption(
+        buildMockTransactions(previousMonthKey, fallbackCategories),
+        sortOption,
+      );
+      const fallbackBudgetGoal =
+        typeof user?.monthlyBudgetGoal === 'number' && user.monthlyBudgetGoal > 0
+          ? user.monthlyBudgetGoal
+          : 0;
+      const fallbackCurrency = user?.baseCurrency ?? 'RON';
+
       setCategories(fallbackCategories);
-      setTransactions(sortTransactionsByOption(buildMockTransactions(selectedMonth, fallbackCategories), sortOption));
+      setTransactions(fallbackTransactions);
+      setPreviousMonthTransactions(fallbackPreviousTransactions);
+      setBudgetSummary(
+        buildBudgetSummaryFromTransactions({
+          transactions: fallbackTransactions,
+          year: selectedMonthParts.year,
+          month: selectedMonthParts.month,
+          currency: fallbackCurrency,
+          budgetGoal: fallbackBudgetGoal,
+        }),
+      );
+      setPreviousMonthBudgetSummary(
+        buildBudgetSummaryFromTransactions({
+          transactions: fallbackPreviousTransactions,
+          year: previousYear,
+          month: previousMonthNumber,
+          currency: fallbackCurrency,
+          budgetGoal: fallbackBudgetGoal,
+        }),
+      );
       setInvestingWallet(null);
       setInvestingWalletSummary(null);
       setIsUsingMockData(true);
@@ -371,7 +557,15 @@ export function BudgetPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, selectedMonth, selectedMonthParts.month, selectedMonthParts.year, sortOption]);
+  }, [
+    accessToken,
+    selectedMonth,
+    selectedMonthParts.month,
+    selectedMonthParts.year,
+    sortOption,
+    user?.baseCurrency,
+    user?.monthlyBudgetGoal,
+  ]);
 
   useEffect(() => {
     void loadBudgetData();
@@ -408,23 +602,39 @@ export function BudgetPage() {
   }, [searchValue, sortOption, transactions]);
 
   const metrics = useMemo(() => {
-    const monthlyBudgetGoal =
-      typeof user?.monthlyBudgetGoal === 'number' && user.monthlyBudgetGoal > 0
-        ? user.monthlyBudgetGoal
-        : null;
-    const income = transactions
+    const fallbackIncome = transactions
       .filter((transaction) => transaction.type === 'income')
-      .reduce((sum, transaction) => sum + transaction.amount, 0);
-    const expenses = transactions
+      .reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
+    const fallbackExpenses = transactions
       .filter((transaction) => transaction.type === 'expense')
-      .reduce((sum, transaction) => sum + transaction.amount, 0);
+      .reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
+    const fallbackPreviousIncome = previousMonthTransactions
+      .filter((transaction) => transaction.type === 'income')
+      .reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
+    const fallbackPreviousExpenses = previousMonthTransactions
+      .filter((transaction) => transaction.type === 'expense')
+      .reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
+    const income = budgetSummary?.incomeTotal ?? fallbackIncome;
+    const expenses = budgetSummary?.expenseTotal ?? fallbackExpenses;
+    const previousIncome = previousMonthBudgetSummary?.incomeTotal ?? fallbackPreviousIncome;
+    const previousExpenses = previousMonthBudgetSummary?.expenseTotal ?? fallbackPreviousExpenses;
+    const monthlyBudgetGoalRaw =
+      budgetSummary?.budgetGoal ??
+      (typeof user?.monthlyBudgetGoal === 'number' && user.monthlyBudgetGoal > 0
+        ? user.monthlyBudgetGoal
+        : 0);
+    const monthlyBudgetGoal = monthlyBudgetGoalRaw > 0 ? monthlyBudgetGoalRaw : null;
+    const previousTotalBalance = previousIncome - previousExpenses;
     const totalBalance = income - expenses;
-    const remainingBudget = monthlyBudgetGoal !== null ? monthlyBudgetGoal - expenses : null;
+    const remainingBudget =
+      budgetSummary?.remainingBudget ??
+      (monthlyBudgetGoal !== null ? Math.max(0, monthlyBudgetGoal - expenses) : null);
     const percentSpent =
       monthlyBudgetGoal && monthlyBudgetGoal > 0
         ? Math.round((expenses / monthlyBudgetGoal) * 100)
         : null;
-    const balanceRatio = income > 0 ? (totalBalance / income) * 100 : 0;
+    const balanceDeltaPct = getDeltaPercent(totalBalance, previousTotalBalance);
+    const incomeDeltaPct = getDeltaPercent(income, previousIncome);
     const investingGoal = investingWallet?.monthlyGoal ?? 0;
     const investedThisMonth = investingWalletSummary?.investedThisMonthRON ?? 0;
     const investingProgress =
@@ -435,16 +645,25 @@ export function BudgetPage() {
       income,
       expenses,
       totalBalance,
+      balanceDeltaPct,
       monthlyBudgetGoal,
       remainingBudget,
       percentSpent,
-      balanceRatio,
+      incomeDeltaPct,
       investingGoal,
       investedThisMonth,
       investingProgress,
       investingAccountBalance,
     };
-  }, [investingWallet, investingWalletSummary, transactions, user]);
+  }, [
+    budgetSummary,
+    investingWallet,
+    investingWalletSummary,
+    previousMonthBudgetSummary,
+    previousMonthTransactions,
+    transactions,
+    user,
+  ]);
 
   const categorySpend = useMemo(() => {
     const grouped = new Map<string, { label: string; value: number; color: string }>();
@@ -540,6 +759,7 @@ export function BudgetPage() {
           setTransactions((current) => [mockTransaction, ...current]);
         }
 
+        setBudgetSummary(null);
         setEditingTransaction(null);
         setIsModalOpen(false);
         setLoadError(
@@ -593,6 +813,7 @@ export function BudgetPage() {
             (item) => item.originalTransactionId !== transaction.originalTransactionId,
           ),
         );
+        setBudgetSummary(null);
 
         if (editingTransaction?.originalTransactionId === transaction.originalTransactionId) {
           setEditingTransaction(null);
@@ -642,11 +863,23 @@ export function BudgetPage() {
       const payload = await updateMonthlyBudgetGoal(amount, accessToken);
       setCurrentUser(payload.user);
       setIsBudgetModalOpen(false);
+      await loadBudgetData();
     } catch (error) {
       if (isUsingMockData) {
         setCurrentUser({
           ...user,
           monthlyBudgetGoal: amount,
+        });
+        setBudgetSummary((current) => {
+          if (!current) {
+            return current;
+          }
+
+          return {
+            ...current,
+            budgetGoal: amount,
+            remainingBudget: Math.max(0, amount - current.expenseTotal),
+          };
         });
         setIsBudgetModalOpen(false);
         setLoadError('Budget goal saved locally in demo mode because the live API is unavailable.');
@@ -783,11 +1016,10 @@ export function BudgetPage() {
     setIsConvertingWalletFunds(true);
 
     try {
-      const conversionPayload = await convertInvestingWalletToEur(amountRON, accessToken);
+      const conversionPayload = await topUpInvestCryptoFromWallet(amountRON, accessToken);
       const [walletPayload, walletSummaryPayload] = await Promise.all([
         fetchInvestingWallet(accessToken),
         fetchInvestingWalletSummary(accessToken, selectedMonthParts.year, selectedMonthParts.month),
-        fetchInvestAccount(accessToken),
       ]);
 
       setInvestingWallet(walletPayload);
@@ -813,14 +1045,52 @@ export function BudgetPage() {
     }
   };
 
-  const balanceBadge = makeProgressBadge(
-    `${metrics.balanceRatio >= 0 ? '+' : ''}${Math.round(metrics.balanceRatio)}%`,
-    'inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-500',
-  );
-  const budgetBadge = makeProgressBadge(
-    `${Math.max(metrics.percentSpent ?? 0, 0)}% Spent`,
-    'text-xs font-bold text-orange-500',
-  );
+  const handleExportBudgetCsv = async () => {
+    if (!accessToken || isExportingBudgetCsv) {
+      return;
+    }
+
+    const { from, to } = getMonthRange(selectedMonth);
+    setIsExportingBudgetCsv(true);
+    setActionError(null);
+    setSuccessMessage('Export started...');
+
+    try {
+      const { blob, filename } = await exportBudgetCsv({ from, to }, accessToken);
+      downloadCsvBlob(blob, filename);
+      setSuccessMessage('Budget CSV downloaded.');
+    } catch (error) {
+      setActionError(
+        error instanceof ApiRequestError
+          ? error.message
+          : 'Unable to export Budget CSV right now.',
+      );
+    } finally {
+      setIsExportingBudgetCsv(false);
+    }
+  };
+
+  const balanceBadge =
+    typeof metrics.balanceDeltaPct === 'number'
+      ? renderChip(
+        `${metrics.balanceDeltaPct >= 0 ? '+' : ''}${metrics.balanceDeltaPct.toFixed(1)}% vs last month`,
+        getDeltaTone(metrics.balanceDeltaPct),
+      )
+      : undefined;
+  const incomeBadge =
+    typeof metrics.incomeDeltaPct === 'number'
+      ? renderChip(
+        `${metrics.incomeDeltaPct >= 0 ? '+' : ''}${metrics.incomeDeltaPct.toFixed(1)}% vs last month`,
+        getDeltaTone(metrics.incomeDeltaPct),
+      )
+      : undefined;
+  const budgetBadge =
+    typeof metrics.percentSpent === 'number'
+      ? renderChip(
+        `${Math.max(metrics.percentSpent, 0)}% spent`,
+        getSpentTone(metrics.percentSpent),
+      )
+      : undefined;
   const hasBudgetGoal = metrics.monthlyBudgetGoal !== null;
   const remainingBudgetValue = hasBudgetGoal
     ? formatCurrency(metrics.remainingBudget ?? 0, 2, budgetCurrency)
@@ -839,11 +1109,11 @@ export function BudgetPage() {
 
   return (
     <AppShell activeTab="budget">
-      <div className="space-y-6 lg:space-y-8">
+      <div className="fv-page space-y-6 lg:space-y-8">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-4xl font-bold tracking-[-0.04em] text-slate-900">Budget & Expenses</h1>
-            <p className="mt-2 text-lg text-slate-500">
+            <h1 className="text-4xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Budget & Expenses</h1>
+            <p className="mt-2 text-lg text-slate-500 dark:text-slate-400">
               Track your spending and manage your financial health.
             </p>
           </div>
@@ -851,14 +1121,14 @@ export function BudgetPage() {
             <button
               type="button"
               onClick={() => setIsBudgetModalOpen(true)}
-              className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+              className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800"
             >
               Set Budget
             </button>
             <select
               value={selectedMonth}
               onChange={(event) => setSelectedMonth(event.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-blue-900/40"
             >
               {monthOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -866,6 +1136,21 @@ export function BudgetPage() {
                 </option>
               ))}
             </select>
+            <button
+              type="button"
+              disabled={isExportingBudgetCsv}
+              onClick={() => {
+                void handleExportBudgetCsv();
+              }}
+              className={[
+                'inline-flex items-center rounded-xl border px-4 py-2.5 text-sm font-medium shadow-sm transition',
+                isExportingBudgetCsv
+                  ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800',
+              ].join(' ')}
+            >
+              {isExportingBudgetCsv ? 'Exporting...' : 'Export CSV'}
+            </button>
             <button
               type="button"
               onClick={() => {
@@ -886,6 +1171,12 @@ export function BudgetPage() {
           </div>
         ) : null}
 
+        {actionError ? (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+            {actionError}
+          </div>
+        ) : null}
+
         {loadError ? (
           <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
             {loadError}
@@ -900,7 +1191,6 @@ export function BudgetPage() {
             iconBgClassName="bg-blue-50"
             iconClassName="text-[#2563eb]"
             badge={balanceBadge}
-            accentDecorationClassName="bg-blue-100/70"
           />
           <KpiCard
             title="Monthly Income"
@@ -908,8 +1198,7 @@ export function BudgetPage() {
             icon={<WalletIcon />}
             iconBgClassName="bg-emerald-50"
             iconClassName="text-emerald-500"
-            badge={makeProgressBadge('Selected month', 'text-xs font-medium text-slate-500')}
-            accentDecorationClassName="bg-emerald-100/70"
+            badge={incomeBadge}
           />
           <KpiCard
             title="Remaining Budget"
@@ -922,7 +1211,6 @@ export function BudgetPage() {
             badge={remainingBudgetBadge}
             progressPercent={remainingBudgetProgress}
             progressColorClassName="bg-orange-500"
-            accentDecorationClassName="bg-orange-100/70"
           />
         </section>
 
@@ -945,26 +1233,31 @@ export function BudgetPage() {
           />
 
           <div className="space-y-6 lg:col-span-4">
-            <CategoryDonutChart slices={categorySpend} total={metrics.expenses} isLoading={isLoading} />
+            <CategoryDonutChart
+              slices={categorySpend}
+              total={metrics.expenses}
+              isLoading={isLoading}
+              currency={budgetCurrency}
+            />
 
-            <section className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+            <section className="fv-card rounded-[1.5rem] p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">Investing Account</h2>
-                  <p className="mt-1 text-sm text-slate-500">RON wallet for funding your EUR investing portfolio.</p>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Investing Account</h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">RON wallet for funding your EUR investing portfolio.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => setIsWalletSettingsModalOpen(true)}
-                    className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                   >
                     Set
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsWalletDepositModalOpen(true)}
-                    className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                   >
                     Add Funds
                   </button>
@@ -983,43 +1276,43 @@ export function BudgetPage() {
               </div>
 
               <div className="mt-6 space-y-4">
-                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
-                  <span className="text-sm font-medium text-slate-500">Monthly investing goal</span>
-                  <span className="text-sm font-semibold text-slate-900">
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/60">
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Monthly investing goal</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {formatCurrency(metrics.investingGoal, 2, 'RON')}
                   </span>
                 </div>
-                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
-                  <span className="text-sm font-medium text-slate-500">Invested this month</span>
-                  <span className="text-sm font-semibold text-slate-900">
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/60">
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Invested this month</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {formatCurrency(metrics.investedThisMonth, 2, 'RON')}
                   </span>
                 </div>
-                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
-                  <span className="text-sm font-medium text-slate-500">Account balance</span>
-                  <span className="text-sm font-semibold text-slate-900">
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/60">
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Account balance</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {formatCurrency(metrics.investingAccountBalance, 2, 'RON')}
                   </span>
                 </div>
               </div>
 
-              <p className="mt-4 text-xs text-slate-500">
+              <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
                 Auto-fund:{' '}
                 {investingWallet?.autoFundEnabled
                   ? `${formatCurrency(investingWallet.autoFundAmount, 2, 'RON')} on day ${investingWallet.autoFundDayOfMonth}`
                   : 'Disabled'}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Invested this month is based on deposits in the selected month.
               </p>
 
               {metrics.investingGoal > 0 ? (
                 <div className="mt-5">
-                  <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                  <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
                     <span>Progress</span>
                     <span>{Math.min(investingProgress ?? 0, 999)}%</span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-slate-200">
+                  <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700">
                     <div
                       className="h-2 rounded-full bg-[#0EA5A4]"
                       style={{ width: `${Math.max(0, Math.min(investingProgress ?? 0, 100))}%` }}
@@ -1027,7 +1320,7 @@ export function BudgetPage() {
                   </div>
                 </div>
               ) : (
-                <p className="mt-5 text-sm text-slate-500">
+                <p className="mt-5 text-sm text-slate-500 dark:text-slate-400">
                   Set a monthly investing goal to track progress.
                 </p>
               )}
@@ -1036,14 +1329,6 @@ export function BudgetPage() {
           </div>
         </section>
       </div>
-
-      <button
-        type="button"
-        className="fixed bottom-6 right-4 z-30 inline-flex items-center gap-3 rounded-full bg-slate-900 px-6 py-4 text-lg font-medium text-white shadow-[0_18px_45px_rgba(15,23,42,0.3)] transition hover:bg-slate-800 sm:right-6"
-      >
-        <span className="text-xl">✦</span>
-        Ask Finny
-      </button>
 
       <SetBudgetModal
         isOpen={isBudgetModalOpen}

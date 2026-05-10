@@ -1,4 +1,8 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001';
+const AUTH_TOKEN_STORAGE_KEYS = [
+  'finvision.accessToken',
+  'accessToken',
+] as const;
 
 export type AuthUser = {
   id: string;
@@ -11,6 +15,8 @@ export type AuthUser = {
   monthlyBudgetGoal: number | null;
   investingMonthlyContributionGoal: number;
   investingAccountBalance: number;
+  investCryptoMode: 'funded' | 'demo' | null;
+  marketStocksMode: 'funded' | 'demo' | null;
 };
 
 export type BudgetCategory = {
@@ -37,6 +43,16 @@ export type BudgetTransaction = {
   nextOccurrenceAt: string | null;
   isProjected: boolean;
   category: BudgetCategory | null;
+};
+
+export type BudgetSummary = {
+  monthStart: string;
+  monthEnd: string;
+  currency: 'RON' | 'EUR' | 'USD';
+  budgetGoal: number;
+  incomeTotal: number;
+  expenseTotal: number;
+  remainingBudget: number;
 };
 
 export type EducationContentBlock = {
@@ -139,9 +155,107 @@ export type NewsArticle = {
   snippet: string;
 };
 
+export type Insight = {
+  id: string;
+  userId: string;
+  type: 'SUBSCRIPTION_NO_END' | 'BUDGET_PACE_WARNING' | 'INVESTING_UNFUNDED' | 'PORTFOLIO_CONCENTRATION';
+  severity: 'low' | 'medium' | 'high';
+  title: string;
+  whatNoticed: string;
+  whyMatters: string;
+  whatYouCanDo: string;
+  actions: {
+    label: string;
+    href: string;
+    variant: 'primary' | 'secondary' | 'link';
+  }[];
+  related: {
+    transactionId: string | null;
+    holdingSymbol: string | null;
+    month: string | null;
+    categoryId: string | null;
+  };
+  status: 'active' | 'dismissed';
+  createdAt: string | null;
+  updatedAt: string | null;
+  message?: string;
+  relatedTransactionId?: string | null;
+  isActive?: boolean;
+};
+
+export type FinnyCardSection = {
+  heading?: string;
+  title?: string;
+  content?: string;
+  text?: string;
+  bullets?: string[];
+};
+
+export type FinnyCardAction = {
+  label: string;
+  href: string;
+};
+
+export type FinnyContextType = 'general' | 'budget' | 'subscriptions' | 'crypto' | 'stocks' | 'app';
+
+export type FinnyChatMeta = {
+  inScope?: boolean;
+  matchedKeywords?: string[];
+  contextTypeUsed?: FinnyContextType;
+  intent?: FinnyContextType | string;
+  attachedContextFields?: string[];
+};
+
+export type FinnyCard = {
+  title?: string;
+  summary?: string;
+  sections?: FinnyCardSection[];
+  actions?: FinnyCardAction[];
+  toneNote?: 'educational_not_advice' | string;
+  disclaimer?: string;
+};
+
+export type FinnyInsightCardBlock = {
+  heading: string;
+  text: string;
+};
+
+export type FinnyInsightCardAction = {
+  label: string;
+  href: string;
+  variant: 'primary' | 'secondary' | 'link';
+};
+
+export type FinnyInsightCard = {
+  icon: 'subscription' | 'budget' | 'invest';
+  title: string;
+  subtitle?: string;
+  blocks: FinnyInsightCardBlock[];
+  actions: FinnyInsightCardAction[];
+};
+
+export type FinnyChatPayloadData =
+  | {
+      format: 'insight_card';
+      card: FinnyInsightCard;
+      meta?: FinnyChatMeta;
+    }
+  | {
+      format: 'card';
+      card: FinnyCard;
+      meta?: FinnyChatMeta;
+    }
+  | {
+      format: 'text';
+      text: string;
+      meta?: FinnyChatMeta;
+    };
+
 export type PortfolioAccount = {
   id: string;
+  mode?: InvestCryptoMode;
   cashBalance: number;
+  cashBalanceEUR?: number;
   baseCurrency: 'EUR';
   pricingCurrency: 'EUR';
   pricingVs: 'eur';
@@ -152,14 +266,18 @@ export type PortfolioAccount = {
 
 export type PortfolioHolding = {
   id: string;
+  mode?: InvestCryptoMode;
   assetType: 'crypto' | 'stock';
   coinId: string | null;
   symbol: string;
   quantity: number;
   avgCost: number;
+  avgCostEUR?: number;
   currentPrice: number;
+  currentPriceEUR?: number;
   change24h: number | null;
   marketValue: number;
+  marketValueEUR?: number;
   unrealizedPnL: number;
   allocationPct: number;
   createdAt: string | null;
@@ -168,31 +286,89 @@ export type PortfolioHolding = {
 
 export type PortfolioTotals = {
   cashBalance: number;
+  cashBalanceEUR?: number;
   holdingsValue: number;
+  holdingsValueEUR?: number;
   totalValue: number;
+  totalValueEUR?: number;
   unrealizedPnL: number;
   holdingsCount: number;
 };
 
 export type PortfolioTrade = {
   id: string;
+  mode?: InvestCryptoMode;
   assetType: 'crypto' | 'stock';
   coinId: string | null;
   symbol: string;
   side: 'buy' | 'sell';
   quantity: number;
   price: number;
+  priceEUR?: number;
   total: number;
+  totalEUR?: number;
+  executedPriceOriginal?: number | null;
+  originalCurrency?: string | null;
+  fxRateToEur?: number | null;
+  executedAt?: string | null;
   createdAt: string | null;
 };
 
 export type PortfolioSnapshot = {
   id: string;
+  mode?: InvestCryptoMode;
   date: string;
   totalValue: number;
+  totalValueEUR?: number;
   cashBalance: number;
+  cashBalanceEUR?: number;
   holdingsValue: number;
+  holdingsValueEUR?: number;
   createdAt: string | null;
+};
+
+export type InvestPerformancePoint = {
+  t: number;
+  value: number;
+};
+
+export type InvestCryptoMode = 'funded' | 'demo';
+export type MarketStocksMode = 'funded' | 'demo';
+
+export type InvestCryptoState = {
+  selectedMode: InvestCryptoMode | null;
+  accounts: {
+    funded: {
+      cashBalanceEUR: number;
+      totalValueEUR: number;
+      holdingsCount: number;
+      tradesCount: number;
+    };
+    demo: {
+      cashBalanceEUR: number;
+      totalValueEUR: number;
+      holdingsCount: number;
+      tradesCount: number;
+    };
+  };
+};
+
+export type MarketStocksState = {
+  selectedMode: MarketStocksMode | null;
+  accounts: {
+    funded: {
+      cashBalanceEUR: number;
+      totalValueEUR: number;
+      holdingsCount: number;
+      tradesCount: number;
+    };
+    demo: {
+      cashBalanceEUR: number;
+      totalValueEUR: number;
+      holdingsCount: number;
+      tradesCount: number;
+    };
+  };
 };
 
 export type InvestingWallet = {
@@ -235,6 +411,7 @@ export type InvestingWalletLedgerEntry = {
 
 export type InvestFundingEntry = {
   id: string;
+  mode?: InvestCryptoMode;
   fromCurrency: 'RON';
   fromAmount: number;
   toCurrency: 'EUR';
@@ -297,7 +474,39 @@ export type StockCandlePoint = {
   c: number;
 };
 
-export type StockChartRange = '1D' | '1W' | '1M' | '1Y' | 'ALL';
+export type InvestStockExecutionQuote = {
+  symbol: string;
+  priceUSD: number;
+  priceEUR: number;
+  usdToEurRate: number;
+};
+
+export type MarketAllocation = {
+  accountType: 'stocks' | 'crypto';
+  total: number;
+  breakdown: { label: string; value: number; pct: number }[];
+  topHoldings: {
+    id: string;
+    symbol: string;
+    value: number;
+    pctOfAssets: number;
+    pctOfTotal: number;
+  }[];
+};
+
+export type MarketAccountOverview = {
+  cashBalanceEUR: number;
+  portfolioValueEUR: number;
+  dayPnL: number;
+  dayPnLPct: number;
+};
+
+export type MarketPerformancePoint = {
+  t: number;
+  value: number;
+};
+
+export type StockChartRange = '1D' | '1W' | '1M' | '6M' | '1Y' | 'ALL';
 
 export type TransactionListMeta = {
   count: number;
@@ -338,6 +547,23 @@ type CurrentUserResponse = ApiSuccessEnvelope<{
   user: AuthUser;
 }>;
 
+type FinnyChatResponse = ApiSuccessEnvelope<
+  Partial<{
+    format: 'card' | 'text' | 'insight_card';
+    card: FinnyCard | FinnyInsightCard;
+    insightCard: FinnyInsightCard;
+    text: string;
+    content: string;
+    meta: FinnyChatMeta;
+    reply?: string;
+    replyTextFallback?: string;
+  }>
+>;
+
+type LogoutResponse = ApiSuccessEnvelope<{
+  loggedOut: boolean;
+}>;
+
 type CategoriesResponse = ApiSuccessEnvelope<{
   categories: BudgetCategory[];
 }>;
@@ -345,6 +571,8 @@ type CategoriesResponse = ApiSuccessEnvelope<{
 type TransactionsResponse = ApiSuccessEnvelope<{
   transactions: BudgetTransaction[];
 }>;
+
+type BudgetSummaryResponse = ApiSuccessEnvelope<BudgetSummary>;
 
 type NewsResponse = {
   success: true;
@@ -367,6 +595,14 @@ type NewsResponse = {
     };
   } | null;
 };
+
+type InsightsResponse = ApiSuccessEnvelope<{
+  insights: Insight[];
+}>;
+
+type DismissInsightResponse = ApiSuccessEnvelope<{
+  insight: Insight;
+}>;
 
 type EducationArticlesResponse = ApiSuccessEnvelope<{
   articles: EducationArticleSummary[];
@@ -401,28 +637,77 @@ type CreateTransactionResponse = ApiSuccessEnvelope<{
 }>;
 
 type InvestAccountResponse = ApiSuccessEnvelope<{
+  selectedMode?: InvestCryptoMode;
   account: PortfolioAccount;
 }>;
 
 type InvestHoldingsResponse = ApiSuccessEnvelope<{
+  selectedMode?: InvestCryptoMode;
   account: PortfolioAccount;
   holdings: PortfolioHolding[];
   totals: PortfolioTotals;
 }>;
 
 type InvestTradesResponse = ApiSuccessEnvelope<{
+  selectedMode?: InvestCryptoMode;
   trades: PortfolioTrade[];
 }>;
 
 type InvestSnapshotsResponse = ApiSuccessEnvelope<{
+  selectedMode?: InvestCryptoMode;
   snapshots: PortfolioSnapshot[];
 }>;
 
+type MarketAccountResponse = ApiSuccessEnvelope<{
+  selectedMode?: MarketStocksMode;
+  account: PortfolioAccount;
+  totals: PortfolioTotals;
+  holdingsCount: number;
+  cashBalanceEUR: number;
+  portfolioValueEUR: number;
+  dayPnL: number;
+  dayPnLPct: number;
+}>;
+
+type MarketHoldingsResponse = ApiSuccessEnvelope<{
+  selectedMode?: MarketStocksMode;
+  account: PortfolioAccount;
+  holdings: PortfolioHolding[];
+  totals: PortfolioTotals;
+}>;
+
+type MarketTradesResponse = ApiSuccessEnvelope<{
+  selectedMode?: MarketStocksMode;
+  trades: PortfolioTrade[];
+}>;
+
+type MarketPerformanceResponse = ApiSuccessEnvelope<{
+  selectedMode?: MarketStocksMode;
+  range: '7d' | '30d';
+  series: MarketPerformancePoint[];
+  meta: {
+    points: number;
+    symbols: string[];
+  };
+}>;
+
+type InvestPerformanceResponse = ApiSuccessEnvelope<{
+  selectedMode?: InvestCryptoMode;
+  range: '7d' | '30d';
+  series: InvestPerformancePoint[];
+  meta: {
+    points: number;
+    coins: string[];
+  };
+}>;
+
 type InvestFundingResponse = ApiSuccessEnvelope<{
+  selectedMode?: InvestCryptoMode;
   funding: InvestFundingEntry[];
 }>;
 
 type InvestTopUpQuoteResponse = ApiSuccessEnvelope<{
+  selectedMode?: InvestCryptoMode;
   fromCurrency: 'RON';
   fromAmount: number;
   toCurrency: 'EUR';
@@ -433,10 +718,40 @@ type InvestTopUpQuoteResponse = ApiSuccessEnvelope<{
 }>;
 
 type InvestTopUpResponse = ApiSuccessEnvelope<{
+  selectedMode?: InvestCryptoMode;
   cashBalanceEUR: number;
   addedEUR: number;
   rate: number;
   fromAmountRON: number;
+}>;
+
+type InvestCryptoStateResponse = ApiSuccessEnvelope<InvestCryptoState>;
+type MarketStocksStateResponse = ApiSuccessEnvelope<MarketStocksState>;
+
+type InvestCryptoModeResponse = ApiSuccessEnvelope<{
+  selectedMode: InvestCryptoMode;
+}>;
+
+type MarketStocksModeResponse = ApiSuccessEnvelope<{
+  selectedMode: MarketStocksMode;
+}>;
+
+type InvestCryptoDemoBudgetResponse = ApiSuccessEnvelope<{
+  selectedMode: InvestCryptoMode | null;
+  demoAccount: PortfolioAccount;
+  totals: PortfolioTotals;
+}>;
+
+type InvestCryptoTopUpFromWalletResponse = ApiSuccessEnvelope<{
+  selectedMode: InvestCryptoMode;
+  fromAmountRON: number;
+  addedEUR: number;
+  cashBalanceEUR: number;
+  walletBalanceRON: number;
+  rate: {
+    eurPerRon: number;
+    ronPerEur: number | null;
+  };
 }>;
 
 type InvestingWalletResponse = ApiSuccessEnvelope<InvestingWallet>;
@@ -458,14 +773,53 @@ type InvestingWalletConvertResponse = ApiSuccessEnvelope<{
 }>;
 
 type InvestOrderResponse = ApiSuccessEnvelope<{
+  selectedMode?: InvestCryptoMode;
   trade: PortfolioTrade;
   account: PortfolioAccount;
   holdingsSummary: PortfolioTotals;
 }>;
 
+type InvestStockQuoteResponse = ApiSuccessEnvelope<InvestStockExecutionQuote>;
+type MarketAllocationResponse = ApiSuccessEnvelope<{
+  allocation: MarketAllocation;
+}>;
+type MarketTopUpFromWalletResponse = ApiSuccessEnvelope<{
+  selectedMode?: MarketStocksMode;
+  amountRON: number;
+  toppedUpEUR: number;
+  walletBalanceRON: number;
+  stocksCashBalanceEUR: number;
+  rate: {
+    eurPerRon: number;
+    ronPerEur: number | null;
+  };
+}>;
+
 type InvestResetResponse = ApiSuccessEnvelope<{
+  selectedMode?: InvestCryptoMode;
   account: PortfolioAccount;
   totals: PortfolioTotals;
+}>;
+
+type MarketDemoBudgetResponse = ApiSuccessEnvelope<{
+  selectedMode: MarketStocksMode | null;
+  demoAccount: PortfolioAccount;
+  totals: PortfolioTotals;
+}>;
+
+type MarketResetResponse = ApiSuccessEnvelope<{
+  selectedMode?: MarketStocksMode;
+  account: PortfolioAccount;
+  totals: PortfolioTotals;
+}>;
+
+type MarketAdminResetResponse = ApiSuccessEnvelope<{
+  reset: boolean;
+  selectedMode: MarketStocksMode | null;
+  accounts: {
+    funded: PortfolioAccount;
+    demo: PortfolioAccount;
+  };
 }>;
 
 type MarketSearchResponse = ApiSuccessEnvelope<{
@@ -504,6 +858,14 @@ type StockCandlesResponse = ApiSuccessEnvelope<{
   series: StockCandlePoint[];
   range: StockChartRange;
   symbol: string;
+  meta?: {
+    provider?: string | null;
+    status?: string | null;
+    reason?: string | null;
+    finnhubStatus?: string | null;
+    requestUrlWithoutToken?: string | null;
+    stooqSymbol?: string | null;
+  } | null;
 }>;
 
 type UpdateBudgetGoalResponse = ApiSuccessEnvelope<{
@@ -534,6 +896,12 @@ type LoginPayload = {
   password: string;
 };
 
+type FinnyChatPayload = {
+  message: string;
+  contextType: FinnyContextType;
+  selectedMonth?: string;
+};
+
 type TransactionsQuery = {
   from: string;
   to: string;
@@ -559,9 +927,10 @@ type CreateTransactionPayload = {
 type UpdateProfilePayload = {
   displayName?: string;
   email?: string;
-  avatarUrl?: string;
   baseCurrency?: 'RON' | 'EUR' | 'USD';
   locale?: 'en-US' | 'ro-RO';
+  investCryptoMode?: InvestCryptoMode | null;
+  marketStocksMode?: MarketStocksMode | null;
 };
 
 type UpdatePasswordPayload = {
@@ -622,6 +991,30 @@ type EducationQuizAttemptPayload = {
   timeSpentSeconds?: number;
 };
 
+type BudgetExportQuery = {
+  from: string;
+  to: string;
+};
+
+type InvestExportQuery = {
+  range?: 'all' | 'month';
+  year?: number;
+  month?: number;
+};
+
+type CsvDownloadResult = {
+  blob: Blob;
+  filename: string;
+};
+
+export type ApiFailure = {
+  ok: false;
+  code: string;
+  message: string;
+  status: number;
+  details: unknown[];
+};
+
 export class ApiRequestError extends Error {
   code: string;
   details: unknown[];
@@ -635,6 +1028,52 @@ export class ApiRequestError extends Error {
     this.status = options?.status ?? 500;
   }
 }
+
+const clearStoredAuthTokens = () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  for (const key of AUTH_TOKEN_STORAGE_KEYS) {
+    window.localStorage.removeItem(key);
+    window.sessionStorage.removeItem(key);
+  }
+};
+
+const handleUnauthorizedResponse = () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  clearStoredAuthTokens();
+
+  const pathname = window.location.pathname;
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register');
+
+  if (!isAuthRoute) {
+    window.location.assign('/login');
+  }
+};
+
+export const toApiFailure = (error: unknown): ApiFailure => {
+  if (error instanceof ApiRequestError) {
+    return {
+      ok: false,
+      code: error.code,
+      message: error.message,
+      status: error.status,
+      details: error.details,
+    };
+  }
+
+  return {
+    ok: false,
+    code: 'UNKNOWN_ERROR',
+    message: error instanceof Error && error.message.trim().length > 0 ? error.message : 'Request failed.',
+    status: 500,
+    details: [],
+  };
+};
 
 const apiRequest = async <T>(
   path: string,
@@ -687,6 +1126,10 @@ const apiRequest = async <T>(
   }
 
   if (!response.ok) {
+    if (response.status === 401 && token) {
+      handleUnauthorizedResponse();
+    }
+
     if (
       typeof payload === 'object' &&
       payload !== null &&
@@ -726,6 +1169,84 @@ const apiRequest = async <T>(
   return payload as T;
 };
 
+const parseFilenameFromDisposition = (contentDisposition: string | null): string | null => {
+  if (!contentDisposition) {
+    return null;
+  }
+
+  const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+
+  if (utf8Match?.[1]) {
+    try {
+      return decodeURIComponent(utf8Match[1].trim());
+    } catch {
+      return utf8Match[1].trim();
+    }
+  }
+
+  const plainMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+  return plainMatch?.[1]?.trim() ?? null;
+};
+
+const requestCsv = async (
+  path: string,
+  token: string,
+  fallbackFilename: string,
+): Promise<CsvDownloadResult> => {
+  const headers = new Headers();
+  headers.set('Authorization', `Bearer ${token}`);
+
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method: 'GET',
+      headers,
+    });
+  } catch (error) {
+    throw new ApiRequestError('Network request failed.', {
+      code: 'NETWORK_ERROR',
+      status: 0,
+      details: [error instanceof Error ? error.message : 'Unknown network error'],
+    });
+  }
+
+  if (!response.ok) {
+    if (response.status === 401 && token) {
+      handleUnauthorizedResponse();
+    }
+
+    const bodyText = await response.text();
+
+    try {
+      const payload = JSON.parse(bodyText) as ApiErrorEnvelope;
+      if (payload?.success === false) {
+        throw new ApiRequestError(payload.error.message, {
+          code: payload.error.code,
+          details: payload.error.details,
+          status: response.status,
+        });
+      }
+    } catch (parseError) {
+      if (parseError instanceof ApiRequestError) {
+        throw parseError;
+      }
+    }
+
+    throw new ApiRequestError('Request failed.', {
+      status: response.status,
+      details: bodyText.trim() ? [bodyText.trim().slice(0, 200)] : [],
+    });
+  }
+
+  const blob = await response.blob();
+  const filename =
+    parseFilenameFromDisposition(response.headers.get('content-disposition')) ??
+    fallbackFilename;
+
+  return { blob, filename };
+};
+
 export const checkApiHealth = async (): Promise<'ok' | 'unreachable'> => {
   try {
     const payload = await apiRequest<HealthResponse>('/healthz');
@@ -758,9 +1279,116 @@ export const fetchCurrentUser = async (token: string) => {
   return payload.data;
 };
 
+export const sendFinnyChatMessage = async (
+  body: FinnyChatPayload,
+  token: string,
+): Promise<FinnyChatPayloadData> => {
+  const payload = await apiRequest<FinnyChatResponse>(
+    '/api/v1/finny/chat',
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+    token,
+  );
+
+  const responseData = payload.data;
+
+  if (responseData.format === 'insight_card' && responseData.card) {
+    return {
+      format: 'insight_card',
+      card: responseData.card as FinnyInsightCard,
+      ...(responseData.meta ? { meta: responseData.meta } : {}),
+    };
+  }
+
+  if (responseData.format === 'card' && responseData.card) {
+    return {
+      format: 'card',
+      card: responseData.card,
+      ...(responseData.meta ? { meta: responseData.meta } : {}),
+    };
+  }
+
+  if (responseData.format === 'text' && typeof responseData.text === 'string') {
+    return {
+      format: 'text',
+      text: responseData.text.trim().length > 0
+        ? responseData.text.trim()
+        : 'Finny response is unavailable right now.',
+      ...(responseData.meta ? { meta: responseData.meta } : {}),
+    };
+  }
+
+  if (typeof responseData.reply === 'string' && responseData.reply.trim().length > 0) {
+    return {
+      format: 'text',
+      text: responseData.reply.trim(),
+      ...(responseData.meta ? { meta: responseData.meta } : {}),
+    };
+  }
+
+  if (typeof responseData.content === 'string' && responseData.content.trim().length > 0) {
+    return {
+      format: 'text',
+      text: responseData.content.trim(),
+      ...(responseData.meta ? { meta: responseData.meta } : {}),
+    };
+  }
+
+  return {
+    format: 'text',
+    text:
+      typeof responseData.replyTextFallback === 'string' && responseData.replyTextFallback.trim().length > 0
+        ? responseData.replyTextFallback.trim()
+        : 'Finny response is unavailable right now.',
+    ...(responseData.meta ? { meta: responseData.meta } : {}),
+  };
+};
+
+export const logoutRequest = async (token?: string | null) => {
+  const payload = await apiRequest<LogoutResponse>(
+    '/api/v1/auth/logout',
+    {
+      method: 'POST',
+    },
+    token ?? undefined,
+  );
+  return payload.data;
+};
+
 export const fetchProfile = async (token: string) => {
   const payload = await apiRequest<CurrentUserResponse>('/api/v1/profile', {}, token);
   return payload.data;
+};
+
+export const exportBudgetCsv = async (query: BudgetExportQuery, token: string) => {
+  const params = new URLSearchParams({
+    from: query.from,
+    to: query.to,
+  });
+
+  return requestCsv(
+    `/api/v1/exports/budget.csv?${params.toString()}`,
+    token,
+    `finvision-budget-${query.from}_to_${query.to}.csv`,
+  );
+};
+
+export const exportInvestCsv = async (query: InvestExportQuery, token: string) => {
+  const params = new URLSearchParams({
+    range: query.range ?? 'month',
+  });
+
+  if (typeof query.year === 'number') {
+    params.set('year', String(query.year));
+  }
+
+  if (typeof query.month === 'number') {
+    params.set('month', String(query.month));
+  }
+
+  return requestCsv('/api/v1/exports/invest.csv?' + params.toString(), token, 'finvision-invest.csv');
 };
 
 export const fetchCategories = async (token: string) => {
@@ -795,8 +1423,65 @@ export const fetchNewsArticles = async (
   };
 };
 
+export const fetchInsights = async (token: string, limit = 3) => {
+  const params = new URLSearchParams({
+    limit: String(limit),
+  });
+
+  const payload = await apiRequest<InsightsResponse>(
+    `/api/v1/insights?${params.toString()}`,
+    {},
+    token,
+  );
+
+  return payload.data;
+};
+
+export const dismissInsight = async (insightId: string, token: string) => {
+  const payload = await apiRequest<DismissInsightResponse>(
+    `/api/v1/insights/${insightId}/dismiss`,
+    {
+      method: 'POST',
+    },
+    token,
+  );
+
+  return payload.data;
+};
+
 export const fetchInvestAccount = async (token: string) => {
   const payload = await apiRequest<InvestAccountResponse>('/api/v1/invest/account', {}, token);
+  return payload.data;
+};
+
+export const fetchInvestCryptoState = async (token: string) => {
+  const payload = await apiRequest<InvestCryptoStateResponse>('/api/v1/invest/crypto/state', {}, token);
+  return payload.data;
+};
+
+export const setInvestCryptoMode = async (mode: InvestCryptoMode, token: string) => {
+  const payload = await apiRequest<InvestCryptoModeResponse>(
+    '/api/v1/invest/crypto/mode',
+    {
+      method: 'POST',
+      body: JSON.stringify({ mode }),
+    },
+    token,
+  );
+
+  return payload.data;
+};
+
+export const setInvestCryptoDemoBudget = async (amountEUR: number, token: string) => {
+  const payload = await apiRequest<InvestCryptoDemoBudgetResponse>(
+    '/api/v1/invest/crypto/demo/set-budget',
+    {
+      method: 'POST',
+      body: JSON.stringify({ amountEUR }),
+    },
+    token,
+  );
+
   return payload.data;
 };
 
@@ -821,6 +1506,19 @@ export const fetchInvestTrades = async (token: string, limit = 50) => {
 export const fetchInvestSnapshots = async (token: string, days = 7) => {
   const payload = await apiRequest<InvestSnapshotsResponse>(
     `/api/v1/invest/snapshots?days=${days}`,
+    {},
+    token,
+  );
+
+  return {
+    ...payload.data,
+    meta: payload.meta ?? null,
+  };
+};
+
+export const fetchInvestPerformance = async (token: string, range: '7d' | '30d' = '7d') => {
+  const payload = await apiRequest<InvestPerformanceResponse>(
+    `/api/v1/invest/performance?range=${range}`,
     {},
     token,
   );
@@ -868,6 +1566,19 @@ export const topUpInvestingCash = async (body: InvestTopUpPayload, token: string
     {
       method: 'POST',
       body: JSON.stringify(body),
+    },
+    token,
+  );
+
+  return payload.data;
+};
+
+export const topUpInvestCryptoFromWallet = async (amountRON: number, token: string) => {
+  const payload = await apiRequest<InvestCryptoTopUpFromWalletResponse>(
+    '/api/v1/invest/crypto/topup-from-wallet',
+    {
+      method: 'POST',
+      body: JSON.stringify({ amountRON }),
     },
     token,
   );
@@ -974,12 +1685,133 @@ export const placeInvestOrder = async (body: InvestOrderPayload, token: string) 
   return payload.data;
 };
 
-export const placeInvestStockOrder = async (body: InvestStockOrderPayload, token: string) => {
+export const fetchMarketAccount = async (token: string) => {
+  const payload = await apiRequest<MarketAccountResponse>('/api/v1/market/stocks/account', {}, token);
+  return payload.data;
+};
+
+export const fetchMarketHoldings = async (token: string) => {
+  const payload = await apiRequest<MarketHoldingsResponse>('/api/v1/market/stocks/holdings', {}, token);
+  return payload.data;
+};
+
+export const fetchMarketTrades = async (token: string, limit = 50) => {
+  const payload = await apiRequest<MarketTradesResponse>(
+    `/api/v1/market/stocks/trades?limit=${limit}`,
+    {},
+    token,
+  );
+
+  return payload.data;
+};
+
+export const fetchMarketAllocation = async (token: string) => {
+  const payload = await apiRequest<MarketAllocationResponse>('/api/v1/market/stocks/allocation', {}, token);
+  return payload.data;
+};
+
+export const fetchMarketPerformance = async (
+  token: string,
+  range: '7d' | '30d' = '7d',
+) => {
+  const payload = await apiRequest<MarketPerformanceResponse>(
+    `/api/v1/market/stocks/performance?range=${range}`,
+    {},
+    token,
+  );
+  return {
+    ...payload.data,
+    meta: payload.meta ?? null,
+  };
+};
+
+export const topUpMarketFromWallet = async (amountRON: number, token: string) => {
+  const payload = await apiRequest<MarketTopUpFromWalletResponse>(
+    '/api/v1/market/stocks/topup-from-wallet',
+    {
+      method: 'POST',
+      body: JSON.stringify({ amountRON }),
+    },
+    token,
+  );
+
+  return payload.data;
+};
+
+export const fetchMarketStockExecutionQuote = async (symbol: string, token: string) => {
+  const params = new URLSearchParams({
+    symbol: symbol.trim().toUpperCase(),
+  });
+  const payload = await apiRequest<InvestStockQuoteResponse>(
+    `/api/v1/market/stocks/order/quote?${params.toString()}`,
+    {},
+    token,
+  );
+
+  return payload.data;
+};
+
+export const placeMarketStockOrder = async (body: InvestStockOrderPayload, token: string) => {
   const payload = await apiRequest<InvestOrderResponse>(
-    '/api/v1/invest/stocks/order',
+    '/api/v1/market/stocks/order',
     {
       method: 'POST',
       body: JSON.stringify(body),
+    },
+    token,
+  );
+
+  return payload.data;
+};
+
+export const resetMarketDemoPortfolio = async (token: string) => {
+  const payload = await apiRequest<MarketResetResponse>(
+    '/api/v1/market/stocks/reset',
+    {
+      method: 'POST',
+    },
+    token,
+  );
+
+  return payload.data;
+};
+
+export const fetchMarketStocksState = async (token: string) => {
+  const payload = await apiRequest<MarketStocksStateResponse>('/api/v1/market/stocks/state', {}, token);
+  return payload.data;
+};
+
+export const setMarketStocksMode = async (mode: MarketStocksMode, token: string) => {
+  const payload = await apiRequest<MarketStocksModeResponse>(
+    '/api/v1/market/stocks/mode',
+    {
+      method: 'POST',
+      body: JSON.stringify({ mode }),
+    },
+    token,
+  );
+
+  return payload.data;
+};
+
+export const setMarketStocksDemoBudget = async (amountEUR: number, token: string) => {
+  const payload = await apiRequest<MarketDemoBudgetResponse>(
+    '/api/v1/market/stocks/demo/set-budget',
+    {
+      method: 'POST',
+      body: JSON.stringify({ amountEUR }),
+    },
+    token,
+  );
+
+  return payload.data;
+};
+
+export const resetMarketStocksAdminState = async (token: string) => {
+  const payload = await apiRequest<MarketAdminResetResponse>(
+    '/api/v1/market/stocks/admin/reset',
+    {
+      method: 'POST',
     },
     token,
   );
@@ -1144,19 +1976,21 @@ export const fetchStockCandles = async (
   token: string,
   options: { signal?: AbortSignal } = {},
 ) => {
+  const normalizedSymbol = symbol.trim().toUpperCase();
   const params = new URLSearchParams({
-    symbol: symbol.trim().toUpperCase(),
+    symbol: normalizedSymbol,
     range,
   });
+  const path = `/api/v1/market/stocks/candles?${params.toString()}`;
   const payload = await apiRequest<StockCandlesResponse>(
-    `/api/v1/market/stocks/candles?${params.toString()}`,
+    path,
     { signal: options.signal },
     token,
   );
 
   return {
     ...payload.data,
-    meta: payload.meta ?? null,
+    meta: payload.data?.meta ?? payload.meta ?? null,
   };
 };
 
@@ -1179,6 +2013,24 @@ export const fetchTransactions = async (query: TransactionsQuery, token: string)
     ...payload.data,
     meta: payload.meta ?? null,
   };
+};
+
+export const fetchBudgetSummary = async (
+  token: string,
+  year: number,
+  month: number,
+) => {
+  const params = new URLSearchParams({
+    year: String(year),
+    month: String(month),
+  });
+  const payload = await apiRequest<BudgetSummaryResponse>(
+    `/api/v1/budget/summary?${params.toString()}`,
+    {},
+    token,
+  );
+
+  return payload.data;
 };
 
 export const createTransaction = async (body: CreateTransactionPayload, token: string) => {

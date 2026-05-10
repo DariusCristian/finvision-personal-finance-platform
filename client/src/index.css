@@ -31,8 +31,8 @@ body,
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: var(--color-page-bg);
-  color: var(--color-text-heading);
+  background-color: #f8fafc;
+  color: #0f172a;
   font-family:
     'Inter',
     system-ui,
@@ -40,6 +40,77 @@ body {
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
+}
+
+html.dark body {
+  background-color: #020617;
+  color: #f1f5f9;
+}
+
+@layer components {
+  .fv-page {
+    @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  }
+
+  .fv-card {
+    @apply border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900;
+  }
+
+  .fv-heading {
+    @apply text-slate-900 dark:text-slate-100;
+  }
+
+  .fv-muted {
+    @apply text-slate-500 dark:text-slate-400;
+  }
+
+  .fv-subtle-surface {
+    @apply bg-slate-50 dark:bg-slate-800/60;
+  }
+
+  .fv-secondary-btn {
+    @apply border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800;
+  }
+}
+
+@layer utilities {
+  html.dark .bg-white {
+    @apply bg-slate-900;
+  }
+
+  html.dark .bg-slate-50 {
+    @apply bg-slate-800;
+  }
+
+  html.dark .bg-slate-100 {
+    @apply bg-slate-800;
+  }
+
+  html.dark .border-slate-100,
+  html.dark .border-slate-200 {
+    @apply border-slate-800;
+  }
+
+  html.dark .border-slate-300 {
+    @apply border-slate-700;
+  }
+
+  html.dark .text-slate-900 {
+    @apply text-slate-100;
+  }
+
+  html.dark .text-slate-700 {
+    @apply text-slate-200;
+  }
+
+  html.dark .text-slate-600 {
+    @apply text-slate-300;
+  }
+
+  html.dark .text-slate-500 {
+    @apply text-slate-400;
+  }
+
 }
 
 * {

@@ -14,4 +14,12 @@ export const serializeUser = (user) => ({
       : 0,
   investingAccountBalance:
     typeof user.investingAccountBalance === 'number' ? user.investingAccountBalance : 0,
+  investCryptoMode:
+    user.investCryptoMode === 'funded' || user.investCryptoMode === 'demo'
+      ? user.investCryptoMode
+      : null,
+  marketStocksMode:
+    user.marketStocksMode === 'funded' || user.marketStocksMode === 'demo'
+      ? user.marketStocksMode
+      : null,
 });

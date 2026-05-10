@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 const portfolioSideSchema = z.enum(['buy', 'sell']);
 const vsCurrencySchema = z.enum(['usd', 'eur', 'ron']);
+const investCryptoModeSchema = z.enum(['funded', 'demo']);
 const allowedChartDays = [1, 7, 30, 90, 365];
 
 const normalizeSearchValue = (...values) => {
@@ -46,6 +47,10 @@ export const investSnapshotsQuerySchema = z.object({
   days: z.coerce.number().int().positive().max(365).optional().default(7),
 });
 
+export const investPerformanceQuerySchema = z.object({
+  range: z.enum(['7d', '30d']).optional().default('7d'),
+});
+
 export const investFundingQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).optional().default(20),
 });
@@ -58,6 +63,18 @@ export const investTopUpQuoteQuerySchema = z.object({
 export const investTopUpSchema = z.object({
   fromCurrency: z.literal('RON').optional().default('RON'),
   amount: z.coerce.number().positive('Top-up amount must be greater than zero.'),
+});
+
+export const investCryptoModeMutationSchema = z.object({
+  mode: investCryptoModeSchema,
+});
+
+export const investCryptoDemoBudgetSchema = z.object({
+  amountEUR: z.coerce.number().positive('Demo budget must be greater than zero.'),
+});
+
+export const investCryptoTopUpFromWalletSchema = z.object({
+  amountRON: z.coerce.number().positive('Top-up amount must be greater than zero.'),
 });
 
 export const marketSearchQuerySchema = z

@@ -6,7 +6,6 @@ import { requireAuth } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { InvestingWalletLedger } from '../../models/investing-wallet-ledger.js';
 import { InvestingWallet } from '../../models/investing-wallet.js';
-import { PortfolioAccount } from '../../models/portfolio-account.js';
 import { sendSuccess } from '../../utils/response.js';
 import {
   investingWalletConvertQuoteQuerySchema,
@@ -21,7 +20,6 @@ const investingWalletRouter = Router();
 
 const WALLET_CURRENCY = 'RON';
 const PORTFOLIO_CURRENCY = 'EUR';
-const STARTING_INVEST_CASH_EUR = 10000;
 
 const toMoney = (value) => Number(Number(value).toFixed(2));
 const toRate = (value) => Number(Number(value).toFixed(10));
@@ -42,26 +40,6 @@ const serializeWallet = (wallet) => ({
   autoFundAmount: toMoney(wallet.autoFundAmount),
   autoFundDayOfMonth: wallet.autoFundDayOfMonth,
 });
-
-const ensurePortfolioAccount = async (userId) => {
-  let account = await PortfolioAccount.findOne({ userId });
-
-  if (!account) {
-    account = await PortfolioAccount.create({
-      userId,
-      baseCurrency: PORTFOLIO_CURRENCY,
-      cashBalance: STARTING_INVEST_CASH_EUR,
-    });
-    return account;
-  }
-
-  if (account.baseCurrency !== PORTFOLIO_CURRENCY) {
-    account.baseCurrency = PORTFOLIO_CURRENCY;
-    await account.save();
-  }
-
-  return account;
-};
 
 const ensureWallet = async (userId) => {
   let wallet = await InvestingWallet.findOne({ userId });
@@ -314,9 +292,12 @@ investingWalletRouter.get(
         amount: amountRON,
       });
 
-      const eurAmount = toMoney(conversion.result);
-      const eurPerRonRate = toRate(conversion.rate);
-      const ronPerEurRate = eurPerRonRate > 0 ? toRate(1 / eurPerRonRate) : null;
+      const eurAmount = toMoney(conversion.convertedAmount);
+      const eurPerRonRate = toRate(conversion.rateToPerFrom);
+      const ronPerEurRate =
+        typeof conversion.rateFromPerTo === 'number' && conversion.rateFromPerTo > 0
+          ? toRate(conversion.rateFromPerTo)
+          : null;
 
       sendSuccess(res, {
         amountRON,
@@ -342,56 +323,10 @@ investingWalletRouter.post(
   validateRequest({ body: investingWalletConvertSchema }),
   async (req, res, next) => {
     try {
-      const wallet = await ensureWallet(req.authUser._id);
-      await applyAutoFundIfDue(wallet);
-      const amountRON = toMoney(req.body.amountRON);
-
-      if (amountRON > wallet.balance) {
-        throw new AppError({
-          message: 'Not enough RON balance in investing wallet.',
-          statusCode: 400,
-          code: 'INSUFFICIENT_FUNDS',
-        });
-      }
-
-      const conversion = await convert({
-        from: WALLET_CURRENCY,
-        to: PORTFOLIO_CURRENCY,
-        amount: amountRON,
-      });
-      const addedEUR = toMoney(conversion.result);
-      const eurPerRonRate = toRate(conversion.rate);
-      const ronPerEurRate = eurPerRonRate > 0 ? toRate(1 / eurPerRonRate) : null;
-
-      wallet.balance = toMoney(wallet.balance - amountRON);
-      await wallet.save();
-
-      const portfolioAccount = await ensurePortfolioAccount(req.authUser._id);
-      portfolioAccount.cashBalance = toMoney(portfolioAccount.cashBalance + addedEUR);
-      await portfolioAccount.save();
-
-      await InvestingWalletLedger.create({
-        userId: req.authUser._id,
-        type: 'fx_convert_to_eur',
-        amountRON: -amountRON,
-        meta: {
-          from: WALLET_CURRENCY,
-          to: PORTFOLIO_CURRENCY,
-          rateEurPerRon: eurPerRonRate,
-          rateRonPerEur: ronPerEurRate,
-          eurAmount: addedEUR,
-          portfolioAccountId: portfolioAccount._id.toString(),
-        },
-      });
-
-      sendSuccess(res, {
-        walletBalanceRON: toMoney(wallet.balance),
-        addedEUR,
-        portfolioCashEUR: toMoney(portfolioAccount.cashBalance),
-        rate: {
-          eurPerRon: eurPerRonRate,
-          ronPerEur: ronPerEurRate,
-        },
+      throw new AppError({
+        message: 'Use /api/v1/invest/crypto/topup-from-wallet for Start Investing top-ups.',
+        statusCode: 410,
+        code: 'WALLET_CONVERT_DEPRECATED',
       });
     } catch (error) {
       next(normalizeProviderError(error));

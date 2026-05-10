@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import {
   fetchCurrentUser,
   loginWithPassword,
+  logoutRequest,
   registerWithPassword,
   type AuthUser,
 } from '../lib/api';
@@ -27,10 +28,11 @@ type AuthContextValue = {
   login: (args: LoginArgs) => Promise<void>;
   register: (args: RegisterArgs) => Promise<void>;
   setCurrentUser: (user: AuthUser) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 const TOKEN_STORAGE_KEY = 'finvision.accessToken';
+const LEGACY_TOKEN_STORAGE_KEY = 'accessToken';
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
@@ -85,11 +87,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const logout = useCallback(() => {
+  const clearSessionState = useCallback(() => {
     window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+    window.localStorage.removeItem(LEGACY_TOKEN_STORAGE_KEY);
+    window.sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+    window.sessionStorage.removeItem(LEGACY_TOKEN_STORAGE_KEY);
     setAccessToken(null);
     setUser(null);
   }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      if (accessToken) {
+        await logoutRequest(accessToken);
+      }
+    } catch {
+      // Local logout should still complete if the API call fails.
+    } finally {
+      clearSessionState();
+    }
+  }, [accessToken, clearSessionState]);
 
   const setCurrentUser = useCallback((nextUser: AuthUser) => {
     setUser(nextUser);

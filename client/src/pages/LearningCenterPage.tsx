@@ -110,13 +110,13 @@ export function LearningCenterPage() {
 
   return (
     <AppShell activeTab="learning">
-      <div className="space-y-6">
+      <div className="fv-page space-y-6">
         <header className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#2563eb]">Learning Center</p>
-              <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900">Financial Learning Center</h1>
-              <p className="mt-3 text-lg text-slate-500">Learn core money concepts and test yourself with guided quizzes.</p>
+              <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Financial Learning Center</h1>
+              <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">Learn core money concepts and test yourself with guided quizzes.</p>
             </div>
 
             <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600">

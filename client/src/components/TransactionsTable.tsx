@@ -45,7 +45,7 @@ type VirtualizedRowData = RowActionHandlers & {
   currency: 'RON' | 'EUR' | 'USD';
 };
 
-const HEADER_CELL_CLASS = 'sticky top-0 z-10 border-b border-slate-100 bg-slate-50 px-6 py-4';
+const HEADER_CELL_CLASS = 'sticky top-0 z-10 border-b border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800';
 const GRID_TEMPLATE = 'minmax(0,2.4fr) minmax(0,1.25fr) minmax(0,1.1fr) minmax(0,1fr) 4.5rem';
 const VIRTUAL_ROW_HEIGHT = 104;
 
@@ -104,15 +104,15 @@ const getRowLabel = (transaction: BudgetTransaction) => {
     return description;
   }
 
-  return transaction.type === 'income' ? 'Income transaction' : 'Expense transaction';
-};
-
-const getMetaLabel = (transaction: BudgetTransaction) => {
-  if (transaction.category) {
+  if (transaction.category?.name) {
     return transaction.category.name;
   }
 
-  return transaction.type === 'income' ? 'Money in' : 'Money out';
+  return 'Transaction';
+};
+
+const getMetaLabel = (transaction: BudgetTransaction) => {
+  return transaction.type === 'income' ? 'Income transaction' : 'Expense transaction';
 };
 
 const getAvatarLabel = (transaction: BudgetTransaction) => {
@@ -140,11 +140,11 @@ function TransactionDetailContent({ transaction }: { transaction: BudgetTransact
         {getAvatarLabel(transaction)}
       </div>
       <div className="min-w-0">
-        <p className="truncate font-medium text-slate-900">{getRowLabel(transaction)}</p>
+        <p className="max-w-[18rem] truncate font-medium text-slate-900 dark:text-slate-100">{getRowLabel(transaction)}</p>
         <div className="mt-1 flex flex-wrap items-center gap-2">
-          <p className="text-xs text-slate-500">{getMetaLabel(transaction)}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{getMetaLabel(transaction)}</p>
           {transaction.isRecurring ? (
-            <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+            <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
               Recurring
             </span>
           ) : null}
@@ -186,7 +186,7 @@ function TransactionAmountText({
     <span
       className={[
         'font-semibold',
-        transaction.type === 'income' ? 'text-emerald-500' : 'text-slate-900',
+        transaction.type === 'income' ? 'text-emerald-500' : 'text-slate-900 dark:text-slate-100',
       ].join(' ')}
     >
       {formatAmount(transaction, currency)}
@@ -205,7 +205,7 @@ function TransactionActionsMenu({
   menuIsOpen: boolean;
 } & RowActionHandlers) {
   return (
-    <div className="relative text-center text-slate-400">
+    <div className="relative text-center text-slate-400 dark:text-slate-500">
       <button
         type="button"
         onClick={() => onToggleMenu(transaction.id)}
@@ -215,18 +215,18 @@ function TransactionActionsMenu({
         <MoreIcon />
       </button>
       {menuIsOpen ? (
-        <div className="absolute right-0 top-[calc(100%-0.15rem)] z-20 min-w-[11rem] overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-[0_14px_30px_rgba(15,23,42,0.14)]">
+        <div className="absolute right-0 top-[calc(100%-0.15rem)] z-20 min-w-[11rem] overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-[0_14px_30px_rgba(15,23,42,0.14)] dark:border-slate-700 dark:bg-slate-900">
           <button
             type="button"
             onClick={() => onEditTransaction(transaction)}
-            className="block w-full px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className="block w-full px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             Edit Transaction
           </button>
           <button
             type="button"
             onClick={() => onDeleteTransaction(transaction)}
-            className="block w-full border-t border-slate-100 px-4 py-3 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
+            className="block w-full border-t border-slate-100 px-4 py-3 text-sm font-medium text-rose-600 transition hover:bg-rose-50 dark:border-slate-800 dark:text-rose-300 dark:hover:bg-rose-900/30"
           >
             Delete Transaction
           </button>
@@ -250,14 +250,14 @@ const TransactionTableRow = memo(function TransactionTableRow({
   const menuIsOpen = openMenuId === transaction.id;
 
   return (
-    <tr className="transition-colors hover:bg-slate-50/80">
+    <tr className="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/60">
       <td className="px-6 py-5">
         <TransactionDetailContent transaction={transaction} />
       </td>
       <td className="px-6 py-5">
         <TransactionCategoryChip transaction={transaction} />
       </td>
-      <td className="px-6 py-5 text-slate-500">{formatDate(transaction.date)}</td>
+      <td className="px-6 py-5 text-slate-500 dark:text-slate-400">{formatDate(transaction.date)}</td>
       <td className="px-6 py-5 text-right">
         <TransactionAmountText transaction={transaction} currency={currency} />
       </td>
@@ -297,7 +297,7 @@ function VirtualizedTransactionRow({
     <div
       {...ariaAttributes}
       style={rowStyle}
-      className="border-b border-slate-100 px-6 py-4 last:border-b-0 hover:bg-slate-50/80"
+      className="border-b border-slate-100 px-6 py-4 last:border-b-0 hover:bg-slate-50/80 dark:border-slate-800 dark:hover:bg-slate-800/60"
     >
       <div
         className="grid min-h-[4rem] items-center gap-4"
@@ -305,7 +305,7 @@ function VirtualizedTransactionRow({
       >
         <TransactionDetailContent transaction={transaction} />
         <TransactionCategoryChip transaction={transaction} />
-        <span className="text-sm text-slate-500">{formatDate(transaction.date)}</span>
+        <span className="text-sm text-slate-500 dark:text-slate-400">{formatDate(transaction.date)}</span>
         <div className="text-right">
           <TransactionAmountText transaction={transaction} currency={currency} />
         </div>
@@ -409,14 +409,15 @@ export function TransactionsTable({
       ref={tableRef}
       className={[
         'flex min-h-0 flex-col overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] lg:col-span-8',
+        'dark:border-slate-800 dark:bg-slate-900',
         heightClassName,
       ].join(' ')}
     >
-      <div className="flex flex-col gap-4 border-b border-slate-100 p-6 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+      <div className="flex flex-col gap-4 border-b border-slate-100 p-6 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{title}</h2>
         <div className="flex flex-col gap-2 sm:flex-row">
           <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
               <SearchIcon />
             </span>
             <input
@@ -424,15 +425,15 @@ export function TransactionsTable({
               value={searchValue}
               onChange={handleSearchChange}
               placeholder="Search..."
-              className="w-full rounded-xl border-none bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none ring-0 placeholder:text-slate-400 focus:ring-2 focus:ring-[#2563eb] sm:w-64"
+              className="w-full rounded-xl border-none bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none ring-0 placeholder:text-slate-400 focus:ring-2 focus:ring-[#2563eb] dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 sm:w-64"
             />
           </div>
-          <label className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2.5 text-sm text-slate-500">
-            <span className="font-medium text-slate-500">Sort</span>
+          <label className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2.5 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+            <span className="font-medium text-slate-500 dark:text-slate-400">Sort</span>
             <select
               value={sortOption}
               onChange={handleSortChange}
-              className="min-w-[11.5rem] bg-transparent text-sm font-medium text-slate-700 outline-none"
+              className="min-w-[11.5rem] bg-transparent text-sm font-medium text-slate-700 outline-none dark:text-slate-100"
               aria-label="Sort transactions"
             >
               <option value="-date">Date: Newest - Oldest</option>
@@ -446,17 +447,17 @@ export function TransactionsTable({
 
       <div className="min-h-0 flex-1 overflow-hidden">
         {isLoading ? (
-          <div className="flex h-full items-center justify-center px-6 py-16 text-center text-slate-500">
+          <div className="flex h-full items-center justify-center px-6 py-16 text-center text-slate-500 dark:text-slate-400">
             Loading transactions...
           </div>
         ) : transactions.length === 0 ? (
-          <div className="flex h-full items-center justify-center px-6 py-16 text-center text-slate-500">
+          <div className="flex h-full items-center justify-center px-6 py-16 text-center text-slate-500 dark:text-slate-400">
             {emptyMessage}
           </div>
         ) : virtualizedRows ? (
           <div className="flex h-full min-w-[42rem] flex-col">
             <div
-              className="grid shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500"
+              className="grid shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400"
               style={{ gridTemplateColumns: GRID_TEMPLATE }}
             >
               <div className={HEADER_CELL_CLASS}>Details</div>
@@ -481,7 +482,7 @@ export function TransactionsTable({
           <div className="min-h-0 flex-1 overflow-auto">
             <table className="w-full min-w-[42rem] border-collapse text-left">
               <thead>
-                <tr className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                <tr className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                   <th className={HEADER_CELL_CLASS}>Details</th>
                   <th className={HEADER_CELL_CLASS}>Category</th>
                   <th className={HEADER_CELL_CLASS}>Date</th>
@@ -489,7 +490,7 @@ export function TransactionsTable({
                   <th className={[HEADER_CELL_CLASS, 'text-center'].join(' ')}>Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-sm">
+              <tbody className="divide-y divide-slate-100 text-sm dark:divide-slate-800">
                 {transactions.map((transaction) => (
                   <TransactionTableRow
                     key={transaction.id}
@@ -508,7 +509,7 @@ export function TransactionsTable({
       </div>
 
       {viewAllHref ? (
-        <div className="mt-auto shrink-0 border-t border-slate-100 px-6 py-5 text-center">
+        <div className="mt-auto shrink-0 border-t border-slate-100 px-6 py-5 text-center dark:border-slate-800">
           <Link
             to={viewAllHref}
             className="text-lg font-medium text-[#2563eb] transition hover:text-[#1d4ed8]"
