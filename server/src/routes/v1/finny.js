@@ -15,7 +15,18 @@ import { sendSuccess } from '../../utils/response.js';
 
 const USER_WINDOW_MS = 60 * 1000;
 const USER_MAX_REQUESTS_PER_WINDOW = 5;
+const RATE_LIMIT_STORE_SWEEP_THRESHOLD = 1000;
 const userRequestWindowStore = new Map();
+
+const sweepExpiredRateLimitEntries = (windowStart) => {
+  for (const [storedUserId, timestamps] of userRequestWindowStore) {
+    const stillActive = timestamps.some((timestamp) => timestamp > windowStart);
+
+    if (!stillActive) {
+      userRequestWindowStore.delete(storedUserId);
+    }
+  }
+};
 
 const FINNY_CONTEXT_TYPES = ['general', 'budget', 'subscriptions', 'crypto', 'stocks', 'app'];
 const FINNY_CONTEXT_TYPE_ENUM = z.enum(FINNY_CONTEXT_TYPES);
@@ -118,6 +129,13 @@ const consumeUserRateLimit = (userId) => {
 
   recentTimestamps.push(now);
   userRequestWindowStore.set(userId, recentTimestamps);
+
+  // Opportunistically evict stale users so the in-memory store stays bounded
+  // for long-running processes without needing a background timer.
+  if (userRequestWindowStore.size > RATE_LIMIT_STORE_SWEEP_THRESHOLD) {
+    sweepExpiredRateLimitEntries(windowStart);
+  }
+
   return true;
 };
 
