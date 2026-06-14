@@ -10,3 +10,5 @@ server/.env
 apps_legacy/
 packages_legacy/
 *.legacy.json
+.DS_Store
+**/.DS_Store
