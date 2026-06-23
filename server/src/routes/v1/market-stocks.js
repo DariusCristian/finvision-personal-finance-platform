@@ -13,7 +13,6 @@ import {
 } from '../../integrations/finnhub/finnhubClient.js';
 import {
   fetchDailyHistory as fetchStooqDailyHistory,
-  getCandlesByRange as getStooqCandlesByRange,
   StooqProviderError,
 } from '../../integrations/stooq/stooqClient.js';
 import { fetchYahooStockHistory } from '../../integrations/yahoo/yahooChartClient.js';
@@ -945,8 +944,14 @@ const computePerformanceSeries = async ({ account, holdings, range }) => {
       const symbol = String(holding.symbol).trim().toUpperCase();
 
       try {
-        const candlesPayload = await getStooqCandlesByRange(symbol, 'ALL');
-        candlesBySymbol[symbol] = Array.isArray(candlesPayload.series) ? candlesPayload.series : [];
+        // Use the same robust candle helper as the per-symbol chart (Stooq ->
+        // Yahoo -> Finnhub -> synthetic fallback). Calling Stooq directly here
+        // left the performance chart flat at average cost whenever Stooq was
+        // unavailable (e.g. its anti-bot challenge), even though per-symbol
+        // charts kept working via the fallback chain. '1M' covers the longest
+        // performance window (30d) with daily granularity.
+        const candlesPayload = await getStockCandlesByRange(symbol, '1M');
+        candlesBySymbol[symbol] = Array.isArray(candlesPayload?.series) ? candlesPayload.series : [];
       } catch {
         candlesBySymbol[symbol] = [];
       }
