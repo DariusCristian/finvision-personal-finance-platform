@@ -1475,20 +1475,6 @@ export function MarketPage() {
                 >
                   Sell Assets
                 </button>
-                <button
-                  type="button"
-                  disabled
-                  className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 px-4 text-sm font-semibold text-slate-400"
-                >
-                  Recurring Investment (Soon)
-                </button>
-                <button
-                  type="button"
-                  disabled
-                  className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 px-4 text-sm font-semibold text-slate-400"
-                >
-                  Price Alert (Soon)
-                </button>
               </div>
             </article>
 
@@ -1513,23 +1499,6 @@ export function MarketPage() {
                   {marketCapValue !== null
                     ? `Selected ${selectedSymbol} market cap: ${formatMoney(marketCapValue, detailSourceCurrency)}`
                     : 'Heat map module coming soon.'}
-                </div>
-              </div>
-              <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] xl:col-span-2">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Investment Strategy</p>
-                    <p className="mt-2 text-sm text-slate-700">
-                      Dividend reinvestment can compound wealth over time. Learn how to automate your DCA/DRIP process.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    disabled
-                    className="rounded-lg border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-400"
-                  >
-                    Start Guide
-                  </button>
                 </div>
               </div>
             </article>
