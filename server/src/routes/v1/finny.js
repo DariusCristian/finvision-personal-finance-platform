@@ -34,6 +34,9 @@ const SHOULD_INCLUDE_DEBUG_META = process.env.NODE_ENV !== 'production';
 const FINNY_OUT_OF_SCOPE_TEXT =
   "I can't help with that topic. I'm focused on budgeting, savings, net worth, personal finance education, crypto/stock education, and using FinVision. Try one of these: \"Give me saving tips based on my budget\", \"Explain net worth\", \"Check my subscriptions\", \"What is an ETF?\"";
 
+const FINNY_PROVIDER_UNAVAILABLE_TEXT =
+  "Finny is a little busy right now and couldn't generate an answer. Please try again in a few seconds.";
+
 const INTENT_VALUES = [
   'SUBSCRIPTIONS_REVIEW',
   'BUDGET_CHECK',
@@ -1189,17 +1192,40 @@ router.post('/chat', requireAuth, validateRequest({ body: finnyChatSchema }), as
       insights,
     });
 
-    const reply = await generateFinnyReply({
-      message,
-      systemInstruction: buildSystemInstruction({
-        contextTypeUsed,
-        shouldAllowSpendingPatterns,
-        hasInsights: insights.length > 0,
-        intent,
-        locale: insightContext.profile?.locale,
-      }),
-      context,
-    });
+    let reply;
+
+    try {
+      reply = await generateFinnyReply({
+        message,
+        systemInstruction: buildSystemInstruction({
+          contextTypeUsed,
+          shouldAllowSpendingPatterns,
+          hasInsights: insights.length > 0,
+          intent,
+          locale: insightContext.profile?.locale,
+        }),
+        context,
+      });
+    } catch {
+      // The Gemini client already retried transient failures. Rather than
+      // surfacing a 500, return a friendly, in-scope message so the chat shows a
+      // clear "try again" prompt instead of a server error.
+      sendSuccess(res, {
+        format: 'text',
+        text: FINNY_PROVIDER_UNAVAILABLE_TEXT,
+        ...(SHOULD_INCLUDE_DEBUG_META
+          ? {
+              meta: {
+                inScope: topicScope.inScope,
+                contextTypeUsed,
+                intent,
+                providerError: true,
+              },
+            }
+          : {}),
+      });
+      return;
+    }
 
     const parsedObject = tryParseJsonObject(reply);
     const normalizedCard = normalizeCardPayload(parsedObject);
