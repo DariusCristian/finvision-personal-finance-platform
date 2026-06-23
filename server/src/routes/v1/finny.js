@@ -563,12 +563,21 @@ const buildNetWorthCard = ({ insightContext }) => {
   };
 };
 
-const buildSystemInstruction = ({ contextTypeUsed, shouldAllowSpendingPatterns, hasInsights, intent }) => {
+const LOCALE_TO_LANGUAGE = {
+  'ro-RO': 'Romanian',
+  'en-US': 'English',
+};
+
+const buildSystemInstruction = ({ contextTypeUsed, shouldAllowSpendingPatterns, hasInsights, intent, locale }) => {
+  const preferredLanguage = LOCALE_TO_LANGUAGE[locale] ?? null;
   const lines = [
     'You are Finny, a finance + FinVision assistant. Refuse out-of-scope topics.',
     'Provide educational guidance only, not financial advice.',
     'Never provide buy/sell recommendations or direct investment actions.',
     'Answer the user question first and do not change the topic.',
+    preferredLanguage
+      ? `Reply in the same language as the user's message. If that is unclear, default to ${preferredLanguage}. Write all card text (title, summary, headings, bullets, action labels, disclaimer) in that language.`
+      : "Reply in the same language as the user's message. Write all card text in that language.",
     'Allowed topics: budgeting, savings, net worth, personal finance education, crypto/stocks education, FinVision app usage, and finance/news explanations related to these areas.',
     'Budget analysis requests can include spending categories, monthly pacing, and habit improvement using the provided data.',
     'If user asks unrelated topics, respond with a refusal and offer finance/app alternatives.',
@@ -1187,6 +1196,7 @@ router.post('/chat', requireAuth, validateRequest({ body: finnyChatSchema }), as
         shouldAllowSpendingPatterns,
         hasInsights: insights.length > 0,
         intent,
+        locale: insightContext.profile?.locale,
       }),
       context,
     });

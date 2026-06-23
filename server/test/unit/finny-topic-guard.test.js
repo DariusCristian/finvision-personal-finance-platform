@@ -60,3 +60,38 @@ test('topic guard classifies habit improvement last 30 days intent', () => {
   assert.equal(isInScope(message), true);
   assert.equal(classifyIntent(message), 'HABIT_IMPROVEMENT_30D');
 });
+
+test('topic guard allows bare investing question (English)', () => {
+  const message = 'Is 1000 a good amount to start investing?';
+
+  assert.equal(isInScope(message), true);
+  assert.equal(classifyIntent(message), 'FINANCE_EDUCATION');
+});
+
+test('topic guard allows Romanian investing question', () => {
+  const message = 'Suma de 1000 de lei este o suma buna pentru a incepe sa investesc?';
+
+  assert.equal(isInScope(message), true);
+  assert.equal(classifyIntent(message), 'FINANCE_EDUCATION');
+});
+
+test('topic guard classifies Romanian saving question', () => {
+  const message = 'Cum pot sa economisesc mai multi bani?';
+
+  assert.equal(isInScope(message), true);
+  assert.equal(classifyIntent(message), 'SAVING_TIPS');
+});
+
+test('topic guard classifies Romanian budget question', () => {
+  const message = 'Care sunt cheltuielile mele cele mai mari luna aceasta?';
+
+  assert.equal(isInScope(message), true);
+  assert.equal(classifyIntent(message), 'BUDGET_CHECK');
+});
+
+test('topic guard still blocks Romanian off-topic sports question', () => {
+  const message = 'Cine este atacantul de la FC Barcelona?';
+
+  assert.equal(isInScope(message), false);
+  assert.equal(classifyIntent(message), 'OFF_TOPIC');
+});

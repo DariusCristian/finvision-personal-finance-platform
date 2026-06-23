@@ -43,6 +43,10 @@ const ALLOWLIST_KEYWORDS = [
   'avalanche',
   'interest',
   'compound interest',
+  'invest',
+  'investing',
+  'investment',
+  'investments',
   'etf',
   'stock',
   'stocks',
@@ -66,6 +70,29 @@ const ALLOWLIST_KEYWORDS = [
   'investing account',
   'demo portfolio',
   'finvision',
+  // Romanian (ro-RO) finance vocabulary. Roots are chosen so one entry matches
+  // common inflected forms (e.g. 'invest' matches "investesc", "investiție",
+  // "a investi"). Kept specific to avoid matching unrelated words.
+  'economi', // economii, economisesc, economisire
+  'buget', // buget, bugetul, bugetare
+  'cheltui', // cheltuiala, cheltuieli, a cheltui
+  'venit', // venit, venituri
+  'datori', // datorie, datorii
+  'dobanda',
+  'dobândă',
+  'actiuni',
+  'acțiuni',
+  'obligatiuni',
+  'obligațiuni',
+  'cripto', // cripto, criptomonede, criptomoneda
+  'portofoliu',
+  'piata',
+  'piață',
+  'avere', // avere, avere netă
+  'patrimoniu',
+  'abonament', // abonament, abonamente
+  'fond de urgenta',
+  'fond de urgență',
 ];
 
 const BLOCKLIST_KEYWORDS = [
@@ -105,8 +132,27 @@ const getMatchedKeywords = (text, keywords) =>
 const includesAnyKeyword = (text, keywords) => keywords.some((keyword) => text.includes(keyword));
 
 const INTENT_KEYWORDS = {
-  SUBSCRIPTIONS_REVIEW: ['subscription', 'subscriptions', 'recurring', 'renewal', 'netflix', 'spotify', 'hbo', 'prime'],
-  NET_WORTH: ['net worth', 'wealth', 'assets', 'liabilities', 'portfolio value', 'balance sheet'],
+  SUBSCRIPTIONS_REVIEW: [
+    'subscription',
+    'subscriptions',
+    'recurring',
+    'renewal',
+    'netflix',
+    'spotify',
+    'hbo',
+    'prime',
+    'abonament', // abonament, abonamente
+  ],
+  NET_WORTH: [
+    'net worth',
+    'wealth',
+    'assets',
+    'liabilities',
+    'portfolio value',
+    'balance sheet',
+    'avere', // avere, avere netă
+    'patrimoniu',
+  ],
   SAVING_TIPS: [
     'saving tips',
     'save money',
@@ -119,6 +165,9 @@ const INTENT_KEYWORDS = {
     'spend less',
     'emergency fund',
     'cash flow',
+    'economi', // economii, economisesc, economisire
+    'fond de urgenta',
+    'fond de urgență',
   ],
   BUDGET_CHECK: [
     'budget',
@@ -132,6 +181,9 @@ const INTENT_KEYWORDS = {
     'income vs expenses',
     'budget goal',
     'monthly budget',
+    'buget', // buget, bugetul, bugetare
+    'cheltui', // cheltuiala, cheltuieli
+    'venit', // venit, venituri
   ],
   TOP_SPENDING_CATEGORIES: [
     'top categories',
@@ -165,8 +217,20 @@ const INTENT_KEYWORDS = {
     'apr',
     'snowball',
     'avalanche',
+    'invest', // invest, investing, investesc, investiție
     'investing',
     'market',
+    'dobanda', // dobândă (interest)
+    'dobândă',
+    'actiuni', // acțiuni (stocks)
+    'acțiuni',
+    'obligatiuni', // obligațiuni (bonds)
+    'obligațiuni',
+    'cripto', // cripto, criptomonede
+    'portofoliu', // portfolio
+    'piata', // piață (market)
+    'piață',
+    'datori', // datorie, datorii (debt)
   ],
 };
 
