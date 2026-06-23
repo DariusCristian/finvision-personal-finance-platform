@@ -4,8 +4,10 @@ import { AppError } from '../../errors/app-error.js';
 import { FxProviderError, convert } from '../../integrations/fx/frankfurterClient.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validate-request.js';
+import { Category } from '../../models/category.js';
 import { InvestingWalletLedger } from '../../models/investing-wallet-ledger.js';
 import { InvestingWallet } from '../../models/investing-wallet.js';
+import { Transaction } from '../../models/transaction.js';
 import { sendSuccess } from '../../utils/response.js';
 import {
   investingWalletConvertQuoteQuerySchema,
@@ -40,6 +42,34 @@ const serializeWallet = (wallet) => ({
   autoFundAmount: toMoney(wallet.autoFundAmount),
   autoFundDayOfMonth: wallet.autoFundDayOfMonth,
 });
+
+// Funding the investing wallet moves money out of the user's spendable budget,
+// so it is recorded as an "Investing" expense transaction. Without this, the
+// budget's total balance (income - expenses) never reflects the outflow and the
+// user could "add" unlimited funds with no effect on their balance.
+const recordInvestingDepositExpense = async (userId, amountRON, note) => {
+  const investingCategory = await Category.findOne({
+    userId: null,
+    slug: 'investing',
+  }).select('_id');
+
+  if (!investingCategory) {
+    return;
+  }
+
+  const trimmedNote = typeof note === 'string' ? note.trim() : '';
+
+  await Transaction.create({
+    userId,
+    type: 'expense',
+    categoryId: investingCategory._id,
+    amount: amountRON,
+    currency: WALLET_CURRENCY,
+    date: new Date(),
+    description: trimmedNote ? `Investing wallet deposit — ${trimmedNote}` : 'Investing wallet deposit',
+    recurrence: 'none',
+  });
+};
 
 const ensureWallet = async (userId) => {
   let wallet = await InvestingWallet.findOne({ userId });
@@ -267,6 +297,8 @@ investingWalletRouter.post(
           note: req.body.note ?? '',
         },
       });
+
+      await recordInvestingDepositExpense(req.authUser._id, amountRON, req.body.note);
 
       sendSuccess(res, {
         ...serializeWallet(wallet),

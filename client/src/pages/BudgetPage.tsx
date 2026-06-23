@@ -952,30 +952,21 @@ export function BudgetPage() {
     setIsDepositingWalletFunds(true);
 
     try {
-      // The deposit is the source of truth for the new balance. Apply it first so a
-      // successful deposit always updates the UI, even if the (secondary) summary
-      // refresh fails. Coupling both in a single Promise.all previously caused a
-      // successful server-side deposit to be discarded client-side whenever the
-      // summary request failed, leaving the balance visibly unchanged.
+      // The deposit is the source of truth for the new wallet balance. Apply it
+      // first so a successful deposit always updates the UI immediately, even if
+      // the follow-up refresh has a hiccup.
       const walletPayload = await depositInvestingWallet(payload, accessToken);
       setInvestingWallet(walletPayload);
       // A real deposit succeeded, so we are no longer on demo fallback data.
       setIsUsingMockData(false);
       setLoadError(null);
-
-      try {
-        const walletSummaryPayload = await fetchInvestingWalletSummary(
-          accessToken,
-          selectedMonthParts.year,
-          selectedMonthParts.month,
-        );
-        setInvestingWalletSummary(walletSummaryPayload);
-      } catch {
-        // Keep the prior summary; the balance is already updated from the deposit.
-      }
-
       setIsWalletDepositModalOpen(false);
       setSuccessMessage(`Added ${formatCurrency(payload.amountRON, 2, 'RON')} to investing wallet.`);
+
+      // Funding the wallet records an "Investing" expense on the server, so reload
+      // the budget data. This refreshes the total balance (income - expenses), the
+      // transaction list, and the wallet summary so the outflow is reflected.
+      await loadBudgetData();
     } catch (error) {
       if (error instanceof ApiRequestError) {
         throw error;
