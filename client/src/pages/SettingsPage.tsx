@@ -111,7 +111,7 @@ export function SettingsPage() {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingPreferences, setIsSavingPreferences] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   const hasLoadedProfileForTokenRef = useRef<string | null>(null);
   const lastProfileFetchAtRef = useRef<number>(0);
@@ -572,28 +572,26 @@ export function SettingsPage() {
                 </label>
 
                 <div className="md:col-span-2">
-                  <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
-                    <div>
-                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Dark mode</p>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Reduce eye strain in low light.</p>
+                  <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Appearance</p>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Choose how FinVision looks to you.</p>
+                    <div className="mt-3 flex gap-2">
+                      {(['light', 'dark', 'system'] as const).map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => setTheme(option)}
+                          className={[
+                            'flex-1 rounded-lg border px-3 py-2 text-xs font-semibold capitalize transition',
+                            theme === option
+                              ? 'border-[#2563eb] bg-[#2563eb] text-white'
+                              : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700',
+                          ].join(' ')}
+                        >
+                          {option === 'system' ? 'Follow system' : option.charAt(0).toUpperCase() + option.slice(1)}
+                        </button>
+                      ))}
                     </div>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={theme === 'dark'}
-                      onClick={toggleTheme}
-                      className={[
-                        'relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-2 dark:focus:ring-offset-slate-900',
-                        theme === 'dark' ? 'bg-[#2563eb]' : 'bg-slate-300',
-                      ].join(' ')}
-                    >
-                      <span
-                        className={[
-                          'inline-block h-5 w-5 transform rounded-full bg-white transition-transform',
-                          theme === 'dark' ? 'translate-x-6' : 'translate-x-1',
-                        ].join(' ')}
-                      />
-                    </button>
                   </div>
                 </div>
 
@@ -653,7 +651,7 @@ export function SettingsPage() {
               </div>
 
               <form className="mt-6 space-y-4" onSubmit={handlePasswordSubmit}>
-                <label className="block text-sm font-medium text-slate-600">
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300">
                   Current password
                   <input
                     type="password"
@@ -667,10 +665,10 @@ export function SettingsPage() {
                       setSecurityNotice(null);
                     }}
                     className={[
-                      'mt-2 w-full rounded-xl bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-4',
+                      'mt-2 w-full rounded-xl bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-4 dark:bg-slate-900 dark:text-slate-100',
                       passwordErrors.currentPassword
-                        ? 'border border-rose-300 focus:border-rose-500 focus:ring-rose-100'
-                        : 'border border-slate-200 focus:border-[#2563eb] focus:ring-blue-100',
+                        ? 'border border-rose-300 focus:border-rose-500 focus:ring-rose-100 dark:border-rose-700'
+                        : 'border border-slate-200 focus:border-[#2563eb] focus:ring-blue-100 dark:border-slate-700 dark:focus:ring-blue-900/40',
                     ].join(' ')}
                   />
                   {passwordErrors.currentPassword ? (
@@ -679,7 +677,7 @@ export function SettingsPage() {
                 </label>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
                     New password
                     <input
                       type="password"
@@ -690,10 +688,10 @@ export function SettingsPage() {
                         setSecurityNotice(null);
                       }}
                       className={[
-                        'mt-2 w-full rounded-xl bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-4',
+                        'mt-2 w-full rounded-xl bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-4 dark:bg-slate-900 dark:text-slate-100',
                         passwordErrors.newPassword
-                          ? 'border border-rose-300 focus:border-rose-500 focus:ring-rose-100'
-                          : 'border border-slate-200 focus:border-[#2563eb] focus:ring-blue-100',
+                          ? 'border border-rose-300 focus:border-rose-500 focus:ring-rose-100 dark:border-rose-700'
+                          : 'border border-slate-200 focus:border-[#2563eb] focus:ring-blue-100 dark:border-slate-700 dark:focus:ring-blue-900/40',
                       ].join(' ')}
                     />
                     {passwordErrors.newPassword ? (
@@ -701,7 +699,7 @@ export function SettingsPage() {
                     ) : null}
                   </label>
 
-                  <label className="text-sm font-medium text-slate-600">
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
                     Confirm new password
                     <input
                       type="password"
@@ -715,10 +713,10 @@ export function SettingsPage() {
                         setSecurityNotice(null);
                       }}
                       className={[
-                        'mt-2 w-full rounded-xl bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-4',
+                        'mt-2 w-full rounded-xl bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-4 dark:bg-slate-900 dark:text-slate-100',
                         passwordErrors.confirmNewPassword
-                          ? 'border border-rose-300 focus:border-rose-500 focus:ring-rose-100'
-                          : 'border border-slate-200 focus:border-[#2563eb] focus:ring-blue-100',
+                          ? 'border border-rose-300 focus:border-rose-500 focus:ring-rose-100 dark:border-rose-700'
+                          : 'border border-slate-200 focus:border-[#2563eb] focus:ring-blue-100 dark:border-slate-700 dark:focus:ring-blue-900/40',
                       ].join(' ')}
                     />
                     {passwordErrors.confirmNewPassword ? (
@@ -761,17 +759,17 @@ export function SettingsPage() {
               className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-800 dark:bg-slate-900 sm:p-7"
             >
               <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Billing</h2>
-              <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
-                <p className="text-sm text-slate-600">
-                  Current plan: <span className="font-semibold text-slate-900">Free plan</span>
+              <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 dark:border-slate-700 dark:bg-slate-700">
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  Current plan: <span className="font-semibold text-slate-900 dark:text-slate-100">Free plan</span>
                 </p>
-                <p className="mt-2 text-sm text-slate-600">
-                  Next billing date: <span className="font-medium text-slate-900">—</span>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                  Next billing date: <span className="font-medium text-slate-900 dark:text-slate-100">—</span>
                 </p>
-                <p className="mt-2 text-sm text-slate-600">
-                  Payment method: <span className="font-medium text-slate-900">—</span>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                  Payment method: <span className="font-medium text-slate-900 dark:text-slate-100">—</span>
                 </p>
-                <p className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+                <p className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-700 dark:border-blue-900 dark:bg-blue-900/30 dark:text-blue-300">
                   Billing will be handled via Stripe in a future update. This section will show invoices,
                   payment methods, and plan upgrades.
                 </p>
@@ -779,14 +777,14 @@ export function SettingsPage() {
                   <button
                     type="button"
                     disabled
-                    className="cursor-not-allowed rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-400"
+                    className="cursor-not-allowed rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-500"
                   >
                     Upgrade (coming soon)
                   </button>
                   <button
                     type="button"
                     disabled
-                    className="cursor-not-allowed rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-400"
+                    className="cursor-not-allowed rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-500"
                   >
                     Manage billing (coming soon)
                   </button>

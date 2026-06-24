@@ -45,7 +45,6 @@ app.use('/api/v1/insights', insightsRouter);
 app.use('/api/v1/investing-wallet', investingWalletRouter);
 app.use('/api/v1/market/crypto', marketCryptoRouter);
 app.use('/api/v1/market/stocks', marketStocksRouter);
-app.use('/api/v1/market', marketStocksRouter);
 app.use('/api/v1/news', newsRouter);
 app.use('/api/v1/profile', profileRouter);
 app.use('/api/v1/transactions', transactionRouter);

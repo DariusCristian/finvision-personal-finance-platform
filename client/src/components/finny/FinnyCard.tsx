@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 
-const toSafeArray = (value) => (Array.isArray(value) ? value : []);
+import type { FinnyCard as FinnyCardModel } from '../../lib/api';
 
-export function FinnyCard({ card }) {
+const toSafeArray = <T,>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
+
+export function FinnyCard({ card }: { card: FinnyCardModel | null | undefined }) {
   const navigate = useNavigate();
 
   if (!card || typeof card !== 'object') {
@@ -11,8 +13,8 @@ export function FinnyCard({ card }) {
 
   const title = typeof card.title === 'string' ? card.title : '';
   const summary = typeof card.summary === 'string' ? card.summary : '';
-  const sections = toSafeArray(card.sections);
-  const actions = toSafeArray(card.actions);
+  const sections = toSafeArray<Record<string, unknown>>(card.sections);
+  const actions = toSafeArray<Record<string, unknown>>(card.actions);
   const disclaimer = typeof card.disclaimer === 'string' ? card.disclaimer : '';
 
   return (
@@ -25,17 +27,21 @@ export function FinnyCard({ card }) {
           return null;
         }
 
-        const heading = typeof section.heading === 'string'
-          ? section.heading
-          : typeof section.title === 'string'
-            ? section.title
-            : '';
-        const content = typeof section.content === 'string'
-          ? section.content
-          : typeof section.text === 'string'
-            ? section.text
-            : '';
-        const bullets = toSafeArray(section.bullets).filter((item) => typeof item === 'string' && item.trim().length > 0);
+        const heading =
+          typeof section['heading'] === 'string'
+            ? section['heading']
+            : typeof section['title'] === 'string'
+              ? section['title']
+              : '';
+        const content =
+          typeof section['content'] === 'string'
+            ? section['content']
+            : typeof section['text'] === 'string'
+              ? section['text']
+              : '';
+        const bullets = toSafeArray<unknown>(section['bullets']).filter(
+          (item): item is string => typeof item === 'string' && item.trim().length > 0,
+        );
 
         if (!heading && !content && bullets.length === 0) {
           return null;
@@ -63,8 +69,8 @@ export function FinnyCard({ card }) {
               return null;
             }
 
-            const label = typeof action.label === 'string' ? action.label : '';
-            const href = typeof action.href === 'string' ? action.href : '';
+            const label = typeof action['label'] === 'string' ? action['label'] : '';
+            const href = typeof action['href'] === 'string' ? action['href'] : '';
 
             if (!label || !href) {
               return null;
@@ -99,4 +105,3 @@ export function FinnyCard({ card }) {
     </div>
   );
 }
-

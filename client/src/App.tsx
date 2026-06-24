@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 
-import { FinnyWidget } from './components/finny/FinnyWidget.jsx';
+import { FinnyWidget } from './components/finny/FinnyWidget';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import { BudgetPage } from './pages/BudgetPage';

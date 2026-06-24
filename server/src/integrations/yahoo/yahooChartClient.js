@@ -1,3 +1,12 @@
+export class YahooProviderError extends Error {
+  constructor(message, options = {}) {
+    super(message);
+    this.name = 'YahooProviderError';
+    this.status = options.status ?? 502;
+    this.code = options.code ?? 'YAHOO_PROVIDER_ERROR';
+  }
+}
+
 const YAHOO_CHART_ENDPOINT = 'https://query1.finance.yahoo.com/v8/finance/chart/';
 const REQUEST_TIMEOUT_MS = 10_000;
 const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
@@ -56,7 +65,10 @@ export const fetchYahooStockHistory = async (symbol, range = '1M') => {
 
     const isTimeout = error instanceof Error && (error.name === 'AbortError' || error.message.toLowerCase().includes('aborted'));
 
-    throw new Error(isTimeout ? 'YAHOO_TIMEOUT' : 'YAHOO_NETWORK_ERROR');
+    throw new YahooProviderError(
+      isTimeout ? 'Yahoo Finance request timed out.' : 'Yahoo Finance network error.',
+      { status: 502, code: isTimeout ? 'YAHOO_TIMEOUT' : 'YAHOO_NETWORK_ERROR' },
+    );
   }
 
   clearTimeout(timeoutId);
@@ -65,7 +77,10 @@ export const fetchYahooStockHistory = async (symbol, range = '1M') => {
   const rawResponseFirst200Chars = bodyText.slice(0, 200);
 
   if (!response.ok) {
-    throw new Error(`YAHOO_NON_200_${response.status}`);
+    throw new YahooProviderError(`Yahoo Finance returned HTTP ${response.status}.`, {
+      status: response.status >= 500 ? 502 : response.status,
+      code: `YAHOO_NON_200_${response.status}`,
+    });
   }
 
   let payload;

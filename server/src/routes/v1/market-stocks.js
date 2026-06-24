@@ -15,8 +15,9 @@ import {
   fetchDailyHistory as fetchStooqDailyHistory,
   StooqProviderError,
 } from '../../integrations/stooq/stooqClient.js';
-import { fetchYahooStockHistory } from '../../integrations/yahoo/yahooChartClient.js';
+import { fetchYahooStockHistory, YahooProviderError } from '../../integrations/yahoo/yahooChartClient.js';
 import { requireAuth } from '../../middleware/auth.js';
+import { InvestFunding } from '../../models/invest-funding.js';
 import { InvestingWalletLedger } from '../../models/investing-wallet-ledger.js';
 import { InvestingWallet } from '../../models/investing-wallet.js';
 import { PortfolioAccount } from '../../models/portfolio-account.js';
@@ -174,6 +175,14 @@ const normalizeProviderError = (error) => {
       statusCode: error.status,
       code: error.code,
       details: error.details,
+    });
+  }
+
+  if (error instanceof YahooProviderError) {
+    return new AppError({
+      message: error.message,
+      statusCode: error.status,
+      code: error.code,
     });
   }
 
@@ -1175,6 +1184,7 @@ const handleStockOrder = async (req, res, next) => {
 
 marketStocksRouter.get(
   '/search',
+  requireAuth,
   validateRequest({ query: marketStocksSearchQuerySchema }),
   async (req, res, next) => {
     try {
@@ -1201,6 +1211,7 @@ marketStocksRouter.get(
 
 marketStocksRouter.get(
   '/quote',
+  requireAuth,
   validateRequest({ query: marketStocksQuoteQuerySchema }),
   async (req, res, next) => {
     try {
@@ -1268,6 +1279,7 @@ marketStocksRouter.get(
 
 marketStocksRouter.get(
   '/profile',
+  requireAuth,
   validateRequest({ query: marketStocksProfileQuerySchema }),
   async (req, res, next) => {
     try {
@@ -1708,6 +1720,17 @@ marketStocksRouter.post(
           targetMode: STOCKS_FUNDED_MODE,
           portfolioAccountId: stocksAccount._id.toString(),
         },
+      });
+
+      await InvestFunding.create({
+        userId: req.authUser._id,
+        mode: STOCKS_FUNDED_MODE,
+        fromCurrency: WALLET_CURRENCY,
+        fromAmount: amountRON,
+        toCurrency: STOCKS_BASE_CURRENCY,
+        toAmount: toppedUpEUR,
+        rate: eurPerRonRate,
+        provider: 'frankfurter',
       });
 
       const refreshedHoldings = await PortfolioHolding.find({

@@ -2,15 +2,15 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { FinnyCard } from './FinnyCard.jsx';
-import { InsightCard } from './InsightCard.jsx';
-import { FinnyTextMessage } from './FinnyTextMessage.jsx';
+import { FinnyCard } from './FinnyCard';
+import { InsightCard } from './InsightCard';
+import { FinnyTextMessage } from './FinnyTextMessage';
 import { useAuth } from '../../context/AuthContext';
-import { ApiRequestError, sendFinnyChatMessage } from '../../lib/api';
+import { ApiRequestError, sendFinnyChatMessage, type FinnyContextType } from '../../lib/api';
 
 const HIDDEN_PATH_PREFIXES = ['/finny', '/login', '/register'];
 
-const QUICK_CHIPS = [
+const QUICK_CHIPS: { label: string; contextType: FinnyContextType; prompt: string }[] = [
   { label: 'Track expenses', contextType: 'budget', prompt: 'Help me track and improve my monthly expenses.' },
   {
     label: 'Saving tips',
@@ -26,23 +26,23 @@ const QUICK_CHIPS = [
 
 const createMessageId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
-const matchesPathPrefix = (pathname, prefixes) =>
+const matchesPathPrefix = (pathname: string, prefixes: string[]) =>
   prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
-const formatMessageTime = (timestampMs) =>
+const formatMessageTime = (timestampMs: number) =>
   new Date(timestampMs).toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
   });
 
-const detectContextTypeFromInput = (input) => {
+const detectContextTypeFromInput = (input: string) => {
   const value = String(input ?? '').trim().toLowerCase();
 
   if (!value) {
     return 'general';
   }
 
-  const contains = (keywords) => keywords.some((keyword) => value.includes(keyword));
+  const contains = (keywords: string[]) => keywords.some((keyword) => value.includes(keyword));
 
   if (contains(['net worth', 'wealth', 'assets', 'liabilities', 'balance sheet'])) {
     return 'general';
@@ -52,7 +52,9 @@ const detectContextTypeFromInput = (input) => {
     return 'subscriptions';
   }
 
-  if (contains(['budget', 'budgeting', 'spending', 'expense', 'expenses', 'cash flow', 'save', 'saving tips'])) {
+  if (
+    contains(['budget', 'budgeting', 'spending', 'expense', 'expenses', 'cash flow', 'save', 'saving tips'])
+  ) {
     return 'budget';
   }
 
@@ -71,7 +73,7 @@ const detectContextTypeFromInput = (input) => {
   return 'general';
 };
 
-const resolveQuickChipPrompt = (chip) => {
+const resolveQuickChipPrompt = (chip: { prompt?: string; label?: string }) => {
   if (typeof chip?.prompt === 'string' && chip.prompt.trim().length > 0) {
     return chip.prompt.trim();
   }
@@ -87,6 +89,10 @@ const resolveQuickChipPrompt = (chip) => {
   return chip?.label ?? '';
 };
 
+type Message =
+  | { id: string; role: 'user'; text: string; createdAt: number }
+  | { id: string; role: 'assistant'; data: Record<string, unknown>; createdAt: number };
+
 export function FinnyWidget() {
   const { accessToken, isAuthLoading, user } = useAuth();
   const location = useLocation();
@@ -94,13 +100,13 @@ export function FinnyWidget() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState('');
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   const inFlightRef = useRef(false);
-  const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const isHiddenRoute = useMemo(
     () => matchesPathPrefix(location.pathname, HIDDEN_PATH_PREFIXES),
@@ -128,7 +134,7 @@ export function FinnyWidget() {
       return undefined;
     }
 
-    const onKeyDown = (event) => {
+    const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsOpen(false);
       }
@@ -161,7 +167,7 @@ export function FinnyWidget() {
     return () => window.clearTimeout(timeoutId);
   }, [isOpen]);
 
-  const sendMessage = async ({ message: rawMessage, contextType } = {}) => {
+  const sendMessage = async ({ message: rawMessage, contextType }: { message?: string; contextType?: FinnyContextType } = {}) => {
     const message = (rawMessage ?? draft).trim();
 
     if (!message || isSending || inFlightRef.current) {
@@ -180,7 +186,7 @@ export function FinnyWidget() {
       return;
     }
 
-    const resolvedContextType = contextType ?? detectContextTypeFromInput(message);
+    const resolvedContextType = (contextType ?? detectContextTypeFromInput(message)) as FinnyContextType;
     const now = Date.now();
 
     setMessages((current) => [
@@ -212,7 +218,7 @@ export function FinnyWidget() {
         {
           id: createMessageId(),
           role: 'assistant',
-          data: response,
+          data: response as Record<string, unknown>,
           createdAt: Date.now(),
         },
       ]);
@@ -279,7 +285,9 @@ export function FinnyWidget() {
           <header className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-700">
             <div>
               <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Finny</h3>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Educational guidance - not financial advice.</p>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                Educational guidance - not financial advice.
+              </p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -313,7 +321,7 @@ export function FinnyWidget() {
               </p>
             ) : (
               <div className="space-y-2.5">
-                {messages.map((message) => (
+                {messages.map((message) =>
                   message.role === 'user' ? (
                     <article
                       key={message.id}
@@ -323,26 +331,32 @@ export function FinnyWidget() {
                       <p className="mt-1 text-[10px] text-white/75">{formatMessageTime(message.createdAt)}</p>
                     </article>
                   ) : (
-                    <article key={message.id} className="mr-auto max-w-[92%] text-sm leading-5 text-slate-700 dark:text-slate-200">
-                      {message.data?.format === 'insight_card' ? (
-                        <InsightCard card={message.data.card} />
-                      ) : message.data?.format === 'card' ? (
-                        <FinnyCard card={message.data.card} />
+                    <article
+                      key={message.id}
+                      className="mr-auto max-w-[92%] text-sm leading-5 text-slate-700 dark:text-slate-200"
+                    >
+                      {message.data?.['format'] === 'insight_card' ? (
+                        <InsightCard card={message.data['card'] as never} />
+                      ) : message.data?.['format'] === 'card' ? (
+                        <FinnyCard card={message.data['card'] as never} />
                       ) : (
                         <div className="rounded-2xl rounded-bl-sm border border-slate-200 bg-white px-3 py-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                           <FinnyTextMessage
                             text={
-                              typeof message.data?.text === 'string' && message.data.text.trim().length > 0
-                                ? message.data.text
+                              typeof message.data?.['text'] === 'string' &&
+                              message.data['text'].trim().length > 0
+                                ? message.data['text']
                                 : 'Finny could not generate a response.'
                             }
                           />
                         </div>
                       )}
-                      <p className="mt-1 text-[10px] text-slate-400 dark:text-slate-500">{formatMessageTime(message.createdAt)}</p>
+                      <p className="mt-1 text-[10px] text-slate-400 dark:text-slate-500">
+                        {formatMessageTime(message.createdAt)}
+                      </p>
                     </article>
-                  )
-                ))}
+                  ),
+                )}
 
                 {isSending ? (
                   <article className="mr-auto max-w-[88%] rounded-2xl rounded-bl-sm border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
@@ -415,7 +429,9 @@ export function FinnyWidget() {
               </button>
             </div>
 
-            {errorMessage ? <p className="mt-2 text-xs text-rose-600 dark:text-rose-300">{errorMessage}</p> : null}
+            {errorMessage ? (
+              <p className="mt-2 text-xs text-rose-600 dark:text-rose-300">{errorMessage}</p>
+            ) : null}
           </footer>
         </section>
       ) : null}

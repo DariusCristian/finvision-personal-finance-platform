@@ -8,6 +8,7 @@ import {
   isCoinGeckoConfigured,
   searchCoins,
 } from '../../integrations/coingecko/coingeckoClient.js';
+import { requireAuth } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { sendSuccess } from '../../utils/response.js';
 import {
@@ -62,6 +63,7 @@ const assertCoinGeckoAvailable = () => {
 
 marketCryptoRouter.get(
   '/search',
+  requireAuth,
   validateRequest({ query: marketSearchQuerySchema }),
   async (req, res, next) => {
     try {
@@ -89,6 +91,7 @@ marketCryptoRouter.get(
 
 marketCryptoRouter.get(
   '/quote',
+  requireAuth,
   validateRequest({ query: marketQuoteQuerySchema }),
   async (req, res, next) => {
     try {
@@ -121,6 +124,7 @@ marketCryptoRouter.get(
 
 marketCryptoRouter.get(
   '/chart',
+  requireAuth,
   validateRequest({ query: marketChartQuerySchema }),
   async (req, res, next) => {
     try {

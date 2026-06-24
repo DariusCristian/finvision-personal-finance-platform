@@ -9,7 +9,7 @@ import {
   type ChartConfiguration,
 } from 'chart.js';
 
-import { formatMoney } from '../utils/money';
+import { formatMoney } from '../lib/formatters';
 
 Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
 

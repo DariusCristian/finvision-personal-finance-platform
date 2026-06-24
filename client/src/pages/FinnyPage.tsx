@@ -2,9 +2,9 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { useLocation } from 'react-router-dom';
 
 import { AppShell } from '../components/AppShell';
-import { FinnyCard } from '../components/finny/FinnyCard.jsx';
-import { InsightCard } from '../components/finny/InsightCard.jsx';
-import { FinnyTextMessage } from '../components/finny/FinnyTextMessage.jsx';
+import { FinnyCard } from '../components/finny/FinnyCard';
+import { InsightCard } from '../components/finny/InsightCard';
+import { FinnyTextMessage } from '../components/finny/FinnyTextMessage';
 import { useAuth } from '../context/AuthContext';
 import {
   ApiRequestError,

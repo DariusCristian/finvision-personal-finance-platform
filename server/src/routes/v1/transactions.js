@@ -120,8 +120,12 @@ const expandTransactionForRange = (transaction, rangeStart, rangeEnd) => {
 
   let cursor = new Date(transactionDate.getTime());
   let isFirst = true;
+  let iterations = 0;
+  const MAX_OCCURRENCES = 1825; // 5 years of daily recurrences
 
-  while (cursor) {
+  while (cursor && iterations < MAX_OCCURRENCES) {
+    iterations += 1;
+
     if (transactionEndDate && cursor.getTime() > transactionEndDate.getTime()) {
       break;
     }

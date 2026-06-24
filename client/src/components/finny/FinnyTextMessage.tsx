@@ -1,13 +1,23 @@
-const isBulletLine = (line) => /^[-*]\s+/.test(line);
-const isHeadingLine = (line) => /^#{1,3}\s+/.test(line) || /^[A-Z][A-Za-z0-9\s&/-]{2,}:\s*$/.test(line);
+const isBulletLine = (line: string) => /^[-*]\s+/.test(line);
+const isHeadingLine = (line: string) =>
+  /^#{1,3}\s+/.test(line) || /^[A-Z][A-Za-z0-9\s&/-]{2,}:\s*$/.test(line);
 
-const normalizeHeading = (line) => line.replace(/^#{1,3}\s+/, '').replace(/:\s*$/, '').trim();
-const normalizeBullet = (line) => line.replace(/^[-*]\s+/, '').trim();
+const normalizeHeading = (line: string) =>
+  line
+    .replace(/^#{1,3}\s+/, '')
+    .replace(/:\s*$/, '')
+    .trim();
+const normalizeBullet = (line: string) => line.replace(/^[-*]\s+/, '').trim();
 
-const parseTextToBlocks = (text) => {
+type Block =
+  | { type: 'heading'; text: string }
+  | { type: 'bullets'; items: string[] }
+  | { type: 'paragraph'; text: string };
+
+const parseTextToBlocks = (text: string | null | undefined): Block[] => {
   const lines = String(text ?? '').split('\n');
-  const blocks = [];
-  let bulletBuffer = [];
+  const blocks: Block[] = [];
+  let bulletBuffer: string[] = [];
 
   const flushBullets = () => {
     if (bulletBuffer.length > 0) {
@@ -43,7 +53,7 @@ const parseTextToBlocks = (text) => {
   return blocks;
 };
 
-export function FinnyTextMessage({ text }) {
+export function FinnyTextMessage({ text }: { text: string | null | undefined }) {
   const blocks = parseTextToBlocks(text);
 
   if (blocks.length === 0) {
