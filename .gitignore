@@ -12,3 +12,5 @@ packages_legacy/
 *.legacy.json
 .DS_Store
 **/.DS_Store
+.claude/
+docs/
