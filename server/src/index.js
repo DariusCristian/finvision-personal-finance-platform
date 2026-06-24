@@ -5,7 +5,7 @@ import { env } from './config/env.js';
 import { connectToDatabase, disconnectFromDatabase } from './database/mongoose.js';
 import { Article } from './models/article.js';
 import { ensureSystemCategories } from './models/category.js';
-import { backfillInvestFundingMode, InvestFunding } from './models/invest-funding.js';
+import { InvestFunding } from './models/invest-funding.js';
 import { Insight } from './models/insight.js';
 import { InvestingWalletLedger } from './models/investing-wallet-ledger.js';
 import { InvestingWallet } from './models/investing-wallet.js';
@@ -146,7 +146,6 @@ const start = async () => {
       backfillPortfolioTradeExecutedAt(),
       backfillPortfolioSnapshotAccountType(),
       backfillPortfolioSnapshotMode(),
-      backfillInvestFundingMode(),
     ]);
     await normalizeLegacyFundedCryptoCashBalances();
     await Promise.all([
