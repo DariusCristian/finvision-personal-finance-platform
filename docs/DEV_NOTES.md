@@ -21,8 +21,7 @@ Optional API keys:
 - `MARKETAUX_API_KEY`
 - `FINNHUB_API_KEY`
 - `COINGECKO_API_KEY`
-- `OPENAI_API_KEY`
-- `OPENAI_MODEL` (default `gpt-4.1-mini`)
+
 
 ### 3) Start server + client
 ```bash
