@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { AppShell } from '../components/AppShell';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   ApiRequestError,
   fetchProfile,
@@ -11,7 +12,6 @@ import {
   updateProfile,
   type AuthUser,
 } from '../lib/api';
-import { applyTheme, getInitialTheme, type Theme } from '../lib/theme';
 
 type SectionId = 'profile' | 'preferences' | 'security' | 'billing';
 type PasswordField = 'currentPassword' | 'newPassword' | 'confirmNewPassword';
@@ -111,7 +111,7 @@ export function SettingsPage() {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingPreferences, setIsSavingPreferences] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
-  const [theme, setTheme] = useState<Theme>(() => getInitialTheme());
+  const { theme, toggleTheme } = useTheme();
 
   const hasLoadedProfileForTokenRef = useRef<string | null>(null);
   const lastProfileFetchAtRef = useRef<number>(0);
@@ -225,10 +225,6 @@ export function SettingsPage() {
 
     return () => observer.disconnect();
   }, []);
-
-  useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
 
   const scrollToSection = useCallback((sectionId: SectionId) => {
     const section = sectionRefs.current[sectionId];
@@ -585,9 +581,7 @@ export function SettingsPage() {
                       type="button"
                       role="switch"
                       aria-checked={theme === 'dark'}
-                      onClick={() => {
-                        setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
-                      }}
+                      onClick={toggleTheme}
                       className={[
                         'relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-2 dark:focus:ring-offset-slate-900',
                         theme === 'dark' ? 'bg-[#2563eb]' : 'bg-slate-300',

@@ -203,23 +203,6 @@ const assertCategoryMatchesTransactionType = (category, transactionType) => {
   }
 };
 
-const isInvestingContribution = (transactionType, category) =>
-  transactionType === 'expense' && category?.slug === 'investing';
-
-const getInvestingContributionAmount = (transactionType, amount, category) =>
-  isInvestingContribution(transactionType, category) ? amount : 0;
-
-const applyInvestingBalanceDelta = async (user, delta) => {
-  if (!delta) {
-    return;
-  }
-
-  const currentBalance =
-    typeof user.investingAccountBalance === 'number' ? user.investingAccountBalance : 0;
-  user.investingAccountBalance = Math.max(0, currentBalance + delta);
-  await user.save();
-};
-
 const buildSearchFilter = async (userId, searchTerm) => {
   if (!searchTerm) {
     return null;
@@ -359,11 +342,6 @@ transactionRouter.post(
           : null,
       });
 
-      await applyInvestingBalanceDelta(
-        req.authUser,
-        getInvestingContributionAmount(type, amount, category),
-      );
-
       const populatedTransaction = await Transaction.findById(transaction._id).populate('categoryId');
 
       sendSuccess(
@@ -423,12 +401,6 @@ transactionRouter.patch(
       assertCategoryMatchesTransactionType(nextCategory, type);
 
       const normalizedRecurrenceEndDate = isRecurring ? recurrenceEndDate : null;
-      const previousContribution = getInvestingContributionAmount(
-        transaction.type,
-        transaction.amount,
-        transaction.categoryId,
-      );
-      const nextContribution = getInvestingContributionAmount(type, amount, nextCategory);
 
       transaction.type = type;
       transaction.categoryId = nextCategory._id;
@@ -445,7 +417,6 @@ transactionRouter.patch(
         : null;
 
       await transaction.save();
-      await applyInvestingBalanceDelta(req.authUser, nextContribution - previousContribution);
 
       const populatedTransaction = await Transaction.findById(transaction._id).populate('categoryId');
 
@@ -477,14 +448,7 @@ transactionRouter.delete(
         });
       }
 
-      const contributionAmount = getInvestingContributionAmount(
-        transaction.type,
-        transaction.amount,
-        transaction.categoryId,
-      );
-
       await Transaction.deleteOne({ _id: transaction._id, userId: req.authUser._id });
-      await applyInvestingBalanceDelta(req.authUser, -contributionAmount);
 
       sendSuccess(res, {
         deleted: true,

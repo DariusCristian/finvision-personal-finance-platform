@@ -184,6 +184,8 @@ const applyAutoFundIfDue = async (wallet) => {
     },
   });
 
+  await recordInvestingDepositExpense(wallet.userId, amountToAdd, 'Monthly auto-fund');
+
   return wallet;
 };
 

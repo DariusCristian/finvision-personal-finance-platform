@@ -283,11 +283,11 @@ function PortfolioPerformanceChart({
   }, [points]);
 
   if (isLoading) {
-    return <div className="h-64 animate-pulse rounded-2xl bg-slate-100" />;
+    return <div className="h-64 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-700" />;
   }
 
   return (
-    <div className="h-64 rounded-2xl border border-slate-200 bg-slate-50 p-2">
+    <div className="h-64 rounded-2xl border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-800">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full">
         <polyline points={polyline} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" />
       </svg>
@@ -368,12 +368,12 @@ function StockSparkline({
   }, [points]);
 
   if (isLoading) {
-    return <div className="h-24 animate-pulse rounded-xl bg-slate-100" />;
+    return <div className="h-24 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-700" />;
   }
 
   if (isUnavailable) {
     return (
-      <div className="flex h-24 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-500">
+      <div className="flex h-24 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
         Chart unavailable.
       </div>
     );
@@ -381,14 +381,14 @@ function StockSparkline({
 
   if (points.length === 0) {
     return (
-      <div className="flex h-24 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-500">
+      <div className="flex h-24 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
         No chart data yet.
       </div>
     );
   }
 
   return (
-    <div className="h-24 rounded-xl border border-slate-200 bg-slate-50 p-2">
+    <div className="h-24 rounded-xl border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-800">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full">
         <defs>
           <linearGradient id="market-stock-sparkline-fill" x1="0" y1="0" x2="0" y2="1">
@@ -985,6 +985,12 @@ export function MarketPage() {
       await refreshPortfolioContext();
       setIsTradeModalOpen(false);
       setSuccessMessage('Stock order executed.');
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof ApiRequestError
+          ? caughtError.message
+          : 'Unable to place stock order right now.',
+      );
     } finally {
       setIsSubmittingOrder(false);
     }
@@ -1096,7 +1102,7 @@ export function MarketPage() {
             <p className="mt-2 max-w-2xl text-base text-slate-500 dark:text-slate-400">
               Build your long-term wealth with precision and clarity. Choose Start Investing for wallet-funded cash or Demo Practice for simulated capital.
             </p>
-            <div className="mt-3 inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-[0_2px_12px_rgba(15,23,42,0.05)]">
+            <div className="mt-3 inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-[0_2px_12px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-800">
               <button
                 type="button"
                 disabled={isSwitchingMode}
@@ -1107,7 +1113,7 @@ export function MarketPage() {
                   'rounded-lg px-4 py-2 text-sm font-semibold transition',
                   selectedMode === 'funded'
                     ? 'bg-[#2563eb] text-white'
-                    : 'text-slate-600 hover:bg-slate-100',
+                    : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700',
                 ].join(' ')}
               >
                 Start Investing
@@ -1122,7 +1128,7 @@ export function MarketPage() {
                   'rounded-lg px-4 py-2 text-sm font-semibold transition',
                   selectedMode === 'demo'
                     ? 'bg-[#2563eb] text-white'
-                    : 'text-slate-600 hover:bg-slate-100',
+                    : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700',
                 ].join(' ')}
               >
                 Demo Practice
@@ -1136,7 +1142,7 @@ export function MarketPage() {
           </div>
 
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1">
+            <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800">
               {STOCK_RANGES.map((range) => (
                 <button
                   key={range.id}
@@ -1146,7 +1152,7 @@ export function MarketPage() {
                     'rounded-md px-2.5 py-1.5 text-xs font-semibold transition',
                     selectedRange === range.id
                       ? 'bg-[#2563eb] text-white'
-                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700',
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200',
                   ].join(' ')}
                 >
                   {range.label}
@@ -1209,19 +1215,19 @@ export function MarketPage() {
 
         {selectedMode ? (
           <section className="grid grid-cols-12 gap-6">
-          <article className="relative col-span-12 overflow-hidden rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] xl:col-span-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Total Balance</p>
-            <p className="mt-2 text-4xl font-bold tracking-[-0.03em] text-slate-900">
+          <article className="relative col-span-12 overflow-hidden rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Total Balance</p>
+            <p className="mt-2 text-4xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
               {isLoadingPortfolio ? '...' : formatMoney(portfolioValueEUR, 'EUR')}
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
               <span className={['font-semibold', getChangeTextClassName(dayPnLEUR)].join(' ')}>
                 {isLoadingPortfolio ? '--' : `${dayPnLEUR >= 0 ? '+' : ''}${formatMoney(dayPnLEUR, 'EUR')} (${formatPct(dayPnLPct, 2)})`}
               </span>
-              <span className="text-slate-500">Today</span>
+              <span className="text-slate-500 dark:text-slate-400">Today</span>
             </div>
             <div className="mt-4">
-              <div className="mb-3 inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1 text-xs">
+              <div className="mb-3 inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1 text-xs dark:border-slate-600 dark:bg-slate-700">
                 {PERFORMANCE_RANGES.map((range) => (
                   <button
                     key={range.id}
@@ -1230,8 +1236,8 @@ export function MarketPage() {
                     className={[
                       'rounded-md px-2.5 py-1 font-semibold transition',
                       marketPerformanceRange === range.id
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-500 hover:text-slate-700',
+                        ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-600 dark:text-slate-100'
+                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
                     ].join(' ')}
                   >
                     {range.label}
@@ -1243,22 +1249,22 @@ export function MarketPage() {
           </article>
 
           <aside className="col-span-12 grid gap-4 sm:grid-cols-2 xl:col-span-4 xl:grid-cols-1">
-            <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Buy Power</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">{isLoadingPortfolio ? '--' : formatMoney(buyingPowerEUR, 'EUR')}</p>
+            <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">Buy Power</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">{isLoadingPortfolio ? '--' : formatMoney(buyingPowerEUR, 'EUR')}</p>
             </article>
-            <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Invested Amount</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">{isLoadingPortfolio ? '--' : formatMoney(investedAmountEUR, 'EUR')}</p>
+            <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">Invested Amount</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">{isLoadingPortfolio ? '--' : formatMoney(investedAmountEUR, 'EUR')}</p>
             </article>
-            <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Total Return</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">—</p>
+            <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">Total Return</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">—</p>
             </article>
-            <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Best Performer</p>
+            <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">Best Performer</p>
               <div className="mt-1 flex items-end justify-between gap-2">
-                <p className="text-lg font-semibold text-slate-900">{bestPerformerHolding?.symbol ?? '—'}</p>
+                <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{bestPerformerHolding?.symbol ?? '—'}</p>
                 <p className={['text-sm font-semibold', getChangeTextClassName(bestPerformerHolding?.change24h)].join(' ')}>
                   {bestPerformerHolding ? formatPct(bestPerformerHolding.change24h, 2) : '—'}
                 </p>
@@ -1266,16 +1272,16 @@ export function MarketPage() {
             </article>
           </aside>
 
-          <article className="col-span-12 rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] xl:col-span-4">
+          <article className="col-span-12 rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">Sector Allocation</h2>
-              <span className="text-xs text-slate-500">Fallback: symbols</span>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Sector Allocation</h2>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Fallback: symbols</span>
             </div>
             <div className="mt-5 flex items-center justify-center">
               <div className="relative h-44 w-44 rounded-full" style={{ background: allocationDonut }}>
-                <div className="absolute inset-[22px] flex flex-col items-center justify-center rounded-full bg-white">
-                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Total</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-900">
+                <div className="absolute inset-[22px] flex flex-col items-center justify-center rounded-full bg-white dark:bg-slate-800">
+                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Total</p>
+                  <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
                     {formatMoney(allocation.total, portfolioSourceCurrency)}
                   </p>
                 </div>
@@ -1283,7 +1289,7 @@ export function MarketPage() {
             </div>
             <div className="mt-5 space-y-2">
               {allocation.slices.length === 0 ? (
-                <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-500">
+                <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-400">
                   No allocation yet.
                 </p>
               ) : (
@@ -1291,29 +1297,29 @@ export function MarketPage() {
                   <div key={item.id} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span className="text-slate-600">{item.label}</span>
+                      <span className="text-slate-600 dark:text-slate-300">{item.label}</span>
                     </div>
-                    <span className="font-semibold text-slate-900">{formatPct(item.pct, 1)}</span>
+                    <span className="font-semibold text-slate-900 dark:text-slate-100">{formatPct(item.pct, 1)}</span>
                   </div>
                 ))
               )}
             </div>
           </article>
 
-          <article className="col-span-12 rounded-2xl border border-slate-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] xl:col-span-8">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-slate-900">Top Holdings</h2>
+          <article className="col-span-12 rounded-2xl border border-slate-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-8">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-700">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Top Holdings</h2>
               <button
                 type="button"
                 disabled
-                className="text-sm font-semibold text-slate-400 disabled:cursor-not-allowed"
+                className="text-sm font-semibold text-slate-400 disabled:cursor-not-allowed dark:text-slate-500"
               >
                 Full Portfolio
               </button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-left">
-                <thead className="bg-slate-50 text-xs uppercase tracking-[0.14em] text-slate-500">
+                <thead className="bg-slate-50 text-xs uppercase tracking-[0.14em] text-slate-500 dark:bg-slate-700 dark:text-slate-400">
                   <tr>
                     <th className="px-6 py-3">Asset</th>
                     <th className="px-6 py-3">Quantity</th>
@@ -1325,23 +1331,23 @@ export function MarketPage() {
                 <tbody>
                   {topHoldings.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-10 text-center text-sm text-slate-500">
+                      <td colSpan={5} className="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
                         No stock holdings yet. Place a buy order to start.
                       </td>
                     </tr>
                   ) : (
                     topHoldings.map((holding) => (
-                      <tr key={holding.id} className="border-t border-slate-100 text-sm">
+                      <tr key={holding.id} className="border-t border-slate-100 text-sm dark:border-slate-700">
                         <td className="px-6 py-4">
-                          <p className="font-semibold text-slate-900">{holding.symbol}</p>
-                          <p className="text-xs text-slate-500">{holding.symbol}</p>
+                          <p className="font-semibold text-slate-900 dark:text-slate-100">{holding.symbol}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{holding.symbol}</p>
                         </td>
-                        <td className="px-6 py-4 text-slate-700">{formatQty(holding.quantity, holding.symbol)}</td>
-                        <td className="px-6 py-4 text-slate-700">{formatMoney(holding.currentPrice, portfolioSourceCurrency)}</td>
+                        <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{formatQty(holding.quantity, holding.symbol)}</td>
+                        <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{formatMoney(holding.currentPrice, portfolioSourceCurrency)}</td>
                         <td className={['px-6 py-4 font-semibold', getChangeTextClassName(holding.change24h)].join(' ')}>
                           {formatPct(holding.change24h, 2)}
                         </td>
-                        <td className="px-6 py-4 font-semibold text-slate-900">
+                        <td className="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100">
                           {formatMoney(holding.marketValue, portfolioSourceCurrency)}
                         </td>
                       </tr>
@@ -1352,29 +1358,29 @@ export function MarketPage() {
             </div>
           </article>
 
-          <article id="market-discovery" className="col-span-12 rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
+          <article id="market-discovery" className="col-span-12 rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900">Discover Opportunities</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Discover Opportunities</h2>
               <label className="w-full max-w-xs">
                 <input
                   type="search"
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
                   placeholder="Search Apple, Tesla, NVDA..."
-                  className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                  className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-blue-900/40"
                 />
               </label>
             </div>
 
-            <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-700">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Selected Opportunity</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-900">{selectedStockName}</p>
-                  <p className="text-xs text-slate-500">{selectedSymbol}</p>
+                  <p className="text-xs uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Selected Opportunity</p>
+                  <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedStockName}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{selectedSymbol}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-semibold text-slate-900">
+                  <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                     {typeof selectedQuote?.price === 'number' ? formatPrice(selectedQuote.price, detailSourceCurrency) : '--'}
                   </p>
                   <p className={['text-xs font-semibold', getChangeTextClassName(selectedQuote?.changePct)].join(' ')}>
@@ -1424,18 +1430,18 @@ export function MarketPage() {
                       className={[
                         'w-[200px] flex-shrink-0 snap-start rounded-xl border p-3 text-left transition',
                         isActive
-                          ? 'border-[#2563eb] bg-blue-50'
-                          : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white',
+                          ? 'border-[#2563eb] bg-blue-50 dark:bg-blue-900/30'
+                          : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:hover:border-slate-500 dark:hover:bg-slate-600',
                       ].join(' ')}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-sm font-semibold text-slate-900">{stock.symbol}</p>
-                        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-500">
+                        <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{stock.symbol}</p>
+                        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-500 dark:bg-slate-600 dark:text-slate-300">
                           {getOpportunityTag(stock.symbol)}
                         </span>
                       </div>
-                      <p className="mt-1 truncate text-xs text-slate-500">{stock.name}</p>
-                      <p className="mt-3 text-base font-semibold text-slate-900">
+                      <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">{stock.name}</p>
+                      <p className="mt-3 text-base font-semibold text-slate-900 dark:text-slate-100">
                         {typeof quote?.price === 'number' ? formatPrice(quote.price, 'USD') : '--'}
                       </p>
                       <p className={['text-xs font-semibold', getChangeTextClassName(quote?.changePct)].join(' ')}>
@@ -1450,8 +1456,8 @@ export function MarketPage() {
           </article>
 
           <section className="col-span-12 grid grid-cols-12 gap-6">
-            <article className="col-span-12 rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] xl:col-span-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Execution Suite</p>
+            <article className="col-span-12 rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Execution Suite</p>
               <div className="mt-4 grid gap-2">
                 <button
                   type="button"
@@ -1471,7 +1477,7 @@ export function MarketPage() {
                     setTradeSide('sell');
                     setIsTradeModalOpen(true);
                   }}
-                  className="inline-flex h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-4 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-4 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-700 dark:bg-slate-700 dark:text-rose-400 dark:hover:bg-rose-900/30"
                 >
                   Sell Assets
                 </button>
@@ -1479,23 +1485,23 @@ export function MarketPage() {
             </article>
 
             <article className="col-span-12 grid gap-4 xl:col-span-8 xl:grid-cols-2">
-              <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Market Update</p>
-                <p className="mt-3 text-sm text-slate-700">
+              <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Market Update</p>
+                <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
                   S&P 500 reached a fresh high as large-cap earnings stayed resilient across technology and retail.
                 </p>
-                <p className="mt-2 text-xs text-slate-500">
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                   {latestTrade
                     ? `Last trade: ${latestTrade.side.toUpperCase()} ${latestTrade.symbol} (${new Date(latestTrade.createdAt || Date.now()).toLocaleDateString()})`
                     : 'No recent trades yet.'}
                 </p>
               </div>
-              <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Sector Strength</p>
-                <p className="mt-3 text-sm text-slate-700">
+              <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Sector Strength</p>
+                <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
                   Tech and communication services continue to show relative strength while defensives remain stable.
                 </p>
-                <div className="mt-3 text-xs text-slate-500">
+                <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
                   {marketCapValue !== null
                     ? `Selected ${selectedSymbol} market cap: ${formatMoney(marketCapValue, detailSourceCurrency)}`
                     : 'Heat map module coming soon.'}
@@ -1505,9 +1511,9 @@ export function MarketPage() {
           </section>
           </section>
         ) : (
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-            <h2 className="text-lg font-semibold text-slate-900">Choose a mode to begin</h2>
-            <p className="mt-2 text-sm text-slate-500">
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Choose a mode to begin</h2>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Start Investing begins at €0 and is funded by Budget wallet conversion. Demo Practice starts with €5,000.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -1527,7 +1533,7 @@ export function MarketPage() {
                 onClick={() => {
                   void handleChooseMode('demo');
                 }}
-                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
               >
                 Demo Practice
               </button>
@@ -1560,20 +1566,20 @@ export function MarketPage() {
 
       {isTopUpModalOpen ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <h3 className="text-xl font-semibold text-slate-900">Top up from Budget</h3>
-            <p className="mt-2 text-sm text-slate-500">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-800">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Top up from Budget</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Convert RON from Investing Wallet into EUR buying power for Stocks account.
             </p>
 
-            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
-              <p className="text-slate-500">Available wallet balance</p>
-              <p className="mt-1 font-semibold text-slate-900">
+            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-700">
+              <p className="text-slate-500 dark:text-slate-400">Available wallet balance</p>
+              <p className="mt-1 font-semibold text-slate-900 dark:text-slate-100">
                 {isLoadingWalletBalance ? 'Loading...' : formatMoney(walletBalanceRON, 'RON')}
               </p>
             </div>
 
-            <label className="mt-4 block text-sm font-medium text-slate-700">
+            <label className="mt-4 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Amount (RON)
               <input
                 type="number"
@@ -1581,7 +1587,7 @@ export function MarketPage() {
                 step="0.01"
                 value={topUpAmountRONInput}
                 onChange={(event) => setTopUpAmountRONInput(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:focus:ring-blue-900/40"
               />
             </label>
 
@@ -1590,7 +1596,7 @@ export function MarketPage() {
                 type="button"
                 onClick={() => setIsTopUpModalOpen(false)}
                 disabled={isSubmittingTopUp}
-                className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
               >
                 Cancel
               </button>
@@ -1611,13 +1617,13 @@ export function MarketPage() {
 
       {isDemoBudgetModalOpen ? (
         <div className="fixed inset-0 z-[96] flex items-center justify-center bg-slate-900/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <h3 className="text-xl font-semibold text-slate-900">Set demo budget</h3>
-            <p className="mt-2 text-sm text-slate-500">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-800">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Set demo budget</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               This resets Demo Practice holdings/trades and applies a new starting EUR cash balance.
             </p>
 
-            <label className="mt-4 block text-sm font-medium text-slate-700">
+            <label className="mt-4 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Demo budget (EUR)
               <input
                 type="number"
@@ -1625,12 +1631,12 @@ export function MarketPage() {
                 step="0.01"
                 value={demoBudgetInput}
                 onChange={(event) => setDemoBudgetInput(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
+                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:focus:ring-blue-900/40"
               />
             </label>
 
             {demoBudgetError ? (
-              <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+              <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-900/30 dark:text-rose-400">
                 {demoBudgetError}
               </div>
             ) : null}
@@ -1640,7 +1646,7 @@ export function MarketPage() {
                 type="button"
                 onClick={() => setIsDemoBudgetModalOpen(false)}
                 disabled={isSettingDemoBudget}
-                className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
               >
                 Cancel
               </button>
