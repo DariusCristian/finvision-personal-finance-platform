@@ -76,10 +76,11 @@ const ALLOWLIST_KEYWORDS = [
   'economi', // economii, economisesc, economisire
   'buget', // buget, bugetul, bugetare
   'cheltui', // cheltuiala, cheltuieli, a cheltui
+  'unde am cheltuit', // where did I spend — for top spending queries
   'venit', // venit, venituri
   'datori', // datorie, datorii
   'dobanda',
-  'dobândă',
+  'dobând', // root: dobânda, dobândă, dobânzi — catches all inflected forms
   'actiuni',
   'acțiuni',
   'obligatiuni',
@@ -87,10 +88,12 @@ const ALLOWLIST_KEYWORDS = [
   'cripto', // cripto, criptomonede, criptomoneda
   'portofoliu',
   'piata',
+  'piaț', // root: piața, piețe — catches inflected forms (ț ≠ t in piata)
   'piață',
   'avere', // avere, avere netă
   'patrimoniu',
   'abonament', // abonament, abonamente
+  'obicei', // obicei, obiceiuri — habit
   'fond de urgenta',
   'fond de urgență',
 ];
@@ -192,6 +195,10 @@ const INTENT_KEYWORDS = {
     'where did i spend most',
     'highest spending category',
     'largest category',
+    'unde am cheltuit', // where did I spend — RO
+    'pe ce am cheltuit', // what did I spend on — RO
+    'top cheltuieli', // top expenses — RO
+    'categorii', // categorii, categoriile — RO for categories
   ],
   HABIT_IMPROVEMENT_30D: [
     'habit',
@@ -199,6 +206,8 @@ const INTENT_KEYWORDS = {
     'last 30 days',
     'suggest one habit',
     'one habit i can improve',
+    'obicei', // habit — RO
+    'ultimele 30', // last 30 days — RO
   ],
   APP_USAGE: ['finvision', 'app', 'feature', 'navigate', 'where is', 'how do i', 'settings', 'dashboard'],
   FINANCE_EDUCATION: [
@@ -221,7 +230,7 @@ const INTENT_KEYWORDS = {
     'investing',
     'market',
     'dobanda', // dobândă (interest)
-    'dobândă',
+    'dobând', // root: dobânda, dobândă, dobânzi
     'actiuni', // acțiuni (stocks)
     'acțiuni',
     'obligatiuni', // obligațiuni (bonds)
@@ -229,6 +238,7 @@ const INTENT_KEYWORDS = {
     'cripto', // cripto, criptomonede
     'portofoliu', // portfolio
     'piata', // piață (market)
+    'piaț', // root: piața, piețe
     'piață',
     'datori', // datorie, datorii (debt)
   ],

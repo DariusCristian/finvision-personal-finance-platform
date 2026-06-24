@@ -38,10 +38,26 @@ type QuickQuestion = {
 const MAX_COLLAPSED_ASSISTANT_TEXT_LENGTH = 600;
 
 const QUICK_QUESTIONS: QuickQuestion[] = [
-  { label: 'Compare BTC to ETH', contextType: 'crypto' },
-  { label: 'What is an ETF?', contextType: 'general' },
-  { label: 'What is a bond?', contextType: 'general' },
-  { label: 'Explain compound interest', contextType: 'general' },
+  {
+    label: 'Compare BTC to ETH',
+    contextType: 'crypto',
+    prompt: 'Compare Bitcoin and Ethereum: key differences, use cases, and risk profile.',
+  },
+  {
+    label: 'What is an ETF?',
+    contextType: 'general',
+    prompt: 'What is an ETF and how does it work as an investment?',
+  },
+  {
+    label: 'What is a bond?',
+    contextType: 'general',
+    prompt: 'What is a bond and how does it differ from stocks?',
+  },
+  {
+    label: 'Explain compound interest',
+    contextType: 'general',
+    prompt: 'Explain compound interest with a simple example.',
+  },
   {
     label: 'Saving tips',
     contextType: 'budget',
@@ -52,8 +68,16 @@ const QUICK_QUESTIONS: QuickQuestion[] = [
     contextType: 'general',
     prompt: 'Explain net worth and show how my net worth is calculated in FinVision.',
   },
-  { label: 'How can I improve my budgeting?', contextType: 'budget' },
-  { label: 'Check my subscriptions', contextType: 'subscriptions' },
+  {
+    label: 'How can I improve my budgeting?',
+    contextType: 'budget',
+    prompt: 'Suggest one habit I can improve based on my last 30 days of spending.',
+  },
+  {
+    label: 'Check my subscriptions',
+    contextType: 'subscriptions',
+    prompt: 'Review my subscriptions and recurring expenses.',
+  },
 ];
 
 const createMessageId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
@@ -99,14 +123,6 @@ const detectContextTypeFromInput = (input: string): FinnyContextType => {
 const resolveQuickQuestionPrompt = (question: QuickQuestion) => {
   if (question.prompt && question.prompt.trim().length > 0) {
     return question.prompt.trim();
-  }
-
-  if (question.label === 'Saving tips') {
-    return 'Give me saving tips based on my current budget and spending.';
-  }
-
-  if (question.label === 'Net worth') {
-    return 'Explain net worth and show how my net worth is calculated in FinVision.';
   }
 
   return question.label;
