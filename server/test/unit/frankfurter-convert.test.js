@@ -18,13 +18,13 @@ test.after(() => {
 });
 
 test('convert returns realistic EUR amount for 1100 RON', async () => {
+  // Frankfurter now called without `amount` — returns per-unit rate
   global.fetch = async () =>
     jsonResponse({
-      amount: 1100,
       base: 'RON',
       date: '2026-03-25',
       rates: {
-        EUR: 215.88,
+        EUR: 0.196254,
       },
     });
 
@@ -34,18 +34,17 @@ test('convert returns realistic EUR amount for 1100 RON', async () => {
     amount: 1100,
   });
 
-  assert.equal(result.convertedAmount, 215.88);
+  assert.equal(result.convertedAmount, 0.196254 * 1100);
   assert.ok(result.convertedAmount > 100 && result.convertedAmount < 400);
 });
 
 test('convert exposes non-inverted bidirectional rates', async () => {
   global.fetch = async () =>
     jsonResponse({
-      amount: 550,
       base: 'RON',
       date: '2026-03-25',
       rates: {
-        EUR: 107.94,
+        EUR: 0.196254,
       },
     });
 

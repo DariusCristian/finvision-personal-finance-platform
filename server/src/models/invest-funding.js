@@ -63,13 +63,3 @@ investFundingSchema.index({ userId: 1, mode: 1, createdAt: -1 });
 export const InvestFunding =
   mongoose.models.InvestFunding ?? mongoose.model('InvestFunding', investFundingSchema);
 
-export const backfillInvestFundingMode = async () => {
-  await InvestFunding.updateMany(
-    {
-      mode: { $exists: false },
-    },
-    {
-      $set: { mode: 'funded' },
-    },
-  );
-};

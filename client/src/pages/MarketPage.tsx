@@ -845,14 +845,6 @@ export function MarketPage() {
     return { low, high, changePct };
   }, [displaySeries]);
 
-  const marketCapValue = useMemo(() => {
-    if (typeof selectedProfile?.marketCap !== 'number' || !Number.isFinite(selectedProfile.marketCap)) {
-      return null;
-    }
-
-    return selectedProfile.marketCap * 1_000_000;
-  }, [selectedProfile?.marketCap]);
-
   const allocation = useMemo(() => buildSymbolAllocation(portfolioHoldings), [portfolioHoldings]);
   const allocationDonut = useMemo(() => buildDonutBackground(allocation.slices), [allocation.slices]);
 
@@ -1309,13 +1301,6 @@ export function MarketPage() {
           <article className="col-span-12 rounded-2xl border border-slate-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-8">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-700">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Top Holdings</h2>
-              <button
-                type="button"
-                disabled
-                className="text-sm font-semibold text-slate-400 disabled:cursor-not-allowed dark:text-slate-500"
-              >
-                Full Portfolio
-              </button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-left">
@@ -1484,29 +1469,13 @@ export function MarketPage() {
               </div>
             </article>
 
-            <article className="col-span-12 grid gap-4 xl:col-span-8 xl:grid-cols-2">
-              <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Market Update</p>
-                <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
-                  S&P 500 reached a fresh high as large-cap earnings stayed resilient across technology and retail.
-                </p>
-                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                  {latestTrade
-                    ? `Last trade: ${latestTrade.side.toUpperCase()} ${latestTrade.symbol} (${new Date(latestTrade.createdAt || Date.now()).toLocaleDateString()})`
-                    : 'No recent trades yet.'}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Sector Strength</p>
-                <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
-                  Tech and communication services continue to show relative strength while defensives remain stable.
-                </p>
-                <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                  {marketCapValue !== null
-                    ? `Selected ${selectedSymbol} market cap: ${formatMoney(marketCapValue, detailSourceCurrency)}`
-                    : 'Heat map module coming soon.'}
-                </div>
-              </div>
+            <article className="col-span-12 rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Recent Activity</p>
+              <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
+                {latestTrade
+                  ? `Last trade: ${latestTrade.side.toUpperCase()} ${latestTrade.symbol} (${new Date(latestTrade.createdAt || Date.now()).toLocaleDateString()})`
+                  : 'No recent trades yet.'}
+              </p>
             </article>
           </section>
           </section>

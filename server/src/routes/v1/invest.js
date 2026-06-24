@@ -29,7 +29,6 @@ import {
   investPerformanceQuerySchema,
   investSnapshotsQuerySchema,
   investTopUpQuoteQuerySchema,
-  investTopUpSchema,
   investTradesQuerySchema,
 } from '../../validation/invest.js';
 
@@ -974,22 +973,13 @@ investRouter.post(
   },
 );
 
-investRouter.post(
-  '/topup',
-  requireAuth,
-  validateRequest({ body: investTopUpSchema }),
-  async (req, res, next) => {
-    try {
-      throw new AppError({
-        message: 'Use /api/v1/invest/crypto/topup-from-wallet for Start Investing top-ups.',
-        statusCode: 410,
-        code: 'INVEST_TOPUP_ENDPOINT_DEPRECATED',
-      });
-    } catch (error) {
-      next(normalizeProviderError(error));
-    }
-  },
-);
+investRouter.post('/topup', requireAuth, (req, res, next) => {
+  next(new AppError({
+    message: 'Use /api/v1/invest/crypto/topup-from-wallet for Start Investing top-ups.',
+    statusCode: 410,
+    code: 'INVEST_TOPUP_ENDPOINT_DEPRECATED',
+  }));
+});
 
 investRouter.get(
   '/performance',

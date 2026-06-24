@@ -107,7 +107,7 @@ export function AssistantPage() {
   };
 
   return (
-    <AppShell activeTab="home">
+    <AppShell>
       <section className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] sm:p-8">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#2563eb]">Assistant</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-slate-900">Ask Finny</h1>

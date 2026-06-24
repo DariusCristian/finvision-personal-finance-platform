@@ -256,7 +256,7 @@ export function FinnyPage() {
   };
 
   return (
-    <AppShell activeTab="home">
+    <AppShell>
       <div className="fv-page mx-auto w-full max-w-[900px]">
         <section className="rounded-3xl border border-slate-200 bg-white px-4 pb-6 pt-8 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:px-7 sm:pt-10">
           <header className="text-center transition-all duration-200">

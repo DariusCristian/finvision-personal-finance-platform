@@ -11,7 +11,6 @@ import { Transaction } from '../../models/transaction.js';
 import { sendSuccess } from '../../utils/response.js';
 import {
   investingWalletConvertQuoteQuerySchema,
-  investingWalletConvertSchema,
   investingWalletDepositSchema,
   investingWalletLedgerQuerySchema,
   investingWalletSummaryQuerySchema,
@@ -351,22 +350,13 @@ investingWalletRouter.get(
   },
 );
 
-investingWalletRouter.post(
-  '/convert',
-  requireAuth,
-  validateRequest({ body: investingWalletConvertSchema }),
-  async (req, res, next) => {
-    try {
-      throw new AppError({
-        message: 'Use /api/v1/invest/crypto/topup-from-wallet for Start Investing top-ups.',
-        statusCode: 410,
-        code: 'WALLET_CONVERT_DEPRECATED',
-      });
-    } catch (error) {
-      next(normalizeProviderError(error));
-    }
-  },
-);
+investingWalletRouter.post('/convert', requireAuth, (req, res, next) => {
+  next(new AppError({
+    message: 'Use /api/v1/invest/crypto/topup-from-wallet for Start Investing top-ups.',
+    statusCode: 410,
+    code: 'WALLET_CONVERT_DEPRECATED',
+  }));
+});
 
 investingWalletRouter.get(
   '/ledger',

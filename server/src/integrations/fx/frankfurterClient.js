@@ -215,22 +215,22 @@ export const convert = async ({ from, to, amount }) => {
     });
   }
 
-  const cacheKey = `fx:convert:${normalizedFrom}:${normalizedTo}:${numericAmount}`;
+  // Cache the rate for this currency pair, not the amount-specific result
+  const cacheKey = `fx:convert:${normalizedFrom}:${normalizedTo}`;
 
-  return withCachedRequest(cacheKey, CONVERT_CACHE_TTL_MS, async () => {
+  const { rate: rateToPerFrom, date } = await withCachedRequest(cacheKey, CONVERT_CACHE_TTL_MS, async () => {
     const payload = await fetchFrankfurter({
       path: '/latest',
       query: {
         from: normalizedFrom,
         to: normalizedTo,
-        amount: numericAmount,
       },
     });
 
     const rates = payload?.rates || {};
-    const convertedAmount = Number(rates?.[normalizedTo]);
+    const rate = Number(rates?.[normalizedTo]);
 
-    if (!Number.isFinite(convertedAmount)) {
+    if (!Number.isFinite(rate)) {
       throw new FxProviderError('FX conversion result is unavailable.', {
         status: 502,
         code: 'FX_PROVIDER_ERROR',
@@ -238,20 +238,22 @@ export const convert = async ({ from, to, amount }) => {
       });
     }
 
-    const rateToPerFrom = convertedAmount / numericAmount;
-    const rateFromPerTo = convertedAmount > 0 ? numericAmount / convertedAmount : null;
-
-    return {
-      from: normalizedFrom,
-      to: normalizedTo,
-      amount: numericAmount,
-      convertedAmount,
-      rateToPerFrom,
-      rateFromPerTo,
-      rate: rateToPerFrom,
-      result: convertedAmount,
-      date: String(payload?.date || ''),
-      provider: 'frankfurter',
-    };
+    return { rate, date: String(payload?.date || '') };
   });
+
+  const convertedAmount = rateToPerFrom * numericAmount;
+  const rateFromPerTo = convertedAmount > 0 ? numericAmount / convertedAmount : null;
+
+  return {
+    from: normalizedFrom,
+    to: normalizedTo,
+    amount: numericAmount,
+    convertedAmount,
+    rateToPerFrom,
+    rateFromPerTo,
+    rate: rateToPerFrom,
+    result: convertedAmount,
+    date,
+    provider: 'frankfurter',
+  };
 };

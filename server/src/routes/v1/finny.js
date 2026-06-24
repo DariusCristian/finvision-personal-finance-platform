@@ -452,8 +452,6 @@ const buildNetWorthSnapshot = (insightContext) => {
   const stocksPortfolioValue = getPortfolioValueForType(insightContext, 'stocks');
   const cryptoCash = Number(insightContext.investing.crypto.buyingPower || 0);
   const stocksCash = Number(insightContext.investing.stocks.buyingPower || 0);
-  const liabilities = null;
-
   const netWorthEstimate = budgetBalance + cryptoPortfolioValue + cryptoCash + stocksPortfolioValue + stocksCash;
 
   return {
@@ -463,7 +461,6 @@ const buildNetWorthSnapshot = (insightContext) => {
     stocksPortfolioValue,
     cryptoCash,
     stocksCash,
-    liabilities,
     netWorthEstimate,
   };
 };
@@ -526,9 +523,6 @@ const buildSavingTipsCard = ({ insightContext }) => {
 const buildNetWorthCard = ({ insightContext }) => {
   const snapshot = buildNetWorthSnapshot(insightContext);
   const currency = snapshot.currency;
-  const liabilitiesNote = snapshot.liabilities === null
-    ? 'Liabilities are not tracked yet in FinVision.'
-    : formatCurrency(snapshot.liabilities, currency);
 
   return {
     title: 'Net Worth Snapshot',
@@ -545,7 +539,7 @@ const buildNetWorthCard = ({ insightContext }) => {
           `Budget balance proxy (income - expenses this month): ${formatCurrency(snapshot.budgetBalance, currency)}`,
           `Crypto portfolio value: ${formatCurrency(snapshot.cryptoPortfolioValue, currency)} + cash ${formatCurrency(snapshot.cryptoCash, currency)}`,
           `Stocks portfolio value: ${formatCurrency(snapshot.stocksPortfolioValue, currency)} + cash ${formatCurrency(snapshot.stocksCash, currency)}`,
-          liabilitiesNote,
+          'Liabilities are not tracked yet in FinVision.',
         ],
       },
       {
@@ -870,7 +864,6 @@ const buildGeminiContextByType = ({ insightContext, contextTypeUsed, shouldAllow
         stocksPortfolioValue: Number(netWorthSnapshot.stocksPortfolioValue.toFixed(2)),
         stocksCash: Number(netWorthSnapshot.stocksCash.toFixed(2)),
       },
-      liabilities: null,
     },
   };
   const attachedContextFields = ['profile', 'financialSnapshot'];

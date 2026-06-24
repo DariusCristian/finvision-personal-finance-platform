@@ -504,10 +504,8 @@ export function BudgetPage() {
       ]);
 
       setCategories(categoriesPayload.categories);
-      setTransactions(sortTransactionsByOption(transactionsPayload.transactions, sortOption));
-      setPreviousMonthTransactions(
-        sortTransactionsByOption(previousTransactionsPayload.transactions, sortOption),
-      );
+      setTransactions(transactionsPayload.transactions);
+      setPreviousMonthTransactions(previousTransactionsPayload.transactions);
       setBudgetSummary(budgetSummaryPayload);
       setPreviousMonthBudgetSummary(previousBudgetSummaryPayload);
       setInvestingWallet(walletPayload);
@@ -515,14 +513,8 @@ export function BudgetPage() {
       setIsUsingMockData(false);
     } catch {
       const fallbackCategories = MOCK_CATEGORIES;
-      const fallbackTransactions = sortTransactionsByOption(
-        buildMockTransactions(selectedMonth, fallbackCategories),
-        sortOption,
-      );
-      const fallbackPreviousTransactions = sortTransactionsByOption(
-        buildMockTransactions(previousMonthKey, fallbackCategories),
-        sortOption,
-      );
+      const fallbackTransactions = buildMockTransactions(selectedMonth, fallbackCategories);
+      const fallbackPreviousTransactions = buildMockTransactions(previousMonthKey, fallbackCategories);
       const fallbackBudgetGoal =
         typeof user?.monthlyBudgetGoal === 'number' && user.monthlyBudgetGoal > 0
           ? user.monthlyBudgetGoal

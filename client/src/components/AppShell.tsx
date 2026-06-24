@@ -4,13 +4,15 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
+type AppShellTab = 'home' | 'budget' | 'learning' | 'news' | 'settings' | 'invest' | 'market';
+
 type AppShellProps = {
-  activeTab: 'home' | 'budget' | 'learning' | 'news' | 'settings' | 'invest' | 'market';
+  activeTab?: AppShellTab;
   children: ReactNode;
 };
 
 type NavItem = {
-  id: AppShellProps['activeTab'];
+  id: AppShellTab;
   label: string;
   href?: string;
 };
