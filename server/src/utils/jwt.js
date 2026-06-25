@@ -11,3 +11,13 @@ export const createAccessToken = (userId) => {
 export const verifyAccessToken = (token) => {
   return jwt.verify(token, env.JWT_ACCESS_SECRET);
 };
+
+export const createRefreshToken = (userId) => {
+  return jwt.sign({ sub: userId }, env.JWT_REFRESH_SECRET, {
+    expiresIn: '7d',
+  });
+};
+
+export const verifyRefreshToken = (token) => {
+  return jwt.verify(token, env.JWT_REFRESH_SECRET);
+};

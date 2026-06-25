@@ -60,16 +60,16 @@ budgetRouter.get(
       );
 
       const rawBudgetGoal = Number(req.authUser.monthlyBudgetGoal);
-      const budgetGoal = Number.isFinite(rawBudgetGoal) && rawBudgetGoal > 0 ? rawBudgetGoal : 0;
+      const budgetGoal = Number.isFinite(rawBudgetGoal) && rawBudgetGoal > 0 ? rawBudgetGoal : null;
       const incomeTotal = toMoney(totals.income);
       const expenseTotal = toMoney(totals.expense);
-      const remainingBudget = toMoney(Math.max(0, budgetGoal - expenseTotal));
+      const remainingBudget = budgetGoal !== null ? toMoney(budgetGoal - expenseTotal) : null;
 
       sendSuccess(res, {
         monthStart: monthStart.toISOString(),
         monthEnd: monthEnd.toISOString(),
         currency: req.authUser.baseCurrency ?? 'RON',
-        budgetGoal: toMoney(budgetGoal),
+        budgetGoal,
         incomeTotal,
         expenseTotal,
         remainingBudget,

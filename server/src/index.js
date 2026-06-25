@@ -42,6 +42,8 @@ import { logger } from './utils/logger.js';
 
 let server;
 
+// fix pentru conturi crypto funded care au cashBalance > 0 fara niciun top-up in istoric
+// inseamna ca balanta a ajuns acolo printr-un bug vechi, asa ca o resetam la 0
 const normalizeLegacyFundedCryptoCashBalances = async () => {
   const fundedAccounts = await PortfolioAccount.find(
     {
@@ -111,8 +113,11 @@ const normalizeLegacyFundedCryptoCashBalances = async () => {
   });
 };
 
+// ordinea din start() este stricta: DB -> backfills -> indexuri -> listen
+// daca oricare pas esueaza, process.exit(1) opreste tot inainte sa acceptam request-uri
 const start = async () => {
   try {
+    // avertizari in dev daca lipsesc cheile API externe
     if (env.NODE_ENV === 'development' && !env.MARKETAUX_API_KEY) {
       logger.warn('news.marketaux.missing_api_key', {
         message: 'MARKETAUX_API_KEY is missing. /api/v1/news will return 501 until it is configured.',
@@ -134,6 +139,9 @@ const start = async () => {
     }
 
     await connectToDatabase();
+
+    // backfill-uri: adauga campuri noi la documentele vechi din DB care nu le au
+    // ruleaza la fiecare pornire, dar sunt rapide daca nu exista nimic de corectat
     await Promise.all([
       backfillPortfolioAccountType(),
       backfillPortfolioAccountMode(),
@@ -147,7 +155,11 @@ const start = async () => {
       backfillPortfolioSnapshotAccountType(),
       backfillPortfolioSnapshotMode(),
     ]);
+
+    // dupa backfill-uri, fix-ul specific pentru cashBalance gresite
     await normalizeLegacyFundedCryptoCashBalances();
+
+    // sincronizeaza indexurile MongoDB si creeaza datele initiale de sistem
     await Promise.all([
       ensureSystemCategories(),
       Article.syncIndexes(),
@@ -165,8 +177,11 @@ const start = async () => {
       PortfolioTrade.syncIndexes(),
       PortfolioSnapshot.syncIndexes(),
     ]);
+
+    // creeaza conturile de portfolio implicite pentru stocks daca nu exista
     await ensureStockPortfolioAccounts();
 
+    // abia acum serverul incepe sa accepte request-uri
     server = app.listen(env.PORT, () => {
       logger.info('server.started', {
         port: env.PORT,
@@ -182,6 +197,7 @@ const start = async () => {
   }
 };
 
+// oprire curata: nu mai accepta request-uri noi, termina ce e in zbor, inchide DB
 const shutdown = async (signal) => {
   logger.info('server.shutdown_requested', { signal });
 
@@ -212,6 +228,7 @@ const shutdown = async (signal) => {
   }
 };
 
+// SIGINT = Ctrl+C in terminal, SIGTERM = Docker/deploy stop
 process.on('SIGINT', () => {
   void shutdown('SIGINT');
 });
@@ -220,6 +237,7 @@ process.on('SIGTERM', () => {
   void shutdown('SIGTERM');
 });
 
+// prinde promise-urile respinse care nu au .catch() - le logam dar nu oprim serverul
 process.on('unhandledRejection', (reason) => {
   logger.error('server.unhandled_rejection', {
     reason: reason instanceof Error ? reason.message : String(reason),
@@ -227,6 +245,7 @@ process.on('unhandledRejection', (reason) => {
   });
 });
 
+// prinde erorile sincrone necapturate - aici oprim serverul pentru ca starea e necunoscuta
 process.on('uncaughtException', (error) => {
   logger.error('server.uncaught_exception', {
     message: error.message,

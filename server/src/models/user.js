@@ -45,11 +45,6 @@ const userSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
-    investingAccountBalance: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
     investCryptoMode: {
       type: String,
       enum: ['funded', 'demo'],

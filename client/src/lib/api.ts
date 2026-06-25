@@ -3,6 +3,7 @@ const AUTH_TOKEN_STORAGE_KEYS = [
   'finvision.accessToken',
   'accessToken',
 ] as const;
+const REFRESH_TOKEN_STORAGE_KEY = 'finvision.refreshToken';
 
 export type AuthUser = {
   id: string;
@@ -14,7 +15,6 @@ export type AuthUser = {
   plan: 'free';
   monthlyBudgetGoal: number | null;
   investingMonthlyContributionGoal: number;
-  investingAccountBalance: number;
   investCryptoMode: 'funded' | 'demo' | null;
   marketStocksMode: 'funded' | 'demo' | null;
 };
@@ -25,6 +25,7 @@ export type BudgetCategory = {
   slug: string;
   color: string;
   kind: 'income' | 'expense' | 'both';
+  type?: 'income' | 'expense' | 'both';
 };
 
 export type BudgetTransaction = {
@@ -49,10 +50,10 @@ export type BudgetSummary = {
   monthStart: string;
   monthEnd: string;
   currency: 'RON' | 'EUR' | 'USD';
-  budgetGoal: number;
+  budgetGoal: number | null;
   incomeTotal: number;
   expenseTotal: number;
-  remainingBudget: number;
+  remainingBudget: number | null;
 };
 
 export type EducationContentBlock = {
@@ -541,6 +542,7 @@ type HealthResponse = ApiSuccessEnvelope<{
 type AuthResponse = ApiSuccessEnvelope<{
   user: AuthUser;
   accessToken: string;
+  refreshToken: string;
 }>;
 
 type CurrentUserResponse = ApiSuccessEnvelope<{
@@ -706,24 +708,6 @@ type InvestFundingResponse = ApiSuccessEnvelope<{
   funding: InvestFundingEntry[];
 }>;
 
-type InvestTopUpQuoteResponse = ApiSuccessEnvelope<{
-  selectedMode?: InvestCryptoMode;
-  fromCurrency: 'RON';
-  fromAmount: number;
-  toCurrency: 'EUR';
-  estimatedEUR: number;
-  rate: number;
-  provider: string;
-  date: string;
-}>;
-
-type InvestTopUpResponse = ApiSuccessEnvelope<{
-  selectedMode?: InvestCryptoMode;
-  cashBalanceEUR: number;
-  addedEUR: number;
-  rate: number;
-  fromAmountRON: number;
-}>;
 
 type InvestCryptoStateResponse = ApiSuccessEnvelope<InvestCryptoState>;
 type MarketStocksStateResponse = ApiSuccessEnvelope<MarketStocksState>;
@@ -762,15 +746,6 @@ type InvestingWalletLedgerResponse = ApiSuccessEnvelope<{
   entries: InvestingWalletLedgerEntry[];
 }>;
 
-type InvestingWalletConvertResponse = ApiSuccessEnvelope<{
-  walletBalanceRON: number;
-  addedEUR: number;
-  portfolioCashEUR: number;
-  rate: {
-    eurPerRon: number;
-    ronPerEur: number | null;
-  };
-}>;
 
 type InvestOrderResponse = ApiSuccessEnvelope<{
   selectedMode?: InvestCryptoMode;
@@ -958,10 +933,6 @@ type InvestStockOrderPayload = {
   quantity: number;
 };
 
-type InvestTopUpPayload = {
-  fromCurrency: 'RON';
-  amount: number;
-};
 
 type InvestingWalletUpdatePayload = {
   monthlyGoal?: number;
@@ -1038,11 +1009,38 @@ const clearStoredAuthTokens = () => {
     window.localStorage.removeItem(key);
     window.sessionStorage.removeItem(key);
   }
+
+  window.localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
 };
 
-const handleUnauthorizedResponse = () => {
+const handleUnauthorizedResponse = async () => {
   if (typeof window === 'undefined') {
     return;
+  }
+
+  const refreshToken = window.localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+
+  if (refreshToken) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (response.ok) {
+        const payload = (await response.json()) as ApiSuccessEnvelope<{
+          accessToken: string;
+          refreshToken: string;
+        }>;
+        window.localStorage.setItem('finvision.accessToken', payload.data.accessToken);
+        window.localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, payload.data.refreshToken);
+        window.location.reload();
+        return;
+      }
+    } catch {
+      // refresh failed — fall through to redirect
+    }
   }
 
   clearStoredAuthTokens();
@@ -1542,37 +1540,6 @@ export const fetchInvestFunding = async (token: string, limit = 20) => {
   };
 };
 
-export const fetchInvestTopUpQuote = async (
-  amount: number,
-  token: string,
-  fromCurrency: 'RON' = 'RON',
-) => {
-  const params = new URLSearchParams({
-    amount: String(amount),
-    fromCurrency,
-  });
-  const payload = await apiRequest<InvestTopUpQuoteResponse>(
-    `/api/v1/invest/topup/quote?${params.toString()}`,
-    {},
-    token,
-  );
-
-  return payload.data;
-};
-
-export const topUpInvestingCash = async (body: InvestTopUpPayload, token: string) => {
-  const payload = await apiRequest<InvestTopUpResponse>(
-    '/api/v1/invest/topup',
-    {
-      method: 'POST',
-      body: JSON.stringify(body),
-    },
-    token,
-  );
-
-  return payload.data;
-};
-
 export const topUpInvestCryptoFromWallet = async (amountRON: number, token: string) => {
   const payload = await apiRequest<InvestCryptoTopUpFromWalletResponse>(
     '/api/v1/invest/crypto/topup-from-wallet',
@@ -1642,18 +1609,6 @@ export const fetchInvestingWalletConvertQuote = async (amountRON: number, token:
   const payload = await apiRequest<ApiSuccessEnvelope<InvestingWalletConvertQuote>>(
     `/api/v1/investing-wallet/convert/quote?${params.toString()}`,
     {},
-    token,
-  );
-  return payload.data;
-};
-
-export const convertInvestingWalletToEur = async (amountRON: number, token: string) => {
-  const payload = await apiRequest<InvestingWalletConvertResponse>(
-    '/api/v1/investing-wallet/convert',
-    {
-      method: 'POST',
-      body: JSON.stringify({ amountRON }),
-    },
     token,
   );
   return payload.data;

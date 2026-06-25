@@ -12,8 +12,6 @@ export const serializeUser = (user) => ({
     typeof user.investingMonthlyContributionGoal === 'number'
       ? user.investingMonthlyContributionGoal
       : 0,
-  investingAccountBalance:
-    typeof user.investingAccountBalance === 'number' ? user.investingAccountBalance : 0,
   investCryptoMode:
     user.investCryptoMode === 'funded' || user.investCryptoMode === 'demo'
       ? user.investCryptoMode

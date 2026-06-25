@@ -9,6 +9,7 @@ const envSchema = z.object({
   MONGODB_URI: z.string().min(1),
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
   JWT_ACCESS_SECRET: z.string().min(1),
+  JWT_REFRESH_SECRET: z.string().min(1),
   MARKETAUX_API_KEY: z.string().optional().default(''),
   FINNHUB_API_KEY: z.string().optional().default(''),
   COINGECKO_API_KEY: z.string().optional().default(''),

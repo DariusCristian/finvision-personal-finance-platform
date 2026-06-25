@@ -230,7 +230,6 @@ export function LoginPage() {
         password,
       });
 
-      console.info('Login submit', { keepSignedIn });
       navigate(redirectPath, { replace: true });
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Unable to sign in.');

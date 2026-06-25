@@ -367,7 +367,6 @@ export function RegisterPage() {
       });
 
       setErrors({});
-      console.info('Register submit', { agreeToTerms });
       navigate('/login?registered=1', { replace: true });
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Unable to create your account.');

@@ -32,6 +32,7 @@ type AuthContextValue = {
 };
 
 const TOKEN_STORAGE_KEY = 'finvision.accessToken';
+const REFRESH_TOKEN_STORAGE_KEY = 'finvision.refreshToken';
 const LEGACY_TOKEN_STORAGE_KEY = 'accessToken';
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -69,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async ({ email, password }: LoginArgs) => {
     const authPayload = await loginWithPassword({ email, password });
     window.localStorage.setItem(TOKEN_STORAGE_KEY, authPayload.accessToken);
+    window.localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, authPayload.refreshToken);
     setAccessToken(authPayload.accessToken);
     setUser(authPayload.user);
   }, []);
@@ -89,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const clearSessionState = useCallback(() => {
     window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+    window.localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
     window.localStorage.removeItem(LEGACY_TOKEN_STORAGE_KEY);
     window.sessionStorage.removeItem(TOKEN_STORAGE_KEY);
     window.sessionStorage.removeItem(LEGACY_TOKEN_STORAGE_KEY);
