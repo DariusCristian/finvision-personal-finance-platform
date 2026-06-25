@@ -133,8 +133,6 @@ const consumeUserRateLimit = (userId) => {
   recentTimestamps.push(now);
   userRequestWindowStore.set(userId, recentTimestamps);
 
-  // Opportunistically evict stale users so the in-memory store stays bounded
-  // for long-running processes without needing a background timer.
   if (userRequestWindowStore.size > RATE_LIMIT_STORE_SWEEP_THRESHOLD) {
     sweepExpiredRateLimitEntries(windowStart);
   }
@@ -1200,9 +1198,6 @@ router.post('/chat', requireAuth, validateRequest({ body: finnyChatSchema }), as
         context,
       });
     } catch {
-      // The Gemini client already retried transient failures. Rather than
-      // surfacing a 500, return a friendly, in-scope message so the chat shows a
-      // clear "try again" prompt instead of a server error.
       sendSuccess(res, {
         format: 'text',
         text: FINNY_PROVIDER_UNAVAILABLE_TEXT,

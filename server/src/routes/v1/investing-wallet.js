@@ -42,10 +42,6 @@ const serializeWallet = (wallet) => ({
   autoFundDayOfMonth: wallet.autoFundDayOfMonth,
 });
 
-// Funding the investing wallet moves money out of the user's spendable budget,
-// so it is recorded as an "Investing" expense transaction. Without this, the
-// budget's total balance (income - expenses) never reflects the outflow and the
-// user could "add" unlimited funds with no effect on their balance.
 const recordInvestingDepositExpense = async (userId, amountRON, note) => {
   const investingCategory = await Category.findOne({
     userId: null,

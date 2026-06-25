@@ -34,9 +34,6 @@ const extractStatus = (error) => {
   return null;
 };
 
-// Transient Gemini failures (rate limits, "model overloaded", timeouts, brief
-// 5xx) are common on the free tier. Treat them as retryable so a single hiccup
-// does not surface as a 500 to the user.
 const isRetryableError = (error) => {
   const status = extractStatus(error);
 

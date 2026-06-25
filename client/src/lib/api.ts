@@ -1125,7 +1125,7 @@ const apiRequest = async <T>(
 
   if (!response.ok) {
     if (response.status === 401 && token) {
-      handleUnauthorizedResponse();
+      void handleUnauthorizedResponse();
     }
 
     if (
@@ -1211,7 +1211,7 @@ const requestCsv = async (
 
   if (!response.ok) {
     if (response.status === 401 && token) {
-      handleUnauthorizedResponse();
+      void handleUnauthorizedResponse();
     }
 
     const bodyText = await response.text();

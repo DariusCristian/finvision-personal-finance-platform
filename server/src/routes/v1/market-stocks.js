@@ -481,7 +481,6 @@ const getStockCandlesByRange = async (symbol, range) => {
           return yahooPayload;
         }
       } catch {
-        // Keep Stooq quote fallback series if Yahoo is unavailable.
       }
     }
 
@@ -523,7 +522,6 @@ const getStockCandlesByRange = async (symbol, range) => {
           return yahooPayload;
         }
       } catch {
-        // Continue to quote fallback.
       }
 
       try {
@@ -566,7 +564,6 @@ const getStockCandlesByRange = async (symbol, range) => {
           return quoteFallbackPayload;
         }
       } catch {
-        // Keep default no_data response when quote fallback is unavailable.
       }
     }
 
@@ -615,7 +612,6 @@ const getStockCandlesByRange = async (symbol, range) => {
         return yahooPayload;
       }
     } catch {
-      // Continue to quote fallback.
     }
 
     if (isFinnhubConfigured()) {
@@ -659,7 +655,6 @@ const getStockCandlesByRange = async (symbol, range) => {
           return quoteFallbackPayload;
         }
       } catch {
-        // Keep default no_data response when quote fallback is unavailable.
       }
     }
 
@@ -953,12 +948,6 @@ const computePerformanceSeries = async ({ account, holdings, range }) => {
       const symbol = String(holding.symbol).trim().toUpperCase();
 
       try {
-        // Use the same robust candle helper as the per-symbol chart (Stooq ->
-        // Yahoo -> Finnhub -> synthetic fallback). Calling Stooq directly here
-        // left the performance chart flat at average cost whenever Stooq was
-        // unavailable (e.g. its anti-bot challenge), even though per-symbol
-        // charts kept working via the fallback chain. '1M' covers the longest
-        // performance window (30d) with daily granularity.
         const candlesPayload = await getStockCandlesByRange(symbol, '1M');
         candlesBySymbol[symbol] = Array.isArray(candlesPayload?.series) ? candlesPayload.series : [];
       } catch {

@@ -215,7 +215,6 @@ export const convert = async ({ from, to, amount }) => {
     });
   }
 
-  // Cache the rate for this currency pair, not the amount-specific result
   const cacheKey = `fx:convert:${normalizedFrom}:${normalizedTo}`;
 
   const { rate: rateToPerFrom, date } = await withCachedRequest(cacheKey, CONVERT_CACHE_TTL_MS, async () => {

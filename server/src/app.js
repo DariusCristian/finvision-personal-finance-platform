@@ -26,14 +26,12 @@ import { transactionRouter } from './routes/v1/transactions.js';
 
 const app = express();
 
-// middleware global - ruleaza pe orice request, in ordinea asta
-app.use(requestIdMiddleware);      // ataseaza un ID unic fiecarui request
-app.use(requestLoggerMiddleware);  // logeaza in consola: metoda, path, status, timp
-app.use(helmet());                 // seteaza headere HTTP de securitate automat
-app.use(cors(getCorsOptions(env.corsOrigins))); // permite request-uri doar de la clientul autorizat
-app.use(express.json({ limit: '1mb' }));        // parseaza body-ul JSON, fara asta req.body e undefined
+app.use(requestIdMiddleware);
+app.use(requestLoggerMiddleware);
+app.use(helmet());
+app.use(cors(getCorsOptions(env.corsOrigins)));
+app.use(express.json({ limit: '1mb' }));
 
-// rute - Express trimite request-ul la primul prefix care se potriveste
 app.use('/healthz', healthRouter);
 app.use('/api/v1', pingRouter);
 app.use('/api/v1/auth', authRouter);
@@ -51,8 +49,7 @@ app.use('/api/v1/news', newsRouter);
 app.use('/api/v1/profile', profileRouter);
 app.use('/api/v1/transactions', transactionRouter);
 
-// trebuie sa fie ultimele - Express le apeleaza doar daca nicio ruta nu a raspuns
-app.use(notFoundHandler); // nicio ruta nu a matched -> 404
-app.use(errorHandler);    // o ruta a aruncat o eroare -> 500
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export { app };

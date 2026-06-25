@@ -56,7 +56,6 @@ export const serializeInsight = (insight) => {
     createdAt: insight?.createdAt?.toISOString?.() ?? null,
     updatedAt: insight?.updatedAt?.toISOString?.() ?? null,
 
-    // Backward-compatible fields used in existing client widgets.
     message: whatNoticed,
     relatedTransactionId,
     isActive: insight?.status === 'active',

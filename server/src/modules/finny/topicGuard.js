@@ -70,30 +70,27 @@ const ALLOWLIST_KEYWORDS = [
   'investing account',
   'demo portfolio',
   'finvision',
-  // Romanian (ro-RO) finance vocabulary. Roots are chosen so one entry matches
-  // common inflected forms (e.g. 'invest' matches "investesc", "investiție",
-  // "a investi"). Kept specific to avoid matching unrelated words.
-  'economi', // economii, economisesc, economisire
-  'buget', // buget, bugetul, bugetare
-  'cheltui', // cheltuiala, cheltuieli, a cheltui
-  'unde am cheltuit', // where did I spend — for top spending queries
-  'venit', // venit, venituri
-  'datori', // datorie, datorii
+  'economi',
+  'buget',
+  'cheltui',
+  'unde am cheltuit',
+  'venit',
+  'datori',
   'dobanda',
-  'dobând', // root: dobânda, dobândă, dobânzi — catches all inflected forms
+  'dobând',
   'actiuni',
   'acțiuni',
   'obligatiuni',
   'obligațiuni',
-  'cripto', // cripto, criptomonede, criptomoneda
+  'cripto',
   'portofoliu',
   'piata',
-  'piaț', // root: piața, piețe — catches inflected forms (ț ≠ t in piata)
+  'piaț',
   'piață',
-  'avere', // avere, avere netă
+  'avere',
   'patrimoniu',
-  'abonament', // abonament, abonamente
-  'obicei', // obicei, obiceiuri — habit
+  'abonament',
+  'obicei',
   'fond de urgenta',
   'fond de urgență',
 ];
@@ -144,7 +141,7 @@ const INTENT_KEYWORDS = {
     'spotify',
     'hbo',
     'prime',
-    'abonament', // abonament, abonamente
+    'abonament',
   ],
   NET_WORTH: [
     'net worth',
@@ -153,7 +150,7 @@ const INTENT_KEYWORDS = {
     'liabilities',
     'portfolio value',
     'balance sheet',
-    'avere', // avere, avere netă
+    'avere',
     'patrimoniu',
   ],
   SAVING_TIPS: [
@@ -168,7 +165,7 @@ const INTENT_KEYWORDS = {
     'spend less',
     'emergency fund',
     'cash flow',
-    'economi', // economii, economisesc, economisire
+    'economi',
     'fond de urgenta',
     'fond de urgență',
   ],
@@ -184,9 +181,9 @@ const INTENT_KEYWORDS = {
     'income vs expenses',
     'budget goal',
     'monthly budget',
-    'buget', // buget, bugetul, bugetare
-    'cheltui', // cheltuiala, cheltuieli
-    'venit', // venit, venituri
+    'buget',
+    'cheltui',
+    'venit',
   ],
   TOP_SPENDING_CATEGORIES: [
     'top categories',
@@ -195,10 +192,10 @@ const INTENT_KEYWORDS = {
     'where did i spend most',
     'highest spending category',
     'largest category',
-    'unde am cheltuit', // where did I spend — RO
-    'pe ce am cheltuit', // what did I spend on — RO
-    'top cheltuieli', // top expenses — RO
-    'categorii', // categorii, categoriile — RO for categories
+    'unde am cheltuit',
+    'pe ce am cheltuit',
+    'top cheltuieli',
+    'categorii',
   ],
   HABIT_IMPROVEMENT_30D: [
     'habit',
@@ -206,8 +203,8 @@ const INTENT_KEYWORDS = {
     'last 30 days',
     'suggest one habit',
     'one habit i can improve',
-    'obicei', // habit — RO
-    'ultimele 30', // last 30 days — RO
+    'obicei',
+    'ultimele 30',
   ],
   APP_USAGE: ['finvision', 'app', 'feature', 'navigate', 'where is', 'how do i', 'settings', 'dashboard'],
   FINANCE_EDUCATION: [
@@ -226,21 +223,21 @@ const INTENT_KEYWORDS = {
     'apr',
     'snowball',
     'avalanche',
-    'invest', // invest, investing, investesc, investiție
+    'invest',
     'investing',
     'market',
-    'dobanda', // dobândă (interest)
-    'dobând', // root: dobânda, dobândă, dobânzi
-    'actiuni', // acțiuni (stocks)
+    'dobanda',
+    'dobând',
+    'actiuni',
     'acțiuni',
-    'obligatiuni', // obligațiuni (bonds)
+    'obligatiuni',
     'obligațiuni',
-    'cripto', // cripto, criptomonede
-    'portofoliu', // portfolio
-    'piata', // piață (market)
-    'piaț', // root: piața, piețe
+    'cripto',
+    'portofoliu',
+    'piata',
+    'piaț',
     'piață',
-    'datori', // datorie, datorii (debt)
+    'datori',
   ],
 };
 

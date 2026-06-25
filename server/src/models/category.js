@@ -54,7 +54,6 @@ const categorySchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    // Keep slug for stable client rendering and internal helpers.
     slug: {
       type: String,
       trim: true,
