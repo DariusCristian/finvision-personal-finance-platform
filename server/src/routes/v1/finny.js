@@ -454,6 +454,7 @@ const buildNetWorthSnapshot = (insightContext) => {
 
   return {
     currency,
+    investingCurrency: 'EUR',
     budgetBalance,
     cryptoPortfolioValue,
     stocksPortfolioValue,
@@ -521,6 +522,7 @@ const buildSavingTipsCard = ({ insightContext }) => {
 const buildNetWorthCard = ({ insightContext }) => {
   const snapshot = buildNetWorthSnapshot(insightContext);
   const currency = snapshot.currency;
+  const investingCurrency = snapshot.investingCurrency;
 
   return {
     title: 'Net Worth Snapshot',
@@ -535,8 +537,8 @@ const buildNetWorthCard = ({ insightContext }) => {
         heading: 'How FinVision calculates it',
         bullets: [
           `Budget balance proxy (income - expenses this month): ${formatCurrency(snapshot.budgetBalance, currency)}`,
-          `Crypto portfolio value: ${formatCurrency(snapshot.cryptoPortfolioValue, currency)} + cash ${formatCurrency(snapshot.cryptoCash, currency)}`,
-          `Stocks portfolio value: ${formatCurrency(snapshot.stocksPortfolioValue, currency)} + cash ${formatCurrency(snapshot.stocksCash, currency)}`,
+          `Crypto portfolio value: ${formatCurrency(snapshot.cryptoPortfolioValue, investingCurrency)} + cash ${formatCurrency(snapshot.cryptoCash, investingCurrency)}`,
+          `Stocks portfolio value: ${formatCurrency(snapshot.stocksPortfolioValue, investingCurrency)} + cash ${formatCurrency(snapshot.stocksCash, investingCurrency)}`,
           'Liabilities are not tracked yet in FinVision.',
         ],
       },
@@ -857,6 +859,7 @@ const buildGeminiContextByType = ({ insightContext, contextTypeUsed, shouldAllow
       },
       recurringWithoutEndDate,
       investing: {
+        currency: 'EUR',
         cryptoPortfolioValue: Number(netWorthSnapshot.cryptoPortfolioValue.toFixed(2)),
         cryptoCash: Number(netWorthSnapshot.cryptoCash.toFixed(2)),
         stocksPortfolioValue: Number(netWorthSnapshot.stocksPortfolioValue.toFixed(2)),
