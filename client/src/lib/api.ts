@@ -1039,7 +1039,6 @@ const handleUnauthorizedResponse = async () => {
         return;
       }
     } catch {
-      // refresh failed — fall through to redirect
     }
   }
 

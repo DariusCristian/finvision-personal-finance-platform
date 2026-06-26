@@ -55,7 +55,7 @@ const EMPTY_PORTFOLIO_TOTALS: PortfolioTotals = {
   unrealizedPnL: 0,
   holdingsCount: 0,
 };
-const DONUT_COLORS = ['#2563eb', '#14b8a6', '#f97316', '#8b5cf6', '#94a3b8'];
+const DONUT_COLORS = ['#2563eb', '#14b8a6', '#f97316', '#8b5cf6', '#8dab1e'];
 const ONBOARDING_DISMISSED_KEY = 'finvision_onboarding_dismissed';
 
 const getCurrentMonthRange = () => {

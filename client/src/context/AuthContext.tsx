@@ -105,7 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await logoutRequest(accessToken);
       }
     } catch {
-      // Local logout should still complete if the API call fails.
     } finally {
       clearSessionState();
     }

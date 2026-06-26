@@ -108,8 +108,6 @@ function CategoryDonutChartComponent({ slices, total, isLoading, currency }: Cat
     const tooltipBorder = isDarkMode ? '#334155' : '#e2e8f0';
 
     try {
-      // Recreate with a plain config object to avoid carrying Chart.js resolver objects
-      // (e.g. `_scriptable`) across updates/navigation.
       chartRef.current?.destroy();
       chartRef.current = null;
 
