@@ -423,6 +423,7 @@ export function TransactionsTable({
             <input
               type="search"
               value={searchValue}
+              maxLength={100}
               onChange={handleSearchChange}
               placeholder="Search..."
               className="w-full rounded-xl border-none bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none ring-0 placeholder:text-slate-400 focus:ring-2 focus:ring-[#2563eb] dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 sm:w-64"

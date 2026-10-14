@@ -168,6 +168,7 @@ export function LearningCenterPage() {
               Search
               <input
                 value={searchValue}
+                maxLength={100}
                 onChange={(event) => setSearchValue(event.target.value)}
                 placeholder="Search topics"
                 className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100"
