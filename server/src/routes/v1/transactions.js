@@ -5,6 +5,7 @@ import { requireAuth } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { Category, serializeCategory } from '../../models/category.js';
 import { Transaction } from '../../models/transaction.js';
+import { buildLiteralSearchRegex } from '../../utils/regex.js';
 import { sendSuccess } from '../../utils/response.js';
 import {
   transactionMutationSchema,
@@ -212,7 +213,7 @@ const buildSearchFilter = async (userId, searchTerm) => {
     return null;
   }
 
-  const regex = new RegExp(searchTerm, 'i');
+  const regex = buildLiteralSearchRegex(searchTerm);
   const matchingCategories = await Category.find({
     ...buildAccessibleCategoryFilter(userId),
     name: {

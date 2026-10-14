@@ -11,7 +11,7 @@ const categorySchema = z.string().trim().min(1).max(40);
 export const articleListQuerySchema = z.object({
   category: categorySchema.optional(),
   difficulty: z.enum(ARTICLE_DIFFICULTY_VALUES).optional(),
-  search: z.string().trim().max(120).optional(),
+  search: z.string().trim().max(100).optional(),
 });
 
 export const articleIdentifierParamsSchema = z.object({

@@ -9,6 +9,7 @@ import { Question } from '../../models/question.js';
 import { QuizAttempt } from '../../models/quiz-attempt.js';
 import { Quiz } from '../../models/quiz.js';
 import { UserProgress } from '../../models/user-progress.js';
+import { buildLiteralSearchRegex } from '../../utils/regex.js';
 import { sendSuccess } from '../../utils/response.js';
 import {
   articleCompleteParamsSchema,
@@ -130,7 +131,7 @@ educationRouter.get(
       }
 
       if (search) {
-        const regex = new RegExp(search, 'i');
+        const regex = buildLiteralSearchRegex(search);
         filters.$or = [{ title: { $regex: regex } }, { excerpt: { $regex: regex } }, { tags: { $in: [regex] } }];
       }
 

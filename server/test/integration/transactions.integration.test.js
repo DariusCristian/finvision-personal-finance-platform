@@ -120,3 +120,89 @@ test('recurring transaction is projected in future month query', async () => {
   assert.ok(response.body.data.transactions.length > 0);
   assert.equal(response.body.data.transactions[0].isProjected, true);
 });
+
+const createSearchFixture = async (accessToken, descriptions) => {
+  const categoriesResponse = await request(runtime.app)
+    .get('/api/v1/categories')
+    .set('Authorization', `Bearer ${accessToken}`)
+    .expect(200);
+
+  const foodCategory = categoriesResponse.body.data.categories.find(
+    (category) => category.name === 'Food & Dining',
+  );
+
+  for (const description of descriptions) {
+    await request(runtime.app)
+      .post('/api/v1/transactions')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        type: 'expense',
+        categoryId: foodCategory.id,
+        amount: 10,
+        date: '2026-03-01',
+        description,
+        isRecurring: false,
+        recurrence: 'none',
+        recurrenceEndDate: null,
+      })
+      .expect(201);
+  }
+};
+
+test('transaction search with an unbalanced parenthesis returns 200', async () => {
+  const accessToken = await registerAndLogin();
+  await createSearchFixture(accessToken, ['Coffee (large)', 'Lunch']);
+
+  const response = await request(runtime.app)
+    .get('/api/v1/transactions?search=%28')
+    .set('Authorization', `Bearer ${accessToken}`)
+    .expect(200);
+
+  assert.deepEqual(
+    response.body.data.transactions.map((transaction) => transaction.description),
+    ['Coffee (large)'],
+  );
+});
+
+test('transaction search matches special characters literally', async () => {
+  const accessToken = await registerAndLogin();
+  await createSearchFixture(accessToken, ['C++ course', 'ccc subscription']);
+
+  const response = await request(runtime.app)
+    .get(`/api/v1/transactions?search=${encodeURIComponent('c++')}`)
+    .set('Authorization', `Bearer ${accessToken}`)
+    .expect(200);
+
+  assert.deepEqual(
+    response.body.data.transactions.map((transaction) => transaction.description),
+    ['C++ course'],
+  );
+});
+
+test('transaction search with a catastrophic regex pattern returns quickly', async () => {
+  const accessToken = await registerAndLogin();
+  await createSearchFixture(accessToken, [`${'a'.repeat(150)}!`, 'Regex (a+)+$ workshop']);
+
+  const startedAt = Date.now();
+  const response = await request(runtime.app)
+    .get(`/api/v1/transactions?search=${encodeURIComponent('(a+)+$')}`)
+    .set('Authorization', `Bearer ${accessToken}`)
+    .expect(200);
+
+  assert.deepEqual(
+    response.body.data.transactions.map((transaction) => transaction.description),
+    ['Regex (a+)+$ workshop'],
+  );
+  assert.ok(Date.now() - startedAt < 2000);
+});
+
+test('transaction search longer than 100 characters returns 400', async () => {
+  const accessToken = await registerAndLogin();
+
+  const response = await request(runtime.app)
+    .get(`/api/v1/transactions?search=${'a'.repeat(101)}`)
+    .set('Authorization', `Bearer ${accessToken}`)
+    .expect(400);
+
+  assert.equal(response.body.error.code, 'VALIDATION_ERROR');
+});
