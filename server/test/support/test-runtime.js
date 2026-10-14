@@ -3,6 +3,11 @@ import http from 'node:http';
 import mongoose from 'mongoose';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 
+import { frankfurterStubResponse } from './fx-stub.js';
+
+// Captured at import, before any test file replaces fetch with its own stub.
+const nativeFetch = globalThis.fetch;
+
 let runtimePromise = null;
 let activeConsumers = 0;
 
@@ -18,6 +23,12 @@ const ensureTestEnv = () => {
 
 const createRuntime = async () => {
   ensureTestEnv();
+
+  // Transactions convert amounts with FX rates: answer Frankfurter with deterministic rates unless the test file
+  // installed its own fetch stub. Other requests go to the real fetch (only localhost is used by tests).
+  if (globalThis.fetch === nativeFetch) {
+    globalThis.fetch = async (input, init) => frankfurterStubResponse(input) ?? nativeFetch(input, init);
+  }
 
   // Transactions need a replica set; a single wiredTiger node is enough.
   const mongoServer = await MongoMemoryReplSet.create({ replSet: { count: 1, storageEngine: 'wiredTiger' } });

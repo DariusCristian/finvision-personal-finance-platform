@@ -3,6 +3,15 @@ import mongoose from 'mongoose';
 const RECURRENCE_VALUES = ['none', 'daily', 'weekly', 'biweekly', 'monthly', 'annually'];
 const PAYMENT_METHOD_VALUES = ['card', 'cash', 'bank'];
 
+const currencyValuesSchema = new mongoose.Schema(
+  {
+    RON: { type: Number, required: true },
+    EUR: { type: Number, required: true },
+    USD: { type: Number, required: true },
+  },
+  { _id: false },
+);
+
 const transactionSchema = new mongoose.Schema(
   {
     userId: {
@@ -64,6 +73,24 @@ const transactionSchema = new mongoose.Schema(
     recurrenceEndDate: {
       type: Date,
       default: null,
+    },
+    // The amount in every supported currency, converted with the rates of the transaction's date, so totals can
+    // use the user's current base currency. Unset on transactions created before conversions were stored.
+    convertedAmounts: {
+      type: currencyValuesSchema,
+      default: undefined,
+    },
+    fxRates: {
+      type: currencyValuesSchema,
+      default: undefined,
+    },
+    fxRateDate: {
+      type: String,
+      default: undefined,
+    },
+    fxProvider: {
+      type: String,
+      default: undefined,
     },
   },
   {

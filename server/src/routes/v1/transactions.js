@@ -5,6 +5,7 @@ import { requireAuth } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { Category, serializeCategory } from '../../models/category.js';
 import { Transaction } from '../../models/transaction.js';
+import { buildCurrencyConversion, hasCurrencyConversion } from '../../services/currency-amounts.js';
 import { buildLiteralSearchRegex } from '../../utils/regex.js';
 import { sendSuccess } from '../../utils/response.js';
 import {
@@ -329,13 +330,17 @@ transactionRouter.post(
       assertCategoryMatchesTransactionType(category, type);
 
       const normalizedRecurrenceEndDate = isRecurring ? recurrenceEndDate : null;
+      const transactionCurrency = currency ?? req.authUser.baseCurrency ?? 'RON';
+      // Fetch the date's exchange rates before writing anything; a missing rate fails the request (502).
+      const conversion = await buildCurrencyConversion({ amount, currency: transactionCurrency, date });
 
       const transaction = await Transaction.create({
         userId: req.authUser._id,
         type,
         categoryId: category._id,
         amount,
-        currency: currency ?? req.authUser.baseCurrency ?? 'RON',
+        currency: transactionCurrency,
+        ...conversion,
         date,
         description,
         paymentMethod,
@@ -406,11 +411,27 @@ transactionRouter.patch(
       assertCategoryMatchesTransactionType(nextCategory, type);
 
       const normalizedRecurrenceEndDate = isRecurring ? recurrenceEndDate : null;
+      const nextCurrency = currency ?? transaction.currency ?? req.authUser.baseCurrency ?? 'RON';
+      const isSameDay = new Date(transaction.date).toISOString().slice(0, 10) === date.toISOString().slice(0, 10);
+      const needsConversion =
+        !hasCurrencyConversion(transaction) ||
+        transaction.amount !== amount ||
+        transaction.currency !== nextCurrency ||
+        !isSameDay;
+      // Re-convert (before writing) only when the amount, currency or date changed.
+      const conversion = needsConversion
+        ? await buildCurrencyConversion({ amount, currency: nextCurrency, date })
+        : null;
 
       transaction.type = type;
       transaction.categoryId = nextCategory._id;
       transaction.amount = amount;
-      transaction.currency = currency ?? transaction.currency ?? req.authUser.baseCurrency ?? 'RON';
+      transaction.currency = nextCurrency;
+
+      if (conversion) {
+        transaction.set(conversion);
+      }
+
       transaction.date = date;
       transaction.description = description;
       transaction.paymentMethod = paymentMethod;

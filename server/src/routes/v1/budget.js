@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { requireAuth } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { Transaction } from '../../models/transaction.js';
+import { amountInCurrency } from '../../services/currency-amounts.js';
 import { sendSuccess } from '../../utils/response.js';
 import { budgetSummaryQuerySchema } from '../../validation/budget.js';
 
@@ -28,6 +29,7 @@ budgetRouter.get(
     try {
       const { year, month } = req.query;
       const { monthStart, monthEnd } = getMonthBoundsUtc(year, month);
+      const baseCurrency = req.authUser.baseCurrency ?? 'RON';
 
       const transactions = await Transaction.find({
         userId: req.authUser._id,
@@ -35,11 +37,11 @@ budgetRouter.get(
           $gte: monthStart,
           $lt: monthEnd,
         },
-      }).select('type amount');
+      }).select('type amount currency convertedAmounts');
 
       const totals = transactions.reduce(
         (accumulator, transaction) => {
-          const amount = Math.abs(Number(transaction.amount || 0));
+          const amount = Math.abs(amountInCurrency(transaction, baseCurrency));
 
           if (!Number.isFinite(amount) || amount <= 0) {
             return accumulator;
@@ -68,7 +70,7 @@ budgetRouter.get(
       sendSuccess(res, {
         monthStart: monthStart.toISOString(),
         monthEnd: monthEnd.toISOString(),
-        currency: req.authUser.baseCurrency ?? 'RON',
+        currency: baseCurrency,
         budgetGoal,
         incomeTotal,
         expenseTotal,

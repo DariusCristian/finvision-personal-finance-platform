@@ -10,6 +10,7 @@ import { inspectIntent, inspectTopicScope } from '../../modules/finny/topicGuard
 import { Category } from '../../models/category.js';
 import { Transaction } from '../../models/transaction.js';
 import { buildInsightContext } from '../../modules/insights/buildInsightContext.js';
+import { getEurRateTo } from '../../services/currency-amounts.js';
 import { generateInsights, severityRankForInsight } from '../../modules/insights/generateInsights.js';
 import { serializeInsight } from '../../utils/insights.js';
 import { sendSuccess } from '../../utils/response.js';
@@ -444,18 +445,22 @@ const getPortfolioValueForType = (insightContext, accountType) =>
     .filter((holding) => holding.accountType === accountType)
     .reduce((total, holding) => total + Number(holding.marketValue || 0), 0);
 
-const buildNetWorthSnapshot = (insightContext) => {
+// `eurToBaseRate` converts the investing accounts (EUR) into the base currency for the estimate.
+const buildNetWorthSnapshot = (insightContext, { eurToBaseRate = null } = {}) => {
   const currency = insightContext.profile.baseCurrency ?? 'RON';
   const budgetBalance = Number(insightContext.budget.incomeTotal || 0) - Number(insightContext.budget.expenseTotal || 0);
   const cryptoPortfolioValue = getPortfolioValueForType(insightContext, 'crypto');
   const stocksPortfolioValue = getPortfolioValueForType(insightContext, 'stocks');
   const cryptoCash = Number(insightContext.investing.crypto.buyingPower || 0);
   const stocksCash = Number(insightContext.investing.stocks.buyingPower || 0);
-  const netWorthEstimate = budgetBalance + cryptoPortfolioValue + cryptoCash + stocksPortfolioValue + stocksCash;
+  const investingTotalEUR = cryptoPortfolioValue + cryptoCash + stocksPortfolioValue + stocksCash;
+  const netWorthEstimate =
+    eurToBaseRate === null ? null : budgetBalance + investingTotalEUR * eurToBaseRate;
 
   return {
     currency,
     investingCurrency: 'EUR',
+    eurToBaseRate,
     budgetBalance,
     cryptoPortfolioValue,
     stocksPortfolioValue,
@@ -520,8 +525,8 @@ const buildSavingTipsCard = ({ insightContext }) => {
   };
 };
 
-const buildNetWorthCard = ({ insightContext }) => {
-  const snapshot = buildNetWorthSnapshot(insightContext);
+const buildNetWorthCard = ({ insightContext, eurToBaseRate }) => {
+  const snapshot = buildNetWorthSnapshot(insightContext, { eurToBaseRate });
   const currency = snapshot.currency;
   const investingCurrency = snapshot.investingCurrency;
 
@@ -540,6 +545,9 @@ const buildNetWorthCard = ({ insightContext }) => {
           `Budget balance proxy (income - expenses this month): ${formatCurrency(snapshot.budgetBalance, currency)}`,
           `Crypto portfolio value: ${formatCurrency(snapshot.cryptoPortfolioValue, investingCurrency)} + cash ${formatCurrency(snapshot.cryptoCash, investingCurrency)}`,
           `Stocks portfolio value: ${formatCurrency(snapshot.stocksPortfolioValue, investingCurrency)} + cash ${formatCurrency(snapshot.stocksCash, investingCurrency)}`,
+          ...(currency !== investingCurrency && snapshot.eurToBaseRate !== null
+            ? [`Investing amounts converted at 1 ${investingCurrency} = ${snapshot.eurToBaseRate} ${currency}.`]
+            : []),
           'Liabilities are not tracked yet in FinVision.',
         ],
       },
@@ -1130,7 +1138,9 @@ router.post('/chat', requireAuth, finnyChatRateLimit, validateRequest({ body: fi
     }
 
     if (intent === 'NET_WORTH') {
-      const card = buildNetWorthCard({ insightContext });
+      // Investing accounts are in EUR; convert them so the estimate is entirely in the base currency.
+      const eurToBaseRate = await getEurRateTo(insightContext.profile.baseCurrency ?? 'RON');
+      const card = buildNetWorthCard({ insightContext, eurToBaseRate });
 
       sendSuccess(res, {
         format: 'card',

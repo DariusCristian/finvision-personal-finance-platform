@@ -1,6 +1,7 @@
 import { PortfolioAccount } from '../../models/portfolio-account.js';
 import { PortfolioHolding } from '../../models/portfolio-holding.js';
 import { Transaction } from '../../models/transaction.js';
+import { amountInCurrency } from '../../services/currency-amounts.js';
 import { getSimplePrices, isCoinGeckoConfigured } from '../../integrations/coingecko/coingeckoClient.js';
 
 const toMoney = (value) => Number(Number(value).toFixed(2));
@@ -135,7 +136,7 @@ export const buildInsightContext = async ({ authUser, selectedMonth }) => {
         $gte: monthStart,
         $lt: monthEnd,
       },
-    }).select('type amount currency date description isRecurring recurrence recurrenceEndDate'),
+    }).select('type amount currency convertedAmounts date description isRecurring recurrence recurrenceEndDate'),
     Transaction.find({
       userId: authUser._id,
       type: 'expense',
@@ -172,9 +173,10 @@ export const buildInsightContext = async ({ authUser, selectedMonth }) => {
     .map((holding) => holding.coinId);
   const cryptoPricesMap = await fetchCryptoPricesMap(cryptoCoinIds);
 
+  const baseCurrency = authUser.baseCurrency ?? 'RON';
   const totals = monthTransactions.reduce(
     (accumulator, transaction) => {
-      const amount = Math.abs(Number(transaction.amount || 0));
+      const amount = Math.abs(amountInCurrency(transaction, baseCurrency));
 
       if (!Number.isFinite(amount) || amount <= 0) {
         return accumulator;

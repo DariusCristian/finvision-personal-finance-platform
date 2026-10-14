@@ -7,6 +7,8 @@ import { validateRequest } from '../../middleware/validate-request.js';
 import { Category } from '../../models/category.js';
 import { InvestingWalletLedger } from '../../models/investing-wallet-ledger.js';
 import { Transaction } from '../../models/transaction.js';
+import { buildCurrencyConversion, withConvertedAmount } from '../../services/currency-amounts.js';
+import { logger } from '../../utils/logger.js';
 import {
   claimAutoFund,
   creditWallet,
@@ -47,7 +49,8 @@ const serializeWallet = (wallet) => ({
   autoFundDayOfMonth: wallet.autoFundDayOfMonth,
 });
 
-const recordInvestingDepositExpense = async (userId, amountRON, note, { session } = {}) => {
+// `conversion` comes from buildCurrencyConversion, fetched before the surrounding transaction started.
+const recordInvestingDepositExpense = async (userId, amountRON, note, { session, conversion } = {}) => {
   const investingCategory = await Category.findOne({
     userId: null,
     slug: 'investing',
@@ -69,6 +72,7 @@ const recordInvestingDepositExpense = async (userId, amountRON, note, { session 
         categoryId: investingCategory._id,
         amount: amountRON,
         currency: WALLET_CURRENCY,
+        ...(conversion ? withConvertedAmount(conversion, amountRON) : {}),
         date: new Date(),
         description: trimmedNote ? `Investing wallet deposit — ${trimmedNote}` : 'Investing wallet deposit',
         recurrence: 'none',
@@ -155,6 +159,20 @@ const applyAutoFundIfDue = async (wallet) => {
     return wallet;
   }
 
+  // Rates for the expense record are fetched before the transaction. If they are unavailable, auto-fund is skipped
+  // for this request (nothing is written) and the next wallet request retries, instead of failing a read.
+  let conversion;
+  try {
+    conversion = await buildCurrencyConversion({
+      amount: toMoney(wallet.autoFundAmount),
+      currency: WALLET_CURRENCY,
+      date: now,
+    });
+  } catch (error) {
+    logger.warn('investing_wallet.autofund.fx_unavailable', { walletId: String(wallet._id), message: error.message });
+    return wallet;
+  }
+
   // The checks above only skip the transaction on most reads; claimAutoFund re-checks atomically so concurrent
   // requests apply the auto-fund at most once per month.
   const claimedWallet = await runInTransaction(async (session) => {
@@ -182,7 +200,10 @@ const applyAutoFundIfDue = async (wallet) => {
       { session },
     );
 
-    await recordInvestingDepositExpense(claimed.userId, amountToAdd, 'Monthly auto-fund', { session });
+    await recordInvestingDepositExpense(claimed.userId, amountToAdd, 'Monthly auto-fund', {
+      session,
+      conversion,
+    });
 
     return claimed;
   });
@@ -285,6 +306,12 @@ investingWalletRouter.post(
     try {
       await applyAutoFundIfDue(await ensureWallet(req.authUser._id));
       const amountRON = toMoney(req.body.amountRON);
+      // Rates for the expense record, fetched before the transaction; unavailable rates fail the deposit (502).
+      const conversion = await buildCurrencyConversion({
+        amount: amountRON,
+        currency: WALLET_CURRENCY,
+        date: new Date(),
+      });
 
       const wallet = await runInTransaction(async (session) => {
         const credited = await creditWallet(req.authUser._id, amountRON, { session });
@@ -303,7 +330,10 @@ investingWalletRouter.post(
           { session },
         );
 
-        await recordInvestingDepositExpense(req.authUser._id, amountRON, req.body.note, { session });
+        await recordInvestingDepositExpense(req.authUser._id, amountRON, req.body.note, {
+          session,
+          conversion,
+        });
 
         return credited;
       });

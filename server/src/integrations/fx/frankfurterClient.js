@@ -202,6 +202,56 @@ export const getLatestRates = async (base = 'EUR', symbols = ['USD', 'RON']) => 
   });
 };
 
+const HISTORICAL_RATES_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+const CURRENT_RATES_CACHE_TTL_MS = 60 * 60 * 1000;
+
+// Rates from `base` to `symbols` for a calendar day (YYYY-MM-DD). Frankfurter returns the last published rates on or
+// before that day (weekends and holidays fall back to the previous business day); today and future days use the
+// latest rates. Throws FxProviderError when a requested rate is missing.
+export const getRatesForDate = async ({ base, symbols, date }) => {
+  const normalizedBase = String(base || '').trim().toUpperCase();
+  const normalizedSymbols = symbols.map((symbol) => String(symbol || '').trim().toUpperCase()).filter(Boolean);
+  const day = String(date || '').slice(0, 10);
+
+  if (!normalizedBase || normalizedSymbols.length === 0 || !/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+    throw new FxProviderError('Invalid FX rate request.', {
+      status: 400,
+      code: 'FX_INVALID_INPUT',
+      details: [{ reason: 'INVALID_RATE_REQUEST', base: normalizedBase, date: day }],
+    });
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const isHistorical = day < today;
+  const path = isHistorical ? `/${day}` : '/latest';
+  const cacheKey = `fx:rates:${normalizedBase}:${normalizedSymbols.join(',')}:${isHistorical ? day : 'latest'}`;
+  const ttlMs = isHistorical ? HISTORICAL_RATES_CACHE_TTL_MS : CURRENT_RATES_CACHE_TTL_MS;
+
+  return withCachedRequest(cacheKey, ttlMs, async () => {
+    const payload = await fetchFrankfurter({
+      path,
+      query: { base: normalizedBase, symbols: normalizedSymbols.join(',') },
+    });
+    const rates = {};
+
+    for (const symbol of normalizedSymbols) {
+      const rate = Number(payload?.rates?.[symbol]);
+
+      if (!Number.isFinite(rate) || rate <= 0) {
+        throw new FxProviderError('FX rate is unavailable for this date.', {
+          status: 502,
+          code: 'FX_PROVIDER_ERROR',
+          details: [{ reason: 'MISSING_RATE', from: normalizedBase, to: symbol, date: day }],
+        });
+      }
+
+      rates[symbol] = rate;
+    }
+
+    return { base: normalizedBase, date: String(payload?.date || day), rates };
+  });
+};
+
 export const convert = async ({ from, to, amount }) => {
   const normalizedFrom = String(from || '').trim().toUpperCase();
   const normalizedTo = String(to || '').trim().toUpperCase();

@@ -10,6 +10,7 @@ import { PortfolioAccount } from '../../src/models/portfolio-account.js';
 import { PortfolioHolding } from '../../src/models/portfolio-holding.js';
 import { PortfolioTrade } from '../../src/models/portfolio-trade.js';
 import { Transaction } from '../../src/models/transaction.js';
+import { EUR_PER_UNIT, frankfurterStubResponse } from '../support/fx-stub.js';
 import { getTestRuntime, releaseTestRuntime } from '../support/test-runtime.js';
 
 // Finding 1 (AUDIT.md): each test fires concurrent requests whose total exceeds the balance or holding.
@@ -19,8 +20,8 @@ const CONCURRENT_REQUESTS = 5;
 // Auto-fund, first-buy holding creation and reset races have no uncached external call between check and write, so
 // their race window is only DB round-trips; more requests make them fail reliably on unfixed code.
 const CONCURRENT_NARROW_RACE_REQUESTS = 20;
-const EUR_PER_RON = 0.2;
-const EUR_PER_USD = 0.9;
+const EUR_PER_RON = EUR_PER_UNIT.RON;
+const EUR_PER_USD = EUR_PER_UNIT.USD;
 const COIN_PRICE_EUR = 100;
 const STOCK_PRICE_USD = 100;
 const STOCK_PRICE_EUR = STOCK_PRICE_USD * EUR_PER_USD;
@@ -36,10 +37,10 @@ const stubbedFetch = async (input) => {
   const url = new URL(String(input));
   await new Promise((resolve) => setTimeout(resolve, PROVIDER_LATENCY_MS));
 
-  if (url.hostname === 'api.frankfurter.dev') {
-    const base = url.searchParams.get('from') ?? url.searchParams.get('base');
-    const rate = base === 'RON' ? EUR_PER_RON : EUR_PER_USD;
-    return jsonResponse({ base, date: '2026-10-14', rates: { EUR: rate } });
+  const fxResponse = frankfurterStubResponse(url);
+
+  if (fxResponse) {
+    return fxResponse;
   }
 
   if (url.hostname === 'api.coingecko.com' && url.pathname.endsWith('/simple/price')) {
