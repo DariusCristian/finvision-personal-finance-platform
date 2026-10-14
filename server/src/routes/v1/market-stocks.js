@@ -21,7 +21,12 @@ import { PortfolioAccount } from '../../models/portfolio-account.js';
 import { PortfolioHolding } from '../../models/portfolio-holding.js';
 import { PortfolioSnapshot } from '../../models/portfolio-snapshot.js';
 import { PortfolioTrade } from '../../models/portfolio-trade.js';
-import { ensureInvestingWallet as ensureWallet, ensurePortfolioAccount } from '../../services/balance-ops.js';
+import {
+  ensureInvestingWallet as ensureWallet,
+  ensurePortfolioAccount,
+  runInTransaction,
+  setAccountCash,
+} from '../../services/balance-ops.js';
 import { executeOrder } from '../../services/portfolio-order.js';
 import { topUpAccountFromWallet } from '../../services/wallet-topup.js';
 import { validateRequest } from '../../middleware/validate-request.js';
@@ -1319,30 +1324,33 @@ marketStocksRouter.post(
       }
 
       const amountEUR = toMoney(req.body.amountEUR);
-      const demoAccount = await ensureStocksAccount(req.authUser, STOCKS_DEMO_MODE);
+      await ensureStocksAccount(req.authUser, STOCKS_DEMO_MODE);
 
-      await Promise.all([
-        PortfolioHolding.deleteMany({
+      const demoAccount = await runInTransaction(async (session) => {
+        await PortfolioHolding.deleteMany({
           userId: req.authUser._id,
           accountType: STOCKS_ACCOUNT_TYPE,
           mode: STOCKS_DEMO_MODE,
           assetType: 'stock',
-        }),
-        PortfolioTrade.deleteMany({
+        }, { session });
+        await PortfolioTrade.deleteMany({
           userId: req.authUser._id,
           accountType: STOCKS_ACCOUNT_TYPE,
           mode: STOCKS_DEMO_MODE,
           assetType: 'stock',
-        }),
-        PortfolioSnapshot.deleteMany({
+        }, { session });
+        await PortfolioSnapshot.deleteMany({
           userId: req.authUser._id,
           accountType: STOCKS_ACCOUNT_TYPE,
           mode: STOCKS_DEMO_MODE,
-        }),
-      ]);
+        }, { session });
 
-      demoAccount.cashBalance = amountEUR;
-      await demoAccount.save();
+        return setAccountCash(
+          { userId: req.authUser._id, accountType: STOCKS_ACCOUNT_TYPE, mode: STOCKS_DEMO_MODE },
+          amountEUR,
+          { session },
+        );
+      });
 
       const totals = {
         cashBalance: amountEUR,
@@ -1650,30 +1658,43 @@ marketStocksRouter.post(
 marketStocksRouter.post('/reset', requireAuth, async (req, res, next) => {
   try {
     const selectedMode = resolveActiveMode(req.authUser);
-    const account = await ensureStocksAccount(req.authUser, selectedMode);
 
-    await Promise.all([
-      PortfolioHolding.deleteMany({
+    if (selectedMode !== STOCKS_DEMO_MODE) {
+      throw new AppError({
+        message:
+          'Reset is only available in Demo mode. Start Investing balances come from your investing wallet and cannot be reset.',
+        statusCode: 400,
+        code: 'RESET_NOT_ALLOWED_IN_FUNDED_MODE',
+      });
+    }
+
+    await ensureStocksAccount(req.authUser, selectedMode);
+
+    const account = await runInTransaction(async (session) => {
+      await PortfolioHolding.deleteMany({
         userId: req.authUser._id,
         accountType: STOCKS_ACCOUNT_TYPE,
         mode: selectedMode,
         assetType: 'stock',
-      }),
-      PortfolioTrade.deleteMany({
+      }, { session });
+      await PortfolioTrade.deleteMany({
         userId: req.authUser._id,
         accountType: STOCKS_ACCOUNT_TYPE,
         mode: selectedMode,
         assetType: 'stock',
-      }),
-      PortfolioSnapshot.deleteMany({
+      }, { session });
+      await PortfolioSnapshot.deleteMany({
         userId: req.authUser._id,
         accountType: STOCKS_ACCOUNT_TYPE,
         mode: selectedMode,
-      }),
-    ]);
+      }, { session });
 
-    account.cashBalance = getStartingCashBalanceForMode(selectedMode);
-    await account.save();
+      return setAccountCash(
+        { userId: req.authUser._id, accountType: STOCKS_ACCOUNT_TYPE, mode: selectedMode },
+        getStartingCashBalanceForMode(selectedMode),
+        { session },
+      );
+    });
 
     const totals = {
       cashBalance: toMoney(account.cashBalance),

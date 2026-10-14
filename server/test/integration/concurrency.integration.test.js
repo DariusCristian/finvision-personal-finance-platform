@@ -16,8 +16,8 @@ import { getTestRuntime, releaseTestRuntime } from '../support/test-runtime.js';
 // Every test failed on the code before the fix; run this file repeatedly to check a race fix is reliable.
 
 const CONCURRENT_REQUESTS = 5;
-// Auto-fund and first-buy holding creation have no uncached external call between check and write, so their race
-// window is only DB round-trips; more requests make them fail reliably on unfixed code.
+// Auto-fund, first-buy holding creation and reset races have no uncached external call between check and write, so
+// their race window is only DB round-trips; more requests make them fail reliably on unfixed code.
 const CONCURRENT_NARROW_RACE_REQUESTS = 20;
 const EUR_PER_RON = 0.2;
 const EUR_PER_USD = 0.9;
@@ -304,4 +304,41 @@ test('spot H: concurrent first use creates exactly one wallet and one account', 
 
   assert.deepEqual(countStatuses(responses), { 200: 15 });
   assert.equal(await InvestingWallet.countDocuments({ userId }), 1);
+});
+
+const assertResetRace = async ({ modePath, budgetPath, orderPath, resetPath, accountType, order, priceEUR }) => {
+  const { userId, auth } = await registerAndLogin();
+  await expectOk(send('post', modePath, auth, { mode: 'demo' }));
+  await expectOk(send('post', budgetPath, auth, { amountEUR: 1000 }));
+  await expectOk(send('post', orderPath, auth, { ...order, side: 'buy', quantity: 2 }));
+
+  const responses = await Promise.all([
+    send('post', resetPath, auth),
+    ...Array.from({ length: CONCURRENT_NARROW_RACE_REQUESTS }, () =>
+      send('post', orderPath, auth, { ...order, side: 'buy', quantity: 1 }),
+    ),
+  ]);
+
+  assert.equal(responses[0].status, 200, JSON.stringify(responses[0].body));
+
+  // Whatever the interleaving, the state must be "reset, then the surviving trades": cash and holdings must match
+  // the trades that remain after the reset.
+  const account = await getAccount(userId, accountType, 'demo');
+  const trades = await PortfolioTrade.find({ userId, accountType, mode: 'demo' }).lean();
+  const holdings = await PortfolioHolding.find({ userId, accountType, mode: 'demo' }).lean();
+  const boughtQuantity = trades.reduce((sum, trade) => sum + trade.quantity, 0);
+  const spent = trades.reduce((sum, trade) => sum + trade.total, 0);
+
+  assert.ok(trades.every((trade) => trade.side === 'buy'));
+  assert.equal(account.cashBalance, 5000 - spent);
+  assert.equal(holdings.reduce((sum, holding) => sum + holding.quantity, 0), boughtQuantity);
+  assert.equal(trades.length * priceEUR, spent);
+};
+
+test('spot I: a crypto demo reset racing with buys leaves cash and holdings consistent', async () => {
+  await assertResetRace({ ...cryptoOrderSetup, resetPath: '/invest/reset' });
+});
+
+test('spot I: a stocks demo reset racing with buys leaves cash and holdings consistent', async () => {
+  await assertResetRace({ ...stockOrderSetup, resetPath: '/market/stocks/reset' });
 });

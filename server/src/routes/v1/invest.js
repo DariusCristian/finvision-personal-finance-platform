@@ -16,7 +16,12 @@ import { PortfolioAccount } from '../../models/portfolio-account.js';
 import { PortfolioHolding } from '../../models/portfolio-holding.js';
 import { PortfolioSnapshot } from '../../models/portfolio-snapshot.js';
 import { PortfolioTrade } from '../../models/portfolio-trade.js';
-import { ensureInvestingWallet, ensurePortfolioAccount } from '../../services/balance-ops.js';
+import {
+  ensureInvestingWallet,
+  ensurePortfolioAccount,
+  runInTransaction,
+  setAccountCash,
+} from '../../services/balance-ops.js';
 import { executeOrder } from '../../services/portfolio-order.js';
 import { topUpAccountFromWallet } from '../../services/wallet-topup.js';
 import { logger } from '../../utils/logger.js';
@@ -654,30 +659,33 @@ investRouter.post(
       }
 
       const amountEUR = toMoney(req.body.amountEUR);
-      const demoAccount = await ensureCryptoPortfolioAccount(req.authUser, CRYPTO_DEMO_MODE);
+      await ensureCryptoPortfolioAccount(req.authUser, CRYPTO_DEMO_MODE);
 
-      await Promise.all([
-        PortfolioHolding.deleteMany({
+      const demoAccount = await runInTransaction(async (session) => {
+        await PortfolioHolding.deleteMany({
           userId: req.authUser._id,
           accountType: CRYPTO_ACCOUNT_TYPE,
           mode: CRYPTO_DEMO_MODE,
           assetType: 'crypto',
-        }),
-        PortfolioTrade.deleteMany({
+        }, { session });
+        await PortfolioTrade.deleteMany({
           userId: req.authUser._id,
           accountType: CRYPTO_ACCOUNT_TYPE,
           mode: CRYPTO_DEMO_MODE,
           assetType: 'crypto',
-        }),
-        PortfolioSnapshot.deleteMany({
+        }, { session });
+        await PortfolioSnapshot.deleteMany({
           userId: req.authUser._id,
           accountType: CRYPTO_ACCOUNT_TYPE,
           mode: CRYPTO_DEMO_MODE,
-        }),
-      ]);
+        }, { session });
 
-      demoAccount.cashBalance = amountEUR;
-      await demoAccount.save();
+        return setAccountCash(
+          { userId: req.authUser._id, accountType: CRYPTO_ACCOUNT_TYPE, mode: CRYPTO_DEMO_MODE },
+          amountEUR,
+          { session },
+        );
+      });
 
       const totals = {
         cashBalance: amountEUR,
@@ -1022,33 +1030,45 @@ investRouter.get(
 investRouter.post('/reset', requireAuth, async (req, res, next) => {
   try {
     const selectedMode = resolveActiveMode(req.authUser);
-    const account = await ensureCryptoPortfolioAccount(req.authUser, selectedMode);
 
-    await Promise.all([
-      PortfolioHolding.deleteMany({
-        userId: req.authUser._id,
-        accountType: CRYPTO_ACCOUNT_TYPE,
-        mode: selectedMode,
-      }),
-      PortfolioTrade.deleteMany({
-        userId: req.authUser._id,
-        accountType: CRYPTO_ACCOUNT_TYPE,
-        mode: selectedMode,
-      }),
-      PortfolioSnapshot.deleteMany({
-        userId: req.authUser._id,
-        accountType: CRYPTO_ACCOUNT_TYPE,
-        mode: selectedMode,
-      }),
-      InvestFunding.deleteMany({
-        userId: req.authUser._id,
-        mode: selectedMode,
-      }),
-    ]);
+    if (selectedMode !== CRYPTO_DEMO_MODE) {
+      throw new AppError({
+        message:
+          'Reset is only available in Demo mode. Start Investing balances come from your investing wallet and cannot be reset.',
+        statusCode: 400,
+        code: 'RESET_NOT_ALLOWED_IN_FUNDED_MODE',
+      });
+    }
 
-    account.cashBalance = getStartingCashBalanceForMode(selectedMode);
-    account.baseCurrency = INVEST_BASE_CURRENCY;
-    await account.save();
+    await ensureCryptoPortfolioAccount(req.authUser, selectedMode);
+
+    const account = await runInTransaction(async (session) => {
+      await PortfolioHolding.deleteMany({
+        userId: req.authUser._id,
+        accountType: CRYPTO_ACCOUNT_TYPE,
+        mode: selectedMode,
+      }, { session });
+      await PortfolioTrade.deleteMany({
+        userId: req.authUser._id,
+        accountType: CRYPTO_ACCOUNT_TYPE,
+        mode: selectedMode,
+      }, { session });
+      await PortfolioSnapshot.deleteMany({
+        userId: req.authUser._id,
+        accountType: CRYPTO_ACCOUNT_TYPE,
+        mode: selectedMode,
+      }, { session });
+      await InvestFunding.deleteMany({
+        userId: req.authUser._id,
+        mode: selectedMode,
+      }, { session });
+
+      return setAccountCash(
+        { userId: req.authUser._id, accountType: CRYPTO_ACCOUNT_TYPE, mode: selectedMode },
+        getStartingCashBalanceForMode(selectedMode),
+        { session, baseCurrency: INVEST_BASE_CURRENCY },
+      );
+    });
 
     const totals = {
       cashBalance: toMoney(account.cashBalance),

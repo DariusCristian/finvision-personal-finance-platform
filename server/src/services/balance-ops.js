@@ -63,6 +63,15 @@ export const ensurePortfolioAccount = async ({ userId, accountType, mode, baseCu
   return account;
 };
 
+// Sets account cash to an absolute value (demo budget, demo reset). Use inside the same transaction as the
+// related deletes so a concurrent order cannot interleave.
+export const setAccountCash = ({ userId, accountType, mode }, cashBalance, { session, baseCurrency } = {}) =>
+  PortfolioAccount.findOneAndUpdate(
+    { userId, accountType, mode },
+    { $set: { cashBalance: roundTo(cashBalance, MONEY_DECIMALS), ...(baseCurrency ? { baseCurrency } : {}) } },
+    { new: true, session },
+  );
+
 export const debitWallet = (userId, amountRON, { session } = {}) => {
   const amount = roundTo(amountRON, MONEY_DECIMALS);
   assertPositiveAmount(amount, 'amountRON');
