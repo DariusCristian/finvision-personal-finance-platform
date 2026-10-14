@@ -1,3 +1,5 @@
+import http from 'node:http';
+
 import mongoose from 'mongoose';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 
@@ -37,13 +39,20 @@ const createRuntime = async () => {
     await ensureSystemCategories();
   };
 
+  // Listen on 127.0.0.1 explicitly and hand supertest the running server. Given a bare app, supertest listens on
+  // all interfaces but connects to 127.0.0.1, so another local process holding that port on IPv4 can answer instead.
+  const server = await new Promise((resolve) => {
+    const listeningServer = http.createServer(app).listen(0, '127.0.0.1', () => resolve(listeningServer));
+  });
+
   const teardown = async () => {
+    await new Promise((resolve) => server.close(resolve));
     await disconnectFromDatabase();
     await mongoServer.stop();
   };
 
   return {
-    app,
+    app: server,
     resetDatabase,
     teardown,
   };
