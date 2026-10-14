@@ -3,7 +3,11 @@ import { Router } from 'express';
 
 import { AuthError, ConflictError } from '../../errors/app-error.js';
 import { requireAuth } from '../../middleware/auth.js';
-import { loginRateLimit, refreshRateLimit, registerRateLimit } from '../../middleware/rate-limit.js';
+import {
+  loginRateLimit,
+  refreshRateLimit,
+  registerRateLimit,
+} from '../../middleware/rate-limit.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { User } from '../../models/user.js';
 import {
@@ -41,65 +45,71 @@ const readRefreshToken = (refreshToken) => {
   }
 };
 
-authRouter.post('/register', registerRateLimit, validateRequest({ body: registerSchema }), async (req, res, next) => {
-  try {
-    const { email, password, displayName, baseCurrency } = req.body;
+authRouter.post(
+  '/register',
+  registerRateLimit,
+  validateRequest({ body: registerSchema }),
+  async (req, res, next) => {
+    try {
+      const { email, password, displayName, baseCurrency } = req.body;
 
-    const existingUser = await User.findOne({ email });
+      const existingUser = await User.findOne({ email });
 
-    if (existingUser) {
-      throw new ConflictError(
-        'An account with this email already exists.',
-        [],
-        'DUPLICATE_EMAIL',
-      );
-    }
-
-    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-    const user = await User.create({
-      email,
-      passwordHash,
-      displayName,
-      baseCurrency,
-    });
-
-    sendSuccess(res, await toAuthPayload(user), 201);
-  } catch (error) {
-    if (error?.code === 11000) {
-      next(
-        new ConflictError(
+      if (existingUser) {
+        throw new ConflictError(
           'An account with this email already exists.',
           [],
           'DUPLICATE_EMAIL',
-        ),
-      );
-      return;
+        );
+      }
+
+      const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+      const user = await User.create({
+        email,
+        passwordHash,
+        displayName,
+        baseCurrency,
+      });
+
+      sendSuccess(res, await toAuthPayload(user), 201);
+    } catch (error) {
+      if (error?.code === 11000) {
+        next(
+          new ConflictError('An account with this email already exists.', [], 'DUPLICATE_EMAIL'),
+        );
+        return;
+      }
+
+      next(error);
     }
+  },
+);
 
-    next(error);
-  }
-});
+authRouter.post(
+  '/login',
+  loginRateLimit,
+  validateRequest({ body: loginSchema }),
+  async (req, res, next) => {
+    try {
+      const { email, password } = req.body;
+      const user = await User.findOne({ email });
 
-authRouter.post('/login', loginRateLimit, validateRequest({ body: loginSchema }), async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+      if (!user) {
+        throw new AuthError('Invalid email or password');
+      }
 
-    if (!user) {
-      throw new AuthError('Invalid email or password');
+      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+      if (!isPasswordValid) {
+        throw new AuthError('Invalid email or password');
+      }
+
+      sendSuccess(res, await toAuthPayload(user));
+    } catch (error) {
+      next(error);
     }
-
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-
-    if (!isPasswordValid) {
-      throw new AuthError('Invalid email or password');
-    }
-
-    sendSuccess(res, await toAuthPayload(user));
-  } catch (error) {
-    next(error);
-  }
-});
+  },
+);
 
 authRouter.post('/refresh', refreshRateLimit, async (req, res, next) => {
   try {

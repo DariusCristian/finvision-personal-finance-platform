@@ -108,8 +108,7 @@ portfolioHoldingSchema.pre('validate', function normalizeAssetIdentity(next) {
 });
 
 export const PortfolioHolding =
-  mongoose.models.PortfolioHolding ??
-  mongoose.model('PortfolioHolding', portfolioHoldingSchema);
+  mongoose.models.PortfolioHolding ?? mongoose.model('PortfolioHolding', portfolioHoldingSchema);
 
 export const backfillPortfolioHoldingAssetType = async () => {
   await PortfolioHolding.updateMany(

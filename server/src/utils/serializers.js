@@ -6,8 +6,7 @@ export const serializeUser = (user) => ({
   locale: user.locale ?? 'en-US',
   avatarUrl: user.avatarUrl ?? '',
   plan: 'free',
-  monthlyBudgetGoal:
-    typeof user.monthlyBudgetGoal === 'number' ? user.monthlyBudgetGoal : null,
+  monthlyBudgetGoal: typeof user.monthlyBudgetGoal === 'number' ? user.monthlyBudgetGoal : null,
   investingMonthlyContributionGoal:
     typeof user.investingMonthlyContributionGoal === 'number'
       ? user.investingMonthlyContributionGoal

@@ -149,7 +149,9 @@ export function AddTransactionModal({
     }
 
     if (mode === 'edit' && initialTransaction) {
-      const sourceDate = normalizeDateValue(initialTransaction.sourceDate || initialTransaction.date);
+      const sourceDate = normalizeDateValue(
+        initialTransaction.sourceDate || initialTransaction.date,
+      );
       const nextRepeat = initialTransaction.isRecurring ? initialTransaction.recurrence : 'none';
 
       setType(initialTransaction.type);
@@ -160,7 +162,8 @@ export function AddTransactionModal({
       setRepeat(nextRepeat);
       setEndDate(
         nextRepeat !== 'none'
-          ? normalizeDateValue(initialTransaction.recurrenceEndDate) || addMonthsToDateString(sourceDate, 3)
+          ? normalizeDateValue(initialTransaction.recurrenceEndDate) ||
+              addMonthsToDateString(sourceDate, 3)
           : '',
       );
       setFormError(null);
@@ -193,7 +196,9 @@ export function AddTransactionModal({
       }
 
       if (mode === 'edit' && initialTransaction?.category?.id) {
-        const existing = availableCategories.find((category) => category.id === initialTransaction.category?.id);
+        const existing = availableCategories.find(
+          (category) => category.id === initialTransaction.category?.id,
+        );
         if (existing) {
           return existing.id;
         }
@@ -314,7 +319,13 @@ export function AddTransactionModal({
               className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
               aria-label="Close"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-6 w-6"
+              >
                 <path d="m6 6 12 12" />
                 <path d="M18 6 6 18" />
               </svg>
@@ -349,7 +360,9 @@ export function AddTransactionModal({
             </div>
 
             <div className="text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Amount</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                Amount
+              </p>
               <div className="mt-4 flex items-end justify-center gap-2 sm:gap-3">
                 <span
                   className={[
@@ -441,22 +454,22 @@ export function AddTransactionModal({
 
         <div className="shrink-0 border-t border-slate-200 bg-slate-50 px-4 py-4 dark:border-slate-700 dark:bg-slate-800 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3 text-base font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:px-7 sm:py-3.5 sm:text-lg"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => void handleSubmit()}
-            disabled={isSubmitting}
-            className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#2563eb] px-6 py-3 text-base font-medium text-white shadow-[0_12px_30px_rgba(37,99,235,0.22)] transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-blue-300 sm:px-8 sm:py-3.5 sm:text-lg"
-          >
-            <span className="text-xl leading-none">+</span>
-            {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Save Transaction'}
-          </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3 text-base font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:px-7 sm:py-3.5 sm:text-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleSubmit()}
+              disabled={isSubmitting}
+              className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#2563eb] px-6 py-3 text-base font-medium text-white shadow-[0_12px_30px_rgba(37,99,235,0.22)] transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-blue-300 sm:px-8 sm:py-3.5 sm:text-lg"
+            >
+              <span className="text-xl leading-none">+</span>
+              {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Save Transaction'}
+            </button>
           </div>
         </div>
       </div>

@@ -65,7 +65,10 @@ export function FinnyTextMessage({ text }: { text: string | null | undefined }) 
       {blocks.map((block, index) => {
         if (block.type === 'heading') {
           return (
-            <p key={`heading-${index}`} className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <p
+              key={`heading-${index}`}
+              className="text-xs font-semibold uppercase tracking-wide text-slate-500"
+            >
               {block.text}
             </p>
           );

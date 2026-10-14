@@ -13,9 +13,22 @@ const ARTICLES = [
     estimatedMinutes: 6,
     tags: ['budgeting', 'planning'],
     contentBlocks: [
-      { type: 'paragraph', text: 'The 50/30/20 rule is a simple budgeting method that splits your take-home income into three buckets.' },
-      { type: 'bulletList', items: ['50% Needs: rent, food, bills', '30% Wants: lifestyle expenses', '20% Savings and debt repayment'] },
-      { type: 'callout', text: 'Start simple. Consistency matters more than perfect percentages in your first month.' },
+      {
+        type: 'paragraph',
+        text: 'The 50/30/20 rule is a simple budgeting method that splits your take-home income into three buckets.',
+      },
+      {
+        type: 'bulletList',
+        items: [
+          '50% Needs: rent, food, bills',
+          '30% Wants: lifestyle expenses',
+          '20% Savings and debt repayment',
+        ],
+      },
+      {
+        type: 'callout',
+        text: 'Start simple. Consistency matters more than perfect percentages in your first month.',
+      },
     ],
   },
   {
@@ -26,9 +39,22 @@ const ARTICLES = [
     estimatedMinutes: 5,
     tags: ['emergency-fund', 'cashflow'],
     contentBlocks: [
-      { type: 'paragraph', text: 'An emergency fund protects you from unexpected expenses like medical bills or job loss.' },
-      { type: 'bulletList', items: ['Starter goal: one month of expenses', 'Target goal: three to six months', 'Keep funds liquid and low-risk'] },
-      { type: 'callout', text: 'Automate a weekly transfer so saving does not depend on motivation.' },
+      {
+        type: 'paragraph',
+        text: 'An emergency fund protects you from unexpected expenses like medical bills or job loss.',
+      },
+      {
+        type: 'bulletList',
+        items: [
+          'Starter goal: one month of expenses',
+          'Target goal: three to six months',
+          'Keep funds liquid and low-risk',
+        ],
+      },
+      {
+        type: 'callout',
+        text: 'Automate a weekly transfer so saving does not depend on motivation.',
+      },
     ],
   },
   {
@@ -40,7 +66,10 @@ const ARTICLES = [
     tags: ['inflation', 'macro'],
     contentBlocks: [
       { type: 'paragraph', text: 'Inflation reduces how much your money can buy over time.' },
-      { type: 'paragraph', text: 'If inflation outpaces your return, your real wealth declines even when balances rise nominally.' },
+      {
+        type: 'paragraph',
+        text: 'If inflation outpaces your return, your real wealth declines even when balances rise nominally.',
+      },
       { type: 'callout', text: 'Track returns after inflation to understand real performance.' },
     ],
   },
@@ -53,8 +82,18 @@ const ARTICLES = [
     tags: ['etf', 'investing', 'diversification'],
     contentBlocks: [
       { type: 'paragraph', text: 'ETFs are baskets of assets traded on exchanges like stocks.' },
-      { type: 'bulletList', items: ['Broad market exposure', 'Lower fees than many active funds', 'Easy recurring contributions'] },
-      { type: 'callout', text: 'Choose a strategy and hold through volatility instead of reacting to headlines.' },
+      {
+        type: 'bulletList',
+        items: [
+          'Broad market exposure',
+          'Lower fees than many active funds',
+          'Easy recurring contributions',
+        ],
+      },
+      {
+        type: 'callout',
+        text: 'Choose a strategy and hold through volatility instead of reacting to headlines.',
+      },
     ],
   },
   {
@@ -65,9 +104,22 @@ const ARTICLES = [
     estimatedMinutes: 7,
     tags: ['risk', 'portfolio'],
     contentBlocks: [
-      { type: 'paragraph', text: 'Higher expected returns usually come with higher short-term volatility.' },
-      { type: 'bulletList', items: ['Define your time horizon', 'Assess your loss tolerance', 'Diversify across asset classes'] },
-      { type: 'callout', text: 'A strategy you can stick with is better than an optimal strategy you abandon.' },
+      {
+        type: 'paragraph',
+        text: 'Higher expected returns usually come with higher short-term volatility.',
+      },
+      {
+        type: 'bulletList',
+        items: [
+          'Define your time horizon',
+          'Assess your loss tolerance',
+          'Diversify across asset classes',
+        ],
+      },
+      {
+        type: 'callout',
+        text: 'A strategy you can stick with is better than an optimal strategy you abandon.',
+      },
     ],
   },
   {
@@ -78,9 +130,22 @@ const ARTICLES = [
     estimatedMinutes: 6,
     tags: ['crypto', 'risk-management'],
     contentBlocks: [
-      { type: 'paragraph', text: 'Crypto can be highly volatile, so position sizing matters more than prediction.' },
-      { type: 'bulletList', items: ['Use a fixed allocation rule', 'Avoid leverage as a beginner', 'Rebalance periodically'] },
-      { type: 'callout', text: 'Treat speculative assets as a capped share of your total portfolio.' },
+      {
+        type: 'paragraph',
+        text: 'Crypto can be highly volatile, so position sizing matters more than prediction.',
+      },
+      {
+        type: 'bulletList',
+        items: [
+          'Use a fixed allocation rule',
+          'Avoid leverage as a beginner',
+          'Rebalance periodically',
+        ],
+      },
+      {
+        type: 'callout',
+        text: 'Treat speculative assets as a capped share of your total portfolio.',
+      },
     ],
   },
   {
@@ -91,9 +156,18 @@ const ARTICLES = [
     estimatedMinutes: 6,
     tags: ['debt', 'repayment'],
     contentBlocks: [
-      { type: 'paragraph', text: 'Snowball prioritizes motivation by paying smallest balances first.' },
-      { type: 'paragraph', text: 'Avalanche minimizes total interest by paying highest rates first.' },
-      { type: 'callout', text: 'Pick the method that maximizes your consistency month after month.' },
+      {
+        type: 'paragraph',
+        text: 'Snowball prioritizes motivation by paying smallest balances first.',
+      },
+      {
+        type: 'paragraph',
+        text: 'Avalanche minimizes total interest by paying highest rates first.',
+      },
+      {
+        type: 'callout',
+        text: 'Pick the method that maximizes your consistency month after month.',
+      },
     ],
   },
   {
@@ -104,8 +178,18 @@ const ARTICLES = [
     estimatedMinutes: 5,
     tags: ['cashflow', 'habit'],
     contentBlocks: [
-      { type: 'bulletList', items: ['Review top spending categories', 'Compare planned vs actual', 'Set one adjustment for next month'] },
-      { type: 'paragraph', text: 'A lightweight routine helps you improve outcomes without overcomplicating your finances.' },
+      {
+        type: 'bulletList',
+        items: [
+          'Review top spending categories',
+          'Compare planned vs actual',
+          'Set one adjustment for next month',
+        ],
+      },
+      {
+        type: 'paragraph',
+        text: 'A lightweight routine helps you improve outcomes without overcomplicating your finances.',
+      },
     ],
   },
 ];
@@ -127,7 +211,8 @@ const QUIZZES = [
           { id: 'd', text: 'Taxes' },
         ],
         correctOptionId: 'b',
-        explanation: 'The 20% category is typically allocated to savings and accelerated debt payments.',
+        explanation:
+          'The 20% category is typically allocated to savings and accelerated debt payments.',
       },
       {
         order: 2,
@@ -163,7 +248,8 @@ const QUIZZES = [
           { id: 'd', text: 'Checking balances once per quarter' },
         ],
         correctOptionId: 'c',
-        explanation: 'Small repeatable habits outperform complex systems that are hard to maintain.',
+        explanation:
+          'Small repeatable habits outperform complex systems that are hard to maintain.',
       },
     ],
   },
@@ -183,7 +269,8 @@ const QUIZZES = [
           { id: 'd', text: 'Daily tax exemption' },
         ],
         correctOptionId: 'b',
-        explanation: 'Broad ETFs spread exposure across many holdings, reducing single-company risk.',
+        explanation:
+          'Broad ETFs spread exposure across many holdings, reducing single-company risk.',
       },
       {
         order: 2,
@@ -195,7 +282,8 @@ const QUIZZES = [
           { id: 'd', text: 'Fixed by regulation' },
         ],
         correctOptionId: 'c',
-        explanation: 'Assets with higher expected returns usually involve higher volatility or uncertainty.',
+        explanation:
+          'Assets with higher expected returns usually involve higher volatility or uncertainty.',
       },
       {
         order: 3,
@@ -219,7 +307,8 @@ const QUIZZES = [
           { id: 'd', text: 'Single-day market moves' },
         ],
         correctOptionId: 'b',
-        explanation: 'Time horizon and risk tolerance are foundational inputs for allocation decisions.',
+        explanation:
+          'Time horizon and risk tolerance are foundational inputs for allocation decisions.',
       },
     ],
   },
@@ -239,7 +328,8 @@ const QUIZZES = [
           { id: 'd', text: 'Doubles' },
         ],
         correctOptionId: 'c',
-        explanation: 'Real returns account for inflation; a lower return than inflation means purchasing power loss.',
+        explanation:
+          'Real returns account for inflation; a lower return than inflation means purchasing power loss.',
       },
       {
         order: 2,
@@ -251,7 +341,8 @@ const QUIZZES = [
           { id: 'd', text: 'Stop tracking categories' },
         ],
         correctOptionId: 'b',
-        explanation: 'The review loop is meant to improve decisions and adjust next-month behavior.',
+        explanation:
+          'The review loop is meant to improve decisions and adjust next-month behavior.',
       },
       {
         order: 3,
@@ -275,7 +366,8 @@ const QUIZZES = [
           { id: 'd', text: 'Take on high-interest debt' },
         ],
         correctOptionId: 'b',
-        explanation: 'A starter emergency reserve improves resilience and reduces stress-driven decisions.',
+        explanation:
+          'A starter emergency reserve improves resilience and reduces stress-driven decisions.',
       },
     ],
   },
@@ -319,7 +411,8 @@ const QUIZZES = [
           { id: 'd', text: 'Ignore drawdowns completely' },
         ],
         correctOptionId: 'a',
-        explanation: 'Scheduled rebalancing keeps allocations aligned with your target risk profile.',
+        explanation:
+          'Scheduled rebalancing keeps allocations aligned with your target risk profile.',
       },
       {
         order: 4,

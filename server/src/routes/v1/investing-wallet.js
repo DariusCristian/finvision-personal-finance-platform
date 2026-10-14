@@ -50,7 +50,12 @@ const serializeWallet = (wallet) => ({
 });
 
 // `conversion` comes from buildCurrencyConversion, fetched before the surrounding transaction started.
-const recordInvestingDepositExpense = async (userId, amountRON, note, { session, conversion } = {}) => {
+const recordInvestingDepositExpense = async (
+  userId,
+  amountRON,
+  note,
+  { session, conversion } = {},
+) => {
   const investingCategory = await Category.findOne({
     userId: null,
     slug: 'investing',
@@ -74,7 +79,9 @@ const recordInvestingDepositExpense = async (userId, amountRON, note, { session,
         currency: WALLET_CURRENCY,
         ...(conversion ? withConvertedAmount(conversion, amountRON) : {}),
         date: new Date(),
-        description: trimmedNote ? `Investing wallet deposit — ${trimmedNote}` : 'Investing wallet deposit',
+        description: trimmedNote
+          ? `Investing wallet deposit — ${trimmedNote}`
+          : 'Investing wallet deposit',
         recurrence: 'none',
       },
     ],
@@ -94,7 +101,9 @@ const computeInvestedThisMonth = async (userId) => {
     },
   }).select('amountRON');
 
-  return toMoney(entries.reduce((sum, entry) => sum + Math.max(0, Number(entry.amountRON || 0)), 0));
+  return toMoney(
+    entries.reduce((sum, entry) => sum + Math.max(0, Number(entry.amountRON || 0)), 0),
+  );
 };
 
 const computeMonthSummary = async (userId, year, month) => {
@@ -169,7 +178,10 @@ const applyAutoFundIfDue = async (wallet) => {
       date: now,
     });
   } catch (error) {
-    logger.warn('investing_wallet.autofund.fx_unavailable', { walletId: String(wallet._id), message: error.message });
+    logger.warn('investing_wallet.autofund.fx_unavailable', {
+      walletId: String(wallet._id),
+      message: error.message,
+    });
     return wallet;
   }
 
@@ -388,11 +400,13 @@ investingWalletRouter.get(
 );
 
 investingWalletRouter.post('/convert', requireAuth, (req, res, next) => {
-  next(new AppError({
-    message: 'Use /api/v1/invest/crypto/topup-from-wallet for Start Investing top-ups.',
-    statusCode: 410,
-    code: 'WALLET_CONVERT_DEPRECATED',
-  }));
+  next(
+    new AppError({
+      message: 'Use /api/v1/invest/crypto/topup-from-wallet for Start Investing top-ups.',
+      statusCode: 410,
+      code: 'WALLET_CONVERT_DEPRECATED',
+    }),
+  );
 });
 
 investingWalletRouter.get(

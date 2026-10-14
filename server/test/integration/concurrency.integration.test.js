@@ -31,7 +31,10 @@ process.env.COINGECKO_API_KEY = 'test-coingecko-key';
 process.env.FINNHUB_API_KEY = 'test-finnhub-key';
 
 const jsonResponse = (payload) =>
-  new Response(JSON.stringify(payload), { status: 200, headers: { 'content-type': 'application/json' } });
+  new Response(JSON.stringify(payload), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
 
 const stubbedFetch = async (input) => {
   const url = new URL(String(input));
@@ -45,11 +48,22 @@ const stubbedFetch = async (input) => {
 
   if (url.hostname === 'api.coingecko.com' && url.pathname.endsWith('/simple/price')) {
     const ids = url.searchParams.get('ids').split(',');
-    return jsonResponse(Object.fromEntries(ids.map((id) => [id, { eur: COIN_PRICE_EUR, eur_24h_change: 0 }])));
+    return jsonResponse(
+      Object.fromEntries(ids.map((id) => [id, { eur: COIN_PRICE_EUR, eur_24h_change: 0 }])),
+    );
   }
 
   if (url.hostname === 'finnhub.io' && url.pathname.endsWith('/quote')) {
-    return jsonResponse({ c: STOCK_PRICE_USD, d: 0, dp: 0, h: 0, l: 0, o: 0, pc: STOCK_PRICE_USD, t: 0 });
+    return jsonResponse({
+      c: STOCK_PRICE_USD,
+      d: 0,
+      dp: 0,
+      h: 0,
+      l: 0,
+      o: 0,
+      pc: STOCK_PRICE_USD,
+      t: 0,
+    });
   }
 
   throw new Error(`blocked external call in test: ${url.hostname}${url.pathname}`);
@@ -61,11 +75,13 @@ let userCounter = 0;
 
 const registerAndLogin = async () => {
   userCounter += 1;
-  const response = await request(runtime.app).post('/api/v1/auth/register').send({
-    email: `concurrency${userCounter}@example.com`,
-    password: 'Password123',
-    displayName: 'Concurrency User',
-  });
+  const response = await request(runtime.app)
+    .post('/api/v1/auth/register')
+    .send({
+      email: `concurrency${userCounter}@example.com`,
+      password: 'Password123',
+      displayName: 'Concurrency User',
+    });
 
   return {
     userId: response.body.data.user.id,
@@ -83,7 +99,10 @@ const fireConcurrently = (requestFactory, count = CONCURRENT_REQUESTS) =>
 
 const countStatuses = (responses) =>
   responses.reduce((counts, response) => {
-    const key = response.status === 200 ? '200' : `${response.status} ${response.body?.error?.code ?? ''}`.trim();
+    const key =
+      response.status === 200
+        ? '200'
+        : `${response.status} ${response.body?.error?.code ?? ''}`.trim();
     counts[key] = (counts[key] ?? 0) + 1;
     return counts;
   }, {});
@@ -94,7 +113,8 @@ const expectOk = async (pending) => {
   return response;
 };
 
-const getAccount = (userId, accountType, mode) => PortfolioAccount.findOne({ userId, accountType, mode }).lean();
+const getAccount = (userId, accountType, mode) =>
+  PortfolioAccount.findOne({ userId, accountType, mode }).lean();
 
 before(async () => {
   realFetch = global.fetch;
@@ -128,7 +148,10 @@ const assertTopUpRace = async ({ modePath, topUpPath, accountType }) => {
   assert.equal(wallet.balance, 100);
   assert.equal(account.cashBalance, 3 * 300 * EUR_PER_RON);
   assert.equal(ledger.length, 3);
-  assert.equal(ledger.reduce((sum, entry) => sum + entry.amountRON, 0), -900);
+  assert.equal(
+    ledger.reduce((sum, entry) => sum + entry.amountRON, 0),
+    -900,
+  );
   assert.equal(fundings, 3);
 };
 
@@ -152,7 +175,9 @@ test('spot C: concurrent deposits are all credited to the wallet', async () => {
   const { userId, auth } = await registerAndLogin();
   await expectOk(send('get', '/investing-wallet', auth));
 
-  const responses = await fireConcurrently(() => send('post', '/investing-wallet/deposit', auth, { amountRON: 100 }));
+  const responses = await fireConcurrently(() =>
+    send('post', '/investing-wallet/deposit', auth, { amountRON: 100 }),
+  );
 
   assert.deepEqual(countStatuses(responses), { 200: 5 });
 
@@ -172,7 +197,12 @@ test('spot D: concurrent wallet reads apply the monthly auto-fund only once', as
   // Set directly: autoFundDayOfMonth is limited to 1..28 by the API, but the test must run on any day.
   await InvestingWallet.updateOne(
     { userId },
-    { autoFundEnabled: true, autoFundAmount: 50, autoFundDayOfMonth: new Date().getUTCDate(), lastAutoFundAt: null },
+    {
+      autoFundEnabled: true,
+      autoFundAmount: 50,
+      autoFundDayOfMonth: new Date().getUTCDate(),
+      lastAutoFundAt: null,
+    },
   );
 
   const responses = await fireConcurrently(
@@ -198,13 +228,20 @@ const assertBuyRace = async ({ modePath, budgetPath, orderPath, accountType, ord
   // Buy once first so the holding exists; first-buy creation races are covered separately.
   await expectOk(send('post', orderPath, auth, { ...order, side: 'buy', quantity: 1 }));
 
-  const responses = await fireConcurrently(() => send('post', orderPath, auth, { ...order, side: 'buy', quantity: 1 }));
+  const responses = await fireConcurrently(() =>
+    send('post', orderPath, auth, { ...order, side: 'buy', quantity: 1 }),
+  );
 
   assert.deepEqual(countStatuses(responses), { 200: 3, '400 INSUFFICIENT_FUNDS': 2 });
 
   const account = await getAccount(userId, accountType, 'demo');
   const holdings = await PortfolioHolding.find({ userId, accountType, mode: 'demo' }).lean();
-  const trades = await PortfolioTrade.countDocuments({ userId, accountType, mode: 'demo', side: 'buy' });
+  const trades = await PortfolioTrade.countDocuments({
+    userId,
+    accountType,
+    mode: 'demo',
+    side: 'buy',
+  });
 
   assert.equal(account.cashBalance, 0);
   assert.equal(holdings.length, 1);
@@ -213,10 +250,19 @@ const assertBuyRace = async ({ modePath, budgetPath, orderPath, accountType, ord
   assert.equal(trades, 4);
 };
 
-const assertFirstBuyRace = async ({ modePath, budgetPath, orderPath, accountType, order, priceEUR }) => {
+const assertFirstBuyRace = async ({
+  modePath,
+  budgetPath,
+  orderPath,
+  accountType,
+  order,
+  priceEUR,
+}) => {
   const { userId, auth } = await registerAndLogin();
   await expectOk(send('post', modePath, auth, { mode: 'demo' }));
-  await expectOk(send('post', budgetPath, auth, { amountEUR: 2 * CONCURRENT_NARROW_RACE_REQUESTS * priceEUR }));
+  await expectOk(
+    send('post', budgetPath, auth, { amountEUR: 2 * CONCURRENT_NARROW_RACE_REQUESTS * priceEUR }),
+  );
 
   const responses = await fireConcurrently(
     () => send('post', orderPath, auth, { ...order, side: 'buy', quantity: 1 }),
@@ -233,19 +279,33 @@ const assertFirstBuyRace = async ({ modePath, budgetPath, orderPath, accountType
   assert.equal(holdings[0].quantity, CONCURRENT_NARROW_RACE_REQUESTS);
 };
 
-const assertSellRace = async ({ modePath, budgetPath, orderPath, accountType, order, priceEUR }) => {
+const assertSellRace = async ({
+  modePath,
+  budgetPath,
+  orderPath,
+  accountType,
+  order,
+  priceEUR,
+}) => {
   const { userId, auth } = await registerAndLogin();
   await expectOk(send('post', modePath, auth, { mode: 'demo' }));
   await expectOk(send('post', budgetPath, auth, { amountEUR: 1000 }));
   await expectOk(send('post', orderPath, auth, { ...order, side: 'buy', quantity: 2 }));
 
-  const responses = await fireConcurrently(() => send('post', orderPath, auth, { ...order, side: 'sell', quantity: 1 }));
+  const responses = await fireConcurrently(() =>
+    send('post', orderPath, auth, { ...order, side: 'sell', quantity: 1 }),
+  );
 
   assert.deepEqual(countStatuses(responses), { 200: 2, '400 INSUFFICIENT_HOLDINGS': 3 });
 
   const account = await getAccount(userId, accountType, 'demo');
   const holdings = await PortfolioHolding.countDocuments({ userId, accountType, mode: 'demo' });
-  const sellTrades = await PortfolioTrade.countDocuments({ userId, accountType, mode: 'demo', side: 'sell' });
+  const sellTrades = await PortfolioTrade.countDocuments({
+    userId,
+    accountType,
+    mode: 'demo',
+    side: 'sell',
+  });
 
   assert.equal(account.cashBalance, 1000);
   assert.equal(holdings, 0);
@@ -299,15 +359,27 @@ test('spot H: concurrent first use creates exactly one wallet and one account', 
 
   const responses = await Promise.all([
     ...Array.from({ length: CONCURRENT_REQUESTS }, () => send('get', '/investing-wallet', auth)),
-    ...Array.from({ length: CONCURRENT_REQUESTS }, () => send('get', '/invest/crypto/account', auth)),
-    ...Array.from({ length: CONCURRENT_REQUESTS }, () => send('get', '/market/stocks/account', auth)),
+    ...Array.from({ length: CONCURRENT_REQUESTS }, () =>
+      send('get', '/invest/crypto/account', auth),
+    ),
+    ...Array.from({ length: CONCURRENT_REQUESTS }, () =>
+      send('get', '/market/stocks/account', auth),
+    ),
   ]);
 
   assert.deepEqual(countStatuses(responses), { 200: 15 });
   assert.equal(await InvestingWallet.countDocuments({ userId }), 1);
 });
 
-const assertResetRace = async ({ modePath, budgetPath, orderPath, resetPath, accountType, order, priceEUR }) => {
+const assertResetRace = async ({
+  modePath,
+  budgetPath,
+  orderPath,
+  resetPath,
+  accountType,
+  order,
+  priceEUR,
+}) => {
   const { userId, auth } = await registerAndLogin();
   await expectOk(send('post', modePath, auth, { mode: 'demo' }));
   await expectOk(send('post', budgetPath, auth, { amountEUR: 1000 }));
@@ -332,7 +404,10 @@ const assertResetRace = async ({ modePath, budgetPath, orderPath, resetPath, acc
 
   assert.ok(trades.every((trade) => trade.side === 'buy'));
   assert.equal(account.cashBalance, 5000 - spent);
-  assert.equal(holdings.reduce((sum, holding) => sum + holding.quantity, 0), boughtQuantity);
+  assert.equal(
+    holdings.reduce((sum, holding) => sum + holding.quantity, 0),
+    boughtQuantity,
+  );
   assert.equal(trades.length * priceEUR, spent);
 };
 

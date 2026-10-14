@@ -67,7 +67,12 @@ const withTimeout = async (promise, timeoutMs) => {
   let timeoutId;
   const timeoutPromise = new Promise((_resolve, reject) => {
     timeoutId = setTimeout(() => {
-      reject(new GeminiProviderError('Gemini request timed out.', { status: 504, code: 'GEMINI_TIMEOUT' }));
+      reject(
+        new GeminiProviderError('Gemini request timed out.', {
+          status: 504,
+          code: 'GEMINI_TIMEOUT',
+        }),
+      );
     }, timeoutMs);
   });
 
@@ -80,13 +85,7 @@ const withTimeout = async (promise, timeoutMs) => {
 
 export async function generateFinnyReply({ message, systemInstruction, context }) {
   const serializedContext = JSON.stringify(context ?? {}, null, 2);
-  const prompt = [
-    'User message:',
-    message,
-    '',
-    'Context JSON:',
-    serializedContext,
-  ].join('\n');
+  const prompt = ['User message:', message, '', 'Context JSON:', serializedContext].join('\n');
 
   const requestPayload = {
     model: 'gemini-2.5-flash',
@@ -107,7 +106,10 @@ export async function generateFinnyReply({ message, systemInstruction, context }
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     try {
-      const res = await withTimeout(getClient().models.generateContent(requestPayload), REQUEST_TIMEOUT_MS);
+      const res = await withTimeout(
+        getClient().models.generateContent(requestPayload),
+        REQUEST_TIMEOUT_MS,
+      );
       return res.text || '';
     } catch (error) {
       lastError = error;

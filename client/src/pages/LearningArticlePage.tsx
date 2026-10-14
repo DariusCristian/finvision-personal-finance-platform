@@ -24,7 +24,10 @@ const renderBlock = (block: EducationContentBlock, index: number) => {
 
   if (block.type === 'callout') {
     return (
-      <div key={index} className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-slate-700 dark:border-blue-900/50 dark:bg-blue-950/60 dark:text-slate-300">
+      <div
+        key={index}
+        className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-slate-700 dark:border-blue-900/50 dark:bg-blue-950/60 dark:text-slate-300"
+      >
         {block.text}
       </div>
     );
@@ -101,7 +104,10 @@ export function LearningArticlePage() {
   return (
     <AppShell activeTab="learning">
       <div className="space-y-5">
-        <Link to="/learn" className="inline-flex text-sm font-medium text-[#2563eb] hover:text-[#1d4ed8] dark:text-blue-400 dark:hover:text-blue-300">
+        <Link
+          to="/learn"
+          className="inline-flex text-sm font-medium text-[#2563eb] hover:text-[#1d4ed8] dark:text-blue-400 dark:hover:text-blue-300"
+        >
           ← Back to Learning Center
         </Link>
 
@@ -128,7 +134,9 @@ export function LearningArticlePage() {
               <span>{article.estimatedMinutes} min read</span>
             </div>
 
-            <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">{article.title}</h1>
+            <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+              {article.title}
+            </h1>
             <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">{article.excerpt}</p>
 
             <div className="mt-8 space-y-5 leading-relaxed">
@@ -146,7 +154,9 @@ export function LearningArticlePage() {
               >
                 {isCompleting ? 'Saving...' : 'Mark as completed'}
               </button>
-              {statusMessage ? <p className="text-sm text-slate-500 dark:text-slate-400">{statusMessage}</p> : null}
+              {statusMessage ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400">{statusMessage}</p>
+              ) : null}
             </div>
           </article>
         ) : null}

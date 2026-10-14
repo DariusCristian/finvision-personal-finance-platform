@@ -62,7 +62,9 @@ before(async () => {
   // The test runtime exports its in-memory replica set URI.
   replicaSetUri = process.env.MONGODB_URI;
   standaloneServer = await MongoMemoryServer.create();
-  standaloneConnection = await mongoose.createConnection(standaloneServer.getUri('finvision_topology')).asPromise();
+  standaloneConnection = await mongoose
+    .createConnection(standaloneServer.getUri('finvision_topology'))
+    .asPromise();
 });
 
 after(async () => {
@@ -86,7 +88,9 @@ test('assertTransactionSupport rejects a standalone server with setup instructio
 });
 
 test('the server exits at startup with a clear error on a standalone MongoDB', async () => {
-  const { exitCode, output } = await startServerProcess(standaloneServer.getUri('finvision_topology'));
+  const { exitCode, output } = await startServerProcess(
+    standaloneServer.getUri('finvision_topology'),
+  );
 
   assert.equal(exitCode, 1);
   assert.match(output, /needs a replica set/);

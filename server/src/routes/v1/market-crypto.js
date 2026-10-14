@@ -20,7 +20,9 @@ import {
 const marketCryptoRouter = Router();
 
 const resolveVsCurrency = (value) => {
-  const normalizedValue = String(value || 'eur').trim().toLowerCase();
+  const normalizedValue = String(value || 'eur')
+    .trim()
+    .toLowerCase();
 
   return {
     requested: normalizedValue || 'eur',

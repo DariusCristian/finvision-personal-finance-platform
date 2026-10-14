@@ -41,7 +41,15 @@ const EMPTY_TOTALS: PortfolioTotals = {
   holdingsCount: 0,
 };
 
-const ALLOCATION_COLORS = ['#2563eb', '#22c55e', '#8b5cf6', '#f97316', '#14b8a6', '#eab308', '#94a3b8'];
+const ALLOCATION_COLORS = [
+  '#2563eb',
+  '#22c55e',
+  '#8b5cf6',
+  '#f97316',
+  '#14b8a6',
+  '#eab308',
+  '#94a3b8',
+];
 const MAX_CRYPTO_ALLOCATION_SLICES = 5;
 const DISCOVERY_PREVIEW_LIMIT = 6;
 
@@ -78,7 +86,9 @@ const toCoinName = (coinId: string | null, symbol: string) => {
 };
 
 const buildCryptoAllocation = (holdings: PortfolioHolding[]) => {
-  const cryptoHoldings = holdings.filter((holding) => holding.assetType === 'crypto' || !holding.assetType);
+  const cryptoHoldings = holdings.filter(
+    (holding) => holding.assetType === 'crypto' || !holding.assetType,
+  );
 
   const sorted = cryptoHoldings
     .map((holding) => ({
@@ -91,7 +101,9 @@ const buildCryptoAllocation = (holdings: PortfolioHolding[]) => {
     .sort((left, right) => right.value - left.value);
 
   const topCoins = sorted.slice(0, MAX_CRYPTO_ALLOCATION_SLICES);
-  const otherValue = sorted.slice(MAX_CRYPTO_ALLOCATION_SLICES).reduce((sum, entry) => sum + entry.value, 0);
+  const otherValue = sorted
+    .slice(MAX_CRYPTO_ALLOCATION_SLICES)
+    .reduce((sum, entry) => sum + entry.value, 0);
 
   const rawSlices = topCoins.map((entry, index) => ({
     id: entry.id,
@@ -156,7 +168,13 @@ const downloadCsvBlob = (blob: Blob, filename: string) => {
   window.URL.revokeObjectURL(objectUrl);
 };
 
-function PerformanceChart({ points, isLoading }: { points: InvestPerformancePoint[]; isLoading: boolean }) {
+function PerformanceChart({
+  points,
+  isLoading,
+}: {
+  points: InvestPerformancePoint[];
+  isLoading: boolean;
+}) {
   const width = 680;
   const height = 240;
   const padding = 24;
@@ -194,7 +212,13 @@ function PerformanceChart({ points, isLoading }: { points: InvestPerformancePoin
   return (
     <div className="h-60 rounded-2xl border border-slate-200 bg-slate-50 p-2">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full">
-        <polyline points={pathData} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" />
+        <polyline
+          points={pathData}
+          fill="none"
+          stroke="#2563EB"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
       </svg>
     </div>
   );
@@ -213,7 +237,9 @@ export function PortfolioPage() {
   const [performanceRange, setPerformanceRange] = useState<'7d' | '30d'>('7d');
   const [trades, setTrades] = useState<PortfolioTrade[]>([]);
   const [discoveryPreviewCoins, setDiscoveryPreviewCoins] = useState<CryptoSearchCoin[]>([]);
-  const [discoveryPreviewQuotes, setDiscoveryPreviewQuotes] = useState<Record<string, CryptoQuote>>({});
+  const [discoveryPreviewQuotes, setDiscoveryPreviewQuotes] = useState<Record<string, CryptoQuote>>(
+    {},
+  );
   const [isLoadingDiscoveryPreview, setIsLoadingDiscoveryPreview] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -222,7 +248,10 @@ export function PortfolioPage() {
   const [tradeSide, setTradeSide] = useState<'buy' | 'sell'>('sell');
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [isResettingPortfolio, setIsResettingPortfolio] = useState(false);
-  const [budgetInvestingWallet, setBudgetInvestingWallet] = useState<Pick<InvestingWallet, 'balance' | 'monthlyGoal'> | null>(null);
+  const [budgetInvestingWallet, setBudgetInvestingWallet] = useState<Pick<
+    InvestingWallet,
+    'balance' | 'monthlyGoal'
+  > | null>(null);
   const [isBudgetWalletLoading, setIsBudgetWalletLoading] = useState(false);
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [topUpAmountInput, setTopUpAmountInput] = useState('0');
@@ -489,10 +518,11 @@ export function PortfolioPage() {
       return holdings;
     }
 
-    return holdings.filter((holding) => (
-      holding.symbol.toLowerCase().includes(normalizedSearch) ||
-      (holding.coinId ?? '').toLowerCase().includes(normalizedSearch)
-    ));
+    return holdings.filter(
+      (holding) =>
+        holding.symbol.toLowerCase().includes(normalizedSearch) ||
+        (holding.coinId ?? '').toLowerCase().includes(normalizedSearch),
+    );
   }, [holdings, holdingsSearchInput]);
   const recentTrades = useMemo(() => trades.slice(0, 5), [trades]);
 
@@ -511,7 +541,9 @@ export function PortfolioPage() {
       setPerformanceSeries([]);
       setTrades([]);
       await loadInvestData();
-      setSuccessMessage(`Mode changed to ${mode === 'demo' ? 'Demo Practice' : 'Start Investing'}.`);
+      setSuccessMessage(
+        `Mode changed to ${mode === 'demo' ? 'Demo Practice' : 'Start Investing'}.`,
+      );
     } catch (caughtError) {
       setError(
         caughtError instanceof ApiRequestError
@@ -713,10 +745,13 @@ export function PortfolioPage() {
       <div className="fv-page space-y-6">
         <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb]">Crypto Invest</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb]">
+              Crypto Invest
+            </p>
             <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-900">Portfolio</h1>
             <p className="max-w-2xl text-base text-slate-500">
-              Simulated crypto investing in EUR. Use Start Investing for wallet-funded cash, or Demo Practice for sandbox capital.
+              Simulated crypto investing in EUR. Use Start Investing for wallet-funded cash, or Demo
+              Practice for sandbox capital.
             </p>
             <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-[0_2px_12px_rgba(15,23,42,0.05)]">
               <button
@@ -843,7 +878,9 @@ export function PortfolioPage() {
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">Total Portfolio Value</h2>
-                  <p className="text-sm text-slate-500">{formatMoney(totals.totalValue, displayCurrency)}</p>
+                  <p className="text-sm text-slate-500">
+                    {formatMoney(totals.totalValue, displayCurrency)}
+                  </p>
                 </div>
                 <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1 text-xs">
                   <button
@@ -882,24 +919,41 @@ export function PortfolioPage() {
 
             <aside className="col-span-12 grid gap-4 sm:grid-cols-2 xl:col-span-4 xl:grid-cols-1">
               <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Portfolio Value (EUR)</p>
-                <p className="mt-2 text-2xl font-bold text-slate-900">{formatMoney(totals.totalValue, displayCurrency)}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                  Portfolio Value (EUR)
+                </p>
+                <p className="mt-2 text-2xl font-bold text-slate-900">
+                  {formatMoney(totals.totalValue, displayCurrency)}
+                </p>
                 <p className="mt-1 text-xs text-slate-500">Cash + holdings</p>
               </article>
               <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Buying Power (EUR)</p>
-                <p className="mt-2 text-2xl font-bold text-slate-900">{formatMoney(totals.cashBalance, displayCurrency)}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                  Buying Power (EUR)
+                </p>
+                <p className="mt-2 text-2xl font-bold text-slate-900">
+                  {formatMoney(totals.cashBalance, displayCurrency)}
+                </p>
                 <p className="mt-1 text-xs text-slate-500">Available for buy orders</p>
               </article>
               <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Day&apos;s P/L</p>
-                <p className={['mt-2 text-2xl font-bold', totals.unrealizedPnL >= 0 ? 'text-emerald-600' : 'text-rose-600'].join(' ')}>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                  Day&apos;s P/L
+                </p>
+                <p
+                  className={[
+                    'mt-2 text-2xl font-bold',
+                    totals.unrealizedPnL >= 0 ? 'text-emerald-600' : 'text-rose-600',
+                  ].join(' ')}
+                >
                   {formatMoney(totals.unrealizedPnL, displayCurrency)}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">Open positions only</p>
               </article>
               <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Total Return %</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                  Total Return %
+                </p>
                 <p className="mt-2 text-2xl font-bold text-slate-900">&mdash;</p>
                 <p className="mt-1 text-xs text-slate-500">Coming soon</p>
               </article>
@@ -908,12 +962,19 @@ export function PortfolioPage() {
             <article className="col-span-12 rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] xl:col-span-4">
               <h2 className="text-lg font-semibold text-slate-900">Portfolio Allocation</h2>
               <div className="mt-6 flex items-center justify-center">
-                <div className="relative h-44 w-44 rounded-full" style={{ background: buildDonutBackground(allocationSlices) }}>
+                <div
+                  className="relative h-44 w-44 rounded-full"
+                  style={{ background: buildDonutBackground(allocationSlices) }}
+                >
                   <div className="absolute inset-6 flex items-center justify-center rounded-full bg-white text-center">
                     {allocationSlices.length > 0 ? (
                       <div>
-                        <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Total Assets</p>
-                        <p className="text-base font-semibold text-slate-900">{formatMoney(cryptoAllocation.totalCryptoEUR, displayCurrency)}</p>
+                        <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                          Total Assets
+                        </p>
+                        <p className="text-base font-semibold text-slate-900">
+                          {formatMoney(cryptoAllocation.totalCryptoEUR, displayCurrency)}
+                        </p>
                       </div>
                     ) : (
                       <p className="text-xs text-slate-500">No allocation yet</p>
@@ -928,10 +989,15 @@ export function PortfolioPage() {
                   allocationSlices.map((slice) => (
                     <div key={slice.id} className="flex items-center justify-between gap-3 text-sm">
                       <div className="flex min-w-0 items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: slice.color }} />
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: slice.color }}
+                        />
                         <p className="truncate text-slate-700">{slice.label}</p>
                       </div>
-                      <p className="font-semibold text-slate-900">{formatAllocationPct(slice.pct)}</p>
+                      <p className="font-semibold text-slate-900">
+                        {formatAllocationPct(slice.pct)}
+                      </p>
                     </div>
                   ))
                 )}
@@ -981,14 +1047,23 @@ export function PortfolioPage() {
                           <td className="px-6 py-4 text-slate-700">
                             {formatPrice(holding.currentPrice, displayCurrency)}
                           </td>
-                          <td className={['px-6 py-4 font-semibold', getPriceColorClassName(holding.change24h)].join(' ')}>
+                          <td
+                            className={[
+                              'px-6 py-4 font-semibold',
+                              getPriceColorClassName(holding.change24h),
+                            ].join(' ')}
+                          >
                             {formatPct(holding.change24h)}
                           </td>
-                          <td className="px-6 py-4 text-slate-700">{formatQty(holding.quantity, holding.symbol)}</td>
+                          <td className="px-6 py-4 text-slate-700">
+                            {formatQty(holding.quantity, holding.symbol)}
+                          </td>
                           <td className="px-6 py-4 font-semibold text-slate-900">
                             {formatMoney(holding.marketValue, displayCurrency)}
                           </td>
-                          <td className="px-6 py-4 text-slate-700">{formatPct(holding.allocationPct, 1)}</td>
+                          <td className="px-6 py-4 text-slate-700">
+                            {formatPct(holding.allocationPct, 1)}
+                          </td>
                           <td className="px-6 py-4">
                             <button
                               type="button"
@@ -1027,7 +1102,9 @@ export function PortfolioPage() {
                           {trade.side.toUpperCase()} {trade.symbol}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {new Date(trade.executedAt || trade.createdAt || Date.now()).toLocaleString()}
+                          {new Date(
+                            trade.executedAt || trade.createdAt || Date.now(),
+                          ).toLocaleString()}
                         </p>
                       </div>
                       <div className="text-right">
@@ -1040,7 +1117,9 @@ export function PortfolioPage() {
                           {trade.side === 'buy' ? '-' : '+'}
                           {formatMoney(trade.total, displayCurrency)}
                         </p>
-                        <p className="text-xs text-slate-500">Qty {formatQty(trade.quantity, trade.symbol)}</p>
+                        <p className="text-xs text-slate-500">
+                          Qty {formatQty(trade.quantity, trade.symbol)}
+                        </p>
                       </div>
                     </div>
                   ))
@@ -1051,7 +1130,10 @@ export function PortfolioPage() {
             <article className="col-span-12 rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <h2 className="text-lg font-semibold text-slate-900">Discover Crypto Assets</h2>
-                <Link to="/invest/discovery" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+                <Link
+                  to="/invest/discovery"
+                  className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]"
+                >
                   Open discovery
                 </Link>
               </div>
@@ -1076,17 +1158,30 @@ export function PortfolioPage() {
                       >
                         <div className="flex items-center gap-2">
                           <div className="h-8 w-8 overflow-hidden rounded-full border border-slate-200 bg-white">
-                            {coin.thumb ? <img src={coin.thumb} alt={`${coin.name} logo`} className="h-full w-full object-cover" /> : null}
+                            {coin.thumb ? (
+                              <img
+                                src={coin.thumb}
+                                alt={`${coin.name} logo`}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : null}
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-slate-900">{coin.name}</p>
+                            <p className="truncate text-sm font-semibold text-slate-900">
+                              {coin.name}
+                            </p>
                             <p className="text-xs uppercase text-slate-500">{coin.symbol}</p>
                           </div>
                         </div>
                         <p className="mt-3 text-base font-semibold text-slate-900">
                           {quote ? formatPrice(quote.price, displayCurrency) : '--'}
                         </p>
-                        <p className={['text-xs font-semibold', getPriceColorClassName(quote?.change24h ?? null)].join(' ')}>
+                        <p
+                          className={[
+                            'text-xs font-semibold',
+                            getPriceColorClassName(quote?.change24h ?? null),
+                          ].join(' ')}
+                        >
                           {formatPct(quote?.change24h ?? null)} (24h)
                         </p>
                       </Link>
@@ -1100,7 +1195,8 @@ export function PortfolioPage() {
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
             <h2 className="text-lg font-semibold text-slate-900">Choose a mode to begin</h2>
             <p className="mt-2 text-sm text-slate-500">
-              Start Investing begins at €0 and is funded by wallet conversion. Demo Practice starts with €5,000.
+              Start Investing begins at €0 and is funded by wallet conversion. Demo Practice starts
+              with €5,000.
             </p>
           </section>
         )}
@@ -1156,7 +1252,9 @@ export function PortfolioPage() {
               <p className="mt-1 text-slate-600">
                 You receive:{' '}
                 <span className="font-semibold text-slate-900">
-                  {isTopUpQuoteLoading || !topUpQuote ? '--' : formatMoney(topUpQuote.eurAmount, 'EUR')}
+                  {isTopUpQuoteLoading || !topUpQuote
+                    ? '--'
+                    : formatMoney(topUpQuote.eurAmount, 'EUR')}
                 </span>
               </p>
             </div>
@@ -1195,7 +1293,9 @@ export function PortfolioPage() {
         <div className="fixed inset-0 z-[95] flex items-center justify-center bg-slate-900/50 p-4">
           <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl">
             <h3 className="text-xl font-semibold text-slate-900">Set demo budget</h3>
-            <p className="mt-1 text-sm text-slate-500">This resets demo holdings and demo trades.</p>
+            <p className="mt-1 text-sm text-slate-500">
+              This resets demo holdings and demo trades.
+            </p>
 
             <label className="mt-4 block text-sm font-medium text-slate-600">
               Demo cash (EUR)

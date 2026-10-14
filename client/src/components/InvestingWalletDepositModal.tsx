@@ -59,8 +59,12 @@ export function InvestingWalletDepositModal({
       <div className="w-full max-w-md rounded-[1.75rem] bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.18)] dark:bg-slate-900 sm:p-8">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Add Funds</h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Deposit RON into your Budget investing wallet.</p>
+            <h2 className="text-2xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
+              Add Funds
+            </h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Deposit RON into your Budget investing wallet.
+            </p>
           </div>
           <button
             type="button"
@@ -68,7 +72,13 @@ export function InvestingWalletDepositModal({
             className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             aria-label="Close"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="h-5 w-5"
+            >
               <path d="m6 6 12 12" />
               <path d="M18 6 6 18" />
             </svg>

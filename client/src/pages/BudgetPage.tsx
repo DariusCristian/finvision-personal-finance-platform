@@ -50,8 +50,20 @@ type CreateTransactionArgs = {
 };
 
 const MOCK_CATEGORIES: BudgetCategory[] = [
-  { id: 'mock-entertainment', name: 'Entertainment', slug: 'entertainment', color: '#A855F7', kind: 'expense' },
-  { id: 'mock-food', name: 'Food & Dining', slug: 'food-dining', color: '#3B82F6', kind: 'expense' },
+  {
+    id: 'mock-entertainment',
+    name: 'Entertainment',
+    slug: 'entertainment',
+    color: '#A855F7',
+    kind: 'expense',
+  },
+  {
+    id: 'mock-food',
+    name: 'Food & Dining',
+    slug: 'food-dining',
+    color: '#3B82F6',
+    kind: 'expense',
+  },
   { id: 'mock-housing', name: 'Housing', slug: 'housing', color: '#2563EB', kind: 'expense' },
   { id: 'mock-income', name: 'Income', slug: 'income', color: '#10B981', kind: 'income' },
   { id: 'mock-investing', name: 'Investing', slug: 'investing', color: '#0EA5A4', kind: 'expense' },
@@ -61,7 +73,13 @@ const MOCK_CATEGORIES: BudgetCategory[] = [
 
 function BankIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="h-5 w-5"
+    >
       <path d="m4 10 8-4 8 4" />
       <path d="M6 10v6" />
       <path d="M10 10v6" />
@@ -74,7 +92,13 @@ function BankIcon() {
 
 function WalletIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="h-5 w-5"
+    >
       <path d="M4.5 8A2.5 2.5 0 0 1 7 5.5h8A2.5 2.5 0 0 1 17.5 8v8A2.5 2.5 0 0 1 15 18.5H7A2.5 2.5 0 0 1 4.5 16Z" />
       <path d="M15 10.5h4v3h-4a1.5 1.5 0 0 1 0-3Z" />
       <circle cx="15.8" cy="12" r="0.6" fill="currentColor" stroke="none" />
@@ -84,7 +108,13 @@ function WalletIcon() {
 
 function DonutIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="h-5 w-5"
+    >
       <path d="M12 4a8 8 0 1 0 8 8" />
       <path d="M12 4a8 8 0 0 1 8 8h-8Z" />
     </svg>
@@ -104,7 +134,10 @@ const formatMonthLabel = (value: string) => {
 
 const buildMonthOptions = (previousCount: number, futureCount: number) => {
   const now = new Date();
-  const offsets = Array.from({ length: previousCount + futureCount + 1 }, (_, index) => index - previousCount);
+  const offsets = Array.from(
+    { length: previousCount + futureCount + 1 },
+    (_, index) => index - previousCount,
+  );
 
   return offsets.map((offset) => {
     const date = new Date(now.getFullYear(), now.getMonth() + offset, 1);
@@ -186,7 +219,9 @@ const formatCurrency = (
   fractionDigits = 2,
   currency: 'RON' | 'EUR' | 'USD' = 'RON',
 ) => {
-  const normalizedCurrency = String(currency || 'RON').trim().toUpperCase();
+  const normalizedCurrency = String(currency || 'RON')
+    .trim()
+    .toUpperCase();
   const safeCurrency =
     normalizedCurrency === 'RON' || normalizedCurrency === 'EUR' || normalizedCurrency === 'USD'
       ? normalizedCurrency
@@ -274,7 +309,8 @@ const buildMockTransactions = (
           ? addMonths(occurrenceDate, 1).toISOString()
           : null,
       isProjected: Boolean(options.isProjected),
-      category: findCategory(categories, options.categorySlug) ?? findCategory(categories, 'others'),
+      category:
+        findCategory(categories, options.categorySlug) ?? findCategory(categories, 'others'),
     };
   };
 
@@ -331,7 +367,10 @@ const buildMockTransactions = (
       recurrenceEndDate: addYears(selectedMonthDate, 1).toISOString(),
       isProjected: isProjectedMonth,
     }),
-  ].sort((left, right) => new Date(right.occurrenceDate).getTime() - new Date(left.occurrenceDate).getTime());
+  ].sort(
+    (left, right) =>
+      new Date(right.occurrenceDate).getTime() - new Date(left.occurrenceDate).getTime(),
+  );
 };
 
 const getPreviousMonthKey = (month: string) => {
@@ -395,36 +434,34 @@ const renderChip = (label: string, tone: ChipTone) => (
   </span>
 );
 
-const sortTransactionsByOption = (
-  items: BudgetTransaction[],
-  sortOption: SortOption,
-) => [...items].sort((left, right) => {
-  if (sortOption === 'amount' || sortOption === '-amount') {
-    if (left.amount !== right.amount) {
-      return sortOption === 'amount' ? left.amount - right.amount : right.amount - left.amount;
+const sortTransactionsByOption = (items: BudgetTransaction[], sortOption: SortOption) =>
+  [...items].sort((left, right) => {
+    if (sortOption === 'amount' || sortOption === '-amount') {
+      if (left.amount !== right.amount) {
+        return sortOption === 'amount' ? left.amount - right.amount : right.amount - left.amount;
+      }
+    } else {
+      const leftDate = new Date(left.occurrenceDate).getTime();
+      const rightDate = new Date(right.occurrenceDate).getTime();
+
+      if (leftDate !== rightDate) {
+        return sortOption === 'date' ? leftDate - rightDate : rightDate - leftDate;
+      }
     }
-  } else {
-    const leftDate = new Date(left.occurrenceDate).getTime();
-    const rightDate = new Date(right.occurrenceDate).getTime();
 
-    if (leftDate !== rightDate) {
-      return sortOption === 'date' ? leftDate - rightDate : rightDate - leftDate;
+    const leftCreatedAt = new Date(left.createdAt).getTime();
+    const rightCreatedAt = new Date(right.createdAt).getTime();
+
+    if (leftCreatedAt !== rightCreatedAt) {
+      return rightCreatedAt - leftCreatedAt;
     }
-  }
 
-  const leftCreatedAt = new Date(left.createdAt).getTime();
-  const rightCreatedAt = new Date(right.createdAt).getTime();
+    if (left.isProjected !== right.isProjected) {
+      return Number(left.isProjected) - Number(right.isProjected);
+    }
 
-  if (leftCreatedAt !== rightCreatedAt) {
-    return rightCreatedAt - leftCreatedAt;
-  }
-
-  if (left.isProjected !== right.isProjected) {
-    return Number(left.isProjected) - Number(right.isProjected);
-  }
-
-  return left.id.localeCompare(right.id);
-});
+    return left.id.localeCompare(right.id);
+  });
 
 export function BudgetPage() {
   const { accessToken, setCurrentUser, user } = useAuth();
@@ -434,9 +471,12 @@ export function BudgetPage() {
   const [sortOption, setSortOption] = useState<SortOption>('-date');
   const [categories, setCategories] = useState<BudgetCategory[]>([]);
   const [transactions, setTransactions] = useState<BudgetTransaction[]>([]);
-  const [previousMonthTransactions, setPreviousMonthTransactions] = useState<BudgetTransaction[]>([]);
+  const [previousMonthTransactions, setPreviousMonthTransactions] = useState<BudgetTransaction[]>(
+    [],
+  );
   const [budgetSummary, setBudgetSummary] = useState<BudgetSummary | null>(null);
-  const [previousMonthBudgetSummary, setPreviousMonthBudgetSummary] = useState<BudgetSummary | null>(null);
+  const [previousMonthBudgetSummary, setPreviousMonthBudgetSummary] =
+    useState<BudgetSummary | null>(null);
   const [searchValue, setSearchValue] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -454,13 +494,16 @@ export function BudgetPage() {
   const [isExportingBudgetCsv, setIsExportingBudgetCsv] = useState(false);
   const [isLoadingWalletQuote, setIsLoadingWalletQuote] = useState(false);
   const [walletQuoteError, setWalletQuoteError] = useState<string | null>(null);
-  const [walletConvertQuote, setWalletConvertQuote] = useState<InvestingWalletConvertQuote | null>(null);
+  const [walletConvertQuote, setWalletConvertQuote] = useState<InvestingWalletConvertQuote | null>(
+    null,
+  );
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isUsingMockData, setIsUsingMockData] = useState(false);
   const [investingWallet, setInvestingWallet] = useState<InvestingWallet | null>(null);
-  const [investingWalletSummary, setInvestingWalletSummary] = useState<InvestingWalletSummary | null>(null);
+  const [investingWalletSummary, setInvestingWalletSummary] =
+    useState<InvestingWalletSummary | null>(null);
   const budgetCurrency: 'RON' | 'EUR' | 'USD' = user?.baseCurrency ?? 'RON';
   const selectedMonthParts = useMemo(() => {
     const [year, month] = selectedMonth.split('-').map(Number);
@@ -514,7 +557,10 @@ export function BudgetPage() {
     } catch {
       const fallbackCategories = MOCK_CATEGORIES;
       const fallbackTransactions = buildMockTransactions(selectedMonth, fallbackCategories);
-      const fallbackPreviousTransactions = buildMockTransactions(previousMonthKey, fallbackCategories);
+      const fallbackPreviousTransactions = buildMockTransactions(
+        previousMonthKey,
+        fallbackCategories,
+      );
       const fallbackBudgetGoal =
         typeof user?.monthlyBudgetGoal === 'number' && user.monthlyBudgetGoal > 0
           ? user.monthlyBudgetGoal
@@ -583,12 +629,16 @@ export function BudgetPage() {
     const filteredTransactions = !term
       ? transactions
       : transactions.filter((transaction) => {
-      const haystacks = [transaction.description, transaction.category?.name ?? '', transaction.type]
-        .join(' ')
-        .toLowerCase();
+          const haystacks = [
+            transaction.description,
+            transaction.category?.name ?? '',
+            transaction.type,
+          ]
+            .join(' ')
+            .toLowerCase();
 
-      return haystacks.includes(term);
-    });
+          return haystacks.includes(term);
+        });
 
     return sortTransactionsByOption(filteredTransactions, sortOption);
   }, [searchValue, sortOption, transactions]);
@@ -743,7 +793,9 @@ export function BudgetPage() {
             isRecurring: payload.isRecurring,
             recurrence: payload.recurrence,
             recurrenceEndDate: payload.recurrenceEndDate,
-            nextOccurrenceAt: payload.isRecurring ? addMonths(normalizedDate, 1).toISOString() : null,
+            nextOccurrenceAt: payload.isRecurring
+              ? addMonths(normalizedDate, 1).toISOString()
+              : null,
             isProjected: false,
             category,
           };
@@ -777,60 +829,60 @@ export function BudgetPage() {
     setIsModalOpen(true);
   }, []);
 
-  const handleDeleteTransaction = useCallback(async (transaction: BudgetTransaction) => {
-    const targetLabel = transaction.isProjected
-      ? 'this recurring source transaction'
-      : 'this transaction';
-    const confirmed = window.confirm(`Delete ${targetLabel}? This action cannot be undone.`);
+  const handleDeleteTransaction = useCallback(
+    async (transaction: BudgetTransaction) => {
+      const targetLabel = transaction.isProjected
+        ? 'this recurring source transaction'
+        : 'this transaction';
+      const confirmed = window.confirm(`Delete ${targetLabel}? This action cannot be undone.`);
 
-    if (!confirmed || !accessToken) {
-      return;
-    }
-
-    setIsSavingTransaction(true);
-
-    try {
-      await deleteTransaction(transaction.originalTransactionId, accessToken);
-
-      if (editingTransaction?.originalTransactionId === transaction.originalTransactionId) {
-        setEditingTransaction(null);
-        setIsModalOpen(false);
+      if (!confirmed || !accessToken) {
+        return;
       }
 
-      await loadBudgetData();
-    } catch (error) {
-      if (isUsingMockData) {
-        setTransactions((current) =>
-          current.filter(
-            (item) => item.originalTransactionId !== transaction.originalTransactionId,
-          ),
-        );
-        setBudgetSummary(null);
+      setIsSavingTransaction(true);
+
+      try {
+        await deleteTransaction(transaction.originalTransactionId, accessToken);
 
         if (editingTransaction?.originalTransactionId === transaction.originalTransactionId) {
           setEditingTransaction(null);
           setIsModalOpen(false);
         }
 
-        setLoadError('Deletion applied locally in demo mode because the live API is unavailable.');
-        return;
-      }
+        await loadBudgetData();
+      } catch (error) {
+        if (isUsingMockData) {
+          setTransactions((current) =>
+            current.filter(
+              (item) => item.originalTransactionId !== transaction.originalTransactionId,
+            ),
+          );
+          setBudgetSummary(null);
 
-      if (error instanceof ApiRequestError) {
-        setLoadError(error.message);
-        return;
-      }
+          if (editingTransaction?.originalTransactionId === transaction.originalTransactionId) {
+            setEditingTransaction(null);
+            setIsModalOpen(false);
+          }
 
-      setLoadError('Unable to delete the transaction right now.');
-    } finally {
-      setIsSavingTransaction(false);
-    }
-  }, [
-    accessToken,
-    editingTransaction,
-    isUsingMockData,
-    loadBudgetData,
-  ]);
+          setLoadError(
+            'Deletion applied locally in demo mode because the live API is unavailable.',
+          );
+          return;
+        }
+
+        if (error instanceof ApiRequestError) {
+          setLoadError(error.message);
+          return;
+        }
+
+        setLoadError('Unable to delete the transaction right now.');
+      } finally {
+        setIsSavingTransaction(false);
+      }
+    },
+    [accessToken, editingTransaction, isUsingMockData, loadBudgetData],
+  );
 
   const handleBudgetSearchChange = useCallback((value: string) => {
     setSearchValue(value);
@@ -840,9 +892,12 @@ export function BudgetPage() {
     setSortOption(value);
   }, []);
 
-  const handleDeleteBudgetTransaction = useCallback((transaction: BudgetTransaction) => {
-    void handleDeleteTransaction(transaction);
-  }, [handleDeleteTransaction]);
+  const handleDeleteBudgetTransaction = useCallback(
+    (transaction: BudgetTransaction) => {
+      void handleDeleteTransaction(transaction);
+    },
+    [handleDeleteTransaction],
+  );
 
   const handleSaveBudgetGoal = async (amount: number) => {
     if (!accessToken || !user) {
@@ -915,14 +970,19 @@ export function BudgetPage() {
           ...investingWallet,
           ...payload,
         });
-        setInvestingWalletSummary((current) => current ?? {
-          investedThisMonthRON: 0,
-          convertedToEurThisMonthRON: 0,
-          monthStart: '',
-          monthEnd: '',
-        });
+        setInvestingWalletSummary(
+          (current) =>
+            current ?? {
+              investedThisMonthRON: 0,
+              convertedToEurThisMonthRON: 0,
+              monthStart: '',
+              monthEnd: '',
+            },
+        );
         setIsWalletSettingsModalOpen(false);
-        setLoadError('Wallet settings saved locally in demo mode because the live API is unavailable.');
+        setLoadError(
+          'Wallet settings saved locally in demo mode because the live API is unavailable.',
+        );
         return;
       }
 
@@ -949,7 +1009,9 @@ export function BudgetPage() {
       setIsUsingMockData(false);
       setLoadError(null);
       setIsWalletDepositModalOpen(false);
-      setSuccessMessage(`Added ${formatCurrency(payload.amountRON, 2, 'RON')} to investing wallet.`);
+      setSuccessMessage(
+        `Added ${formatCurrency(payload.amountRON, 2, 'RON')} to investing wallet.`,
+      );
 
       await loadBudgetData();
     } catch (error) {
@@ -1053,9 +1115,7 @@ export function BudgetPage() {
       setSuccessMessage('Budget CSV downloaded.');
     } catch (error) {
       setActionError(
-        error instanceof ApiRequestError
-          ? error.message
-          : 'Unable to export Budget CSV right now.',
+        error instanceof ApiRequestError ? error.message : 'Unable to export Budget CSV right now.',
       );
     } finally {
       setIsExportingBudgetCsv(false);
@@ -1065,23 +1125,23 @@ export function BudgetPage() {
   const balanceBadge =
     typeof metrics.balanceDeltaPct === 'number'
       ? renderChip(
-        `${metrics.balanceDeltaPct >= 0 ? '+' : ''}${metrics.balanceDeltaPct.toFixed(1)}% vs last month`,
-        getDeltaTone(metrics.balanceDeltaPct),
-      )
+          `${metrics.balanceDeltaPct >= 0 ? '+' : ''}${metrics.balanceDeltaPct.toFixed(1)}% vs last month`,
+          getDeltaTone(metrics.balanceDeltaPct),
+        )
       : undefined;
   const incomeBadge =
     typeof metrics.incomeDeltaPct === 'number'
       ? renderChip(
-        `${metrics.incomeDeltaPct >= 0 ? '+' : ''}${metrics.incomeDeltaPct.toFixed(1)}% vs last month`,
-        getDeltaTone(metrics.incomeDeltaPct),
-      )
+          `${metrics.incomeDeltaPct >= 0 ? '+' : ''}${metrics.incomeDeltaPct.toFixed(1)}% vs last month`,
+          getDeltaTone(metrics.incomeDeltaPct),
+        )
       : undefined;
   const budgetBadge =
     typeof metrics.percentSpent === 'number'
       ? renderChip(
-        `${Math.max(metrics.percentSpent, 0)}% spent`,
-        getSpentTone(metrics.percentSpent),
-      )
+          `${Math.max(metrics.percentSpent, 0)}% spent`,
+          getSpentTone(metrics.percentSpent),
+        )
       : undefined;
   const hasBudgetGoal = metrics.monthlyBudgetGoal !== null;
   const remainingBudgetValue = hasBudgetGoal
@@ -1090,21 +1150,22 @@ export function BudgetPage() {
   const remainingBudgetSubtitle = hasBudgetGoal
     ? `/ ${formatCurrency(metrics.monthlyBudgetGoal ?? 0, 0, budgetCurrency)}`
     : undefined;
-  const remainingBudgetHelperText = hasBudgetGoal
-    ? undefined
-    : 'Set your monthly budget.';
+  const remainingBudgetHelperText = hasBudgetGoal ? undefined : 'Set your monthly budget.';
   const remainingBudgetProgress = hasBudgetGoal
     ? Math.max(metrics.percentSpent ?? 0, 0)
     : undefined;
   const remainingBudgetBadge = hasBudgetGoal ? budgetBadge : undefined;
-  const investingProgress = metrics.investingGoal > 0 ? Math.max(metrics.investingProgress ?? 0, 0) : null;
+  const investingProgress =
+    metrics.investingGoal > 0 ? Math.max(metrics.investingProgress ?? 0, 0) : null;
 
   return (
     <AppShell activeTab="budget">
       <div className="fv-page space-y-6 lg:space-y-8">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-4xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Budget & Expenses</h1>
+            <h1 className="text-4xl font-bold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+              Budget & Expenses
+            </h1>
             <p className="mt-2 text-lg text-slate-500 dark:text-slate-400">
               Track your spending and manage your financial health.
             </p>
@@ -1235,8 +1296,12 @@ export function BudgetPage() {
             <section className="fv-card rounded-[1.5rem] p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Investing Account</h2>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">RON wallet for funding your EUR investing portfolio.</p>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                    Investing Account
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    RON wallet for funding your EUR investing portfolio.
+                  </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button
@@ -1269,19 +1334,25 @@ export function BudgetPage() {
 
               <div className="mt-6 space-y-4">
                 <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/60">
-                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Monthly investing goal</span>
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                    Monthly investing goal
+                  </span>
                   <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {formatCurrency(metrics.investingGoal, 2, 'RON')}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/60">
-                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Invested this month</span>
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                    Invested this month
+                  </span>
                   <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {formatCurrency(metrics.investedThisMonth, 2, 'RON')}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/60">
-                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Account balance</span>
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                    Account balance
+                  </span>
                   <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {formatCurrency(metrics.investingAccountBalance, 2, 'RON')}
                   </span>
@@ -1317,7 +1388,6 @@ export function BudgetPage() {
                 </p>
               )}
             </section>
-
           </div>
         </section>
       </div>

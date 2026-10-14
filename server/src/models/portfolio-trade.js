@@ -121,8 +121,7 @@ portfolioTradeSchema.pre('validate', function normalizeAssetIdentity(next) {
 });
 
 export const PortfolioTrade =
-  mongoose.models.PortfolioTrade ??
-  mongoose.model('PortfolioTrade', portfolioTradeSchema);
+  mongoose.models.PortfolioTrade ?? mongoose.model('PortfolioTrade', portfolioTradeSchema);
 
 export const backfillPortfolioTradeAssetType = async () => {
   await PortfolioTrade.updateMany(

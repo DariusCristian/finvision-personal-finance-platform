@@ -1,11 +1,5 @@
-const STOOQ_DAILY_ENDPOINTS = [
-  'https://stooq.com/q/d/l/',
-  'https://stooq.pl/q/d/l/',
-];
-const STOOQ_QUOTE_ENDPOINTS = [
-  'https://stooq.com/q/l/',
-  'https://stooq.pl/q/l/',
-];
+const STOOQ_DAILY_ENDPOINTS = ['https://stooq.com/q/d/l/', 'https://stooq.pl/q/d/l/'];
+const STOOQ_QUOTE_ENDPOINTS = ['https://stooq.com/q/l/', 'https://stooq.pl/q/l/'];
 
 const REQUEST_TIMEOUT_MS = 10_000;
 const STOOQ_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
@@ -40,7 +34,10 @@ export class StooqProviderError extends Error {
 const toSnippet = (value) =>
   typeof value === 'string' ? value.trim().slice(0, MAX_BODY_SNIPPET_LENGTH) : '';
 
-const normalizeSymbol = (symbol) => String(symbol || '').trim().toLowerCase();
+const normalizeSymbol = (symbol) =>
+  String(symbol || '')
+    .trim()
+    .toLowerCase();
 
 export const toStooqSymbol = (symbol) => {
   const normalized = normalizeSymbol(symbol);
@@ -432,10 +429,7 @@ const createSeededRandom = (seed) => {
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-const buildSyntheticSeriesFromClose = (
-  close,
-  options = {},
-) => {
+const buildSyntheticSeriesFromClose = (close, options = {}) => {
   const numericClose = Number(close);
 
   if (!Number.isFinite(numericClose) || numericClose <= 0) {
@@ -452,8 +446,8 @@ const buildSyntheticSeriesFromClose = (
   const now = new Date();
   const todayUtcMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
   const denominator = Math.max(pointsCount - 1, 1);
-  const volatilityPct = clamp(0.005 + ((symbolSeed % 7) * 0.0013), 0.004, 0.02);
-  let price = numericClose * (0.95 + (random() * 0.1));
+  const volatilityPct = clamp(0.005 + (symbolSeed % 7) * 0.0013, 0.004, 0.02);
+  let price = numericClose * (0.95 + random() * 0.1);
   const ratioToClose = numericClose / Math.max(price, 0.01);
   const driftPerStep = (ratioToClose - 1) / denominator;
   const primaryCycles = 2 + (symbolSeed % 4);
@@ -462,12 +456,13 @@ const buildSyntheticSeriesFromClose = (
   const rawSeries = Array.from({ length: pointsCount }, (_value, index) => {
     const progress = index / denominator;
     const noise = (random() - 0.5) * 2 * volatilityPct;
-    const wave = Math.sin((progress * Math.PI * 2 * primaryCycles) + phaseShift) * volatilityPct * 0.42;
+    const wave =
+      Math.sin(progress * Math.PI * 2 * primaryCycles + phaseShift) * volatilityPct * 0.42;
     const stepReturn = driftPerStep + noise + wave;
     price = Math.max(0.01, price * (1 + stepReturn));
 
     return {
-      t: todayUtcMs - ((pointsCount - 1 - index) * DAY_MS),
+      t: todayUtcMs - (pointsCount - 1 - index) * DAY_MS,
       c: price,
     };
   });
@@ -481,10 +476,7 @@ const buildSyntheticSeriesFromClose = (
   }));
 };
 
-const buildSyntheticSeriesFromQuote = (
-  quotePayload,
-  options = {},
-) => {
+const buildSyntheticSeriesFromQuote = (quotePayload, options = {}) => {
   const close = Number(quotePayload?.close);
   const open = Number(quotePayload?.open);
   const high = Number(quotePayload?.high);
@@ -501,11 +493,16 @@ const buildSyntheticSeriesFromQuote = (
   }
 
   const random = createSeededRandom(symbolSeed || 1);
-  const startPrice = Number.isFinite(open) && open > 0 ? open : close * (0.96 + (random() * 0.08));
+  const startPrice = Number.isFinite(open) && open > 0 ? open : close * (0.96 + random() * 0.08);
   const spread = Number.isFinite(high) && Number.isFinite(low) && high > low ? high - low : 0;
-  const intradayMovePct = Number.isFinite(open) && open > 0 ? (close - open) / open : (random() - 0.5) * 0.03;
+  const intradayMovePct =
+    Number.isFinite(open) && open > 0 ? (close - open) / open : (random() - 0.5) * 0.03;
   const spreadPct = spread > 0 ? spread / close : Math.abs(intradayMovePct);
-  const dailyVolatilityPct = clamp((spreadPct * 0.26) + 0.0045 + ((symbolSeed % 5) * 0.0009), 0.003, 0.03);
+  const dailyVolatilityPct = clamp(
+    spreadPct * 0.26 + 0.0045 + (symbolSeed % 5) * 0.0009,
+    0.003,
+    0.03,
+  );
   const denominator = Math.max(pointsCount - 1, 1);
   const driftPerStep = (intradayMovePct * 6) / denominator;
   const primaryCycles = 2 + (symbolSeed % 5);
@@ -520,17 +517,17 @@ const buildSyntheticSeriesFromQuote = (
     const progress = index / denominator;
     const noise = (random() - 0.5) * 2 * dailyVolatilityPct;
     const primaryWave =
-      Math.sin((progress * Math.PI * 2 * primaryCycles) + phaseShift) * dailyVolatilityPct * 0.38;
+      Math.sin(progress * Math.PI * 2 * primaryCycles + phaseShift) * dailyVolatilityPct * 0.38;
     const secondaryWave =
-      Math.cos((progress * Math.PI * 2 * secondaryCycles) + secondaryPhaseShift)
-      * dailyVolatilityPct
-      * 0.22;
-    const curvature = ((progress - 0.5) * dailyVolatilityPct * 0.2);
+      Math.cos(progress * Math.PI * 2 * secondaryCycles + secondaryPhaseShift) *
+      dailyVolatilityPct *
+      0.22;
+    const curvature = (progress - 0.5) * dailyVolatilityPct * 0.2;
     const stepReturn = driftPerStep + noise + primaryWave + secondaryWave + curvature;
     price = Math.max(0.01, price * (1 + stepReturn));
 
     return {
-      t: todayUtcMs - ((pointsCount - 1 - index) * DAY_MS),
+      t: todayUtcMs - (pointsCount - 1 - index) * DAY_MS,
       c: price,
     };
   });
@@ -563,7 +560,7 @@ const sliceSeriesByDayWindow = (series, limitDays) => {
   }
 
   const latestTimestamp = sortedSeries[sortedSeries.length - 1]?.t ?? Date.now();
-  const windowStartTimestamp = latestTimestamp - (limitDays * DAY_MS);
+  const windowStartTimestamp = latestTimestamp - limitDays * DAY_MS;
   const inWindow = sortedSeries.filter((point) => point.t >= windowStartTimestamp);
 
   if (inWindow.length > 0) {
@@ -655,19 +652,20 @@ export const fetchDailyHistory = async (symbol, options = {}) => {
 
   const payload = await fetchDailySeries(symbol);
   const normalizedLimitDays = clamp(Math.floor(Number(limitDays) || 0), 1, RANGE_TO_DAYS.ALL);
-  const syntheticPointsCount = normalizedLimitDays >= RANGE_TO_DAYS.ALL
-    ? MAX_SYNTHETIC_POINTS
-    : clamp(
-      normalizedLimitDays + Math.max(14, Math.floor(normalizedLimitDays * 0.6)),
-      14,
-      MAX_SYNTHETIC_POINTS,
-    );
+  const syntheticPointsCount =
+    normalizedLimitDays >= RANGE_TO_DAYS.ALL
+      ? MAX_SYNTHETIC_POINTS
+      : clamp(
+          normalizedLimitDays + Math.max(14, Math.floor(normalizedLimitDays * 0.6)),
+          14,
+          MAX_SYNTHETIC_POINTS,
+        );
   let baseSeries = payload.series;
 
   if (
-    payload.source === 'quote_fallback'
-    && payload.quoteSnapshot
-    && Number.isFinite(Number(payload.quoteSnapshot.close))
+    payload.source === 'quote_fallback' &&
+    payload.quoteSnapshot &&
+    Number.isFinite(Number(payload.quoteSnapshot.close))
   ) {
     baseSeries = buildSyntheticSeriesFromQuote(payload.quoteSnapshot, {
       pointsCount: syntheticPointsCount,
@@ -685,7 +683,9 @@ export const fetchDailyHistory = async (symbol, options = {}) => {
       source: payload.source ?? 'history',
       points: series.length,
       range: normalizedRange,
-      inputSymbol: String(symbol || '').trim().toUpperCase(),
+      inputSymbol: String(symbol || '')
+        .trim()
+        .toUpperCase(),
       stooqSymbol: payload.stooqSymbol,
       requestUrlWithoutSensitive: payload.requestUrlWithoutSensitive ?? null,
       requestUrlsWithoutSensitive: payload.requestUrlsWithoutSensitive ?? [],

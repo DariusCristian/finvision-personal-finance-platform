@@ -20,7 +20,8 @@ export const toCSV = ({ headers, rows }) => {
 
   const headerLine = safeHeaders.map((header) => escapeCsvValue(header)).join(',');
   const lines = safeRows.map((row) =>
-    safeHeaders.map((header) => escapeCsvValue(row?.[header])).join(','));
+    safeHeaders.map((header) => escapeCsvValue(row?.[header])).join(','),
+  );
 
   return [headerLine, ...lines].join('\n');
 };
@@ -32,4 +33,3 @@ export const setCsvDownloadHeaders = (res, filename) => {
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}"`);
 };
-

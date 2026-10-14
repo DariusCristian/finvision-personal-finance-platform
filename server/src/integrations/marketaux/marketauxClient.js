@@ -80,9 +80,7 @@ const normalizeArticle = (item) => {
   }
 
   const title =
-    typeof item.title === 'string' && item.title.trim().length > 0
-      ? item.title.trim()
-      : 'Untitled';
+    typeof item.title === 'string' && item.title.trim().length > 0 ? item.title.trim() : 'Untitled';
 
   const publishedAt =
     typeof item.published_at === 'string' && item.published_at.trim().length > 0
@@ -109,10 +107,7 @@ const normalizeArticle = (item) => {
           ? item.summary.trim()
           : '';
 
-  const id =
-    typeof item.uuid === 'string' && item.uuid.trim().length > 0
-      ? item.uuid.trim()
-      : url;
+  const id = typeof item.uuid === 'string' && item.uuid.trim().length > 0 ? item.uuid.trim() : url;
 
   return {
     id,
@@ -127,7 +122,13 @@ const normalizeArticle = (item) => {
 export const isMarketauxConfigured = () =>
   typeof env.MARKETAUX_API_KEY === 'string' && env.MARKETAUX_API_KEY.trim().length > 0;
 
-export const fetchNews = async ({ topic = 'all', q, page = 1, limit = 12, language = 'en' } = {}) => {
+export const fetchNews = async ({
+  topic = 'all',
+  q,
+  page = 1,
+  limit = 12,
+  language = 'en',
+} = {}) => {
   if (!isMarketauxConfigured()) {
     throw new MarketauxProviderError('Missing MARKETAUX_API_KEY', {
       status: 501,

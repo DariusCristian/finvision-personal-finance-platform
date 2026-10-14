@@ -16,7 +16,8 @@ const fetchRates = async (request) => {
   } catch (error) {
     if (error instanceof FxProviderError) {
       throw new AppError({
-        message: 'Exchange rates are unavailable right now, so the amount could not be converted. Please try again.',
+        message:
+          'Exchange rates are unavailable right now, so the amount could not be converted. Please try again.',
         statusCode: error.status === 429 ? 429 : 502,
         code: error.code,
         details: error.details,
@@ -33,7 +34,11 @@ export const getEurRateTo = async (currency) => {
     return 1;
   }
 
-  const { rates } = await fetchRates({ base: 'EUR', symbols: [currency], date: toIsoDay(new Date()) });
+  const { rates } = await fetchRates({
+    base: 'EUR',
+    symbols: [currency],
+    date: toIsoDay(new Date()),
+  });
   return rates[currency];
 };
 

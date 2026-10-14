@@ -11,7 +11,10 @@ import { Category } from '../../models/category.js';
 import { Transaction } from '../../models/transaction.js';
 import { buildInsightContext } from '../../modules/insights/buildInsightContext.js';
 import { getEurRateTo } from '../../services/currency-amounts.js';
-import { generateInsights, severityRankForInsight } from '../../modules/insights/generateInsights.js';
+import {
+  generateInsights,
+  severityRankForInsight,
+} from '../../modules/insights/generateInsights.js';
 import { serializeInsight } from '../../utils/insights.js';
 import { sendSuccess } from '../../utils/response.js';
 
@@ -34,7 +37,7 @@ const FINNY_CONTEXT_TYPES = ['general', 'budget', 'subscriptions', 'crypto', 'st
 const FINNY_CONTEXT_TYPE_ENUM = z.enum(FINNY_CONTEXT_TYPES);
 const SHOULD_INCLUDE_DEBUG_META = process.env.NODE_ENV !== 'production';
 const FINNY_OUT_OF_SCOPE_TEXT =
-  "I can't help with that topic. I'm focused on budgeting, savings, net worth, personal finance education, crypto/stock education, and using FinVision. Try one of these: \"Give me saving tips based on my budget\", \"Explain net worth\", \"Check my subscriptions\", \"What is an ETF?\"";
+  'I can\'t help with that topic. I\'m focused on budgeting, savings, net worth, personal finance education, crypto/stock education, and using FinVision. Try one of these: "Give me saving tips based on my budget", "Explain net worth", "Check my subscriptions", "What is an ETF?"';
 
 const FINNY_PROVIDER_UNAVAILABLE_TEXT =
   "Finny is a little busy right now and couldn't generate an answer. Please try again in a few seconds.";
@@ -109,7 +112,12 @@ const INSIGHT_TYPES_BY_CONTEXT = {
   crypto: ['PORTFOLIO_CONCENTRATION', 'INVESTING_UNFUNDED'],
   stocks: ['PORTFOLIO_CONCENTRATION', 'INVESTING_UNFUNDED'],
   app: [],
-  general: ['SUBSCRIPTION_NO_END', 'BUDGET_PACE_WARNING', 'PORTFOLIO_CONCENTRATION', 'INVESTING_UNFUNDED'],
+  general: [
+    'SUBSCRIPTION_NO_END',
+    'BUDGET_PACE_WARNING',
+    'PORTFOLIO_CONCENTRATION',
+    'INVESTING_UNFUNDED',
+  ],
 };
 
 const finnyChatSchema = z.object({
@@ -149,7 +157,9 @@ const resolveContextType = (requestedContextType, intent, message) => {
     return requestedContextType;
   }
 
-  const normalizedMessage = String(message ?? '').trim().toLowerCase();
+  const normalizedMessage = String(message ?? '')
+    .trim()
+    .toLowerCase();
 
   if (intent === 'FINANCE_EDUCATION') {
     if (includesAnyKeyword(normalizedMessage, CRYPTO_CONTEXT_KEYWORDS)) {
@@ -266,15 +276,14 @@ const buildBudgetOverviewCard = ({ insightContext, recurringNoEnd }) => {
   const daysPassed = Number(budget.daysPassed || 0);
   const daysInMonth = Number(budget.daysInMonth || 0);
   const expectedToDate =
-    budgetGoal > 0 && daysInMonth > 0
-      ? budgetGoal * (daysPassed / daysInMonth)
-      : 0;
+    budgetGoal > 0 && daysInMonth > 0 ? budgetGoal * (daysPassed / daysInMonth) : 0;
   const paceDelta = expenseToDate - expectedToDate;
-  const paceMessage = budgetGoal <= 0
-    ? 'Set a monthly budget goal to get pace tracking.'
-    : paceDelta > 0
-      ? `You are ${formatCurrency(paceDelta, currency)} above pace so far.`
-      : `You are ${formatCurrency(Math.abs(paceDelta), currency)} under pace so far.`;
+  const paceMessage =
+    budgetGoal <= 0
+      ? 'Set a monthly budget goal to get pace tracking.'
+      : paceDelta > 0
+        ? `You are ${formatCurrency(paceDelta, currency)} above pace so far.`
+        : `You are ${formatCurrency(Math.abs(paceDelta), currency)} under pace so far.`;
 
   const sections = [
     {
@@ -287,10 +296,7 @@ const buildBudgetOverviewCard = ({ insightContext, recurringNoEnd }) => {
     },
     {
       heading: 'Pacing check',
-      bullets: [
-        `Day ${daysPassed || 0} of ${daysInMonth || 0}.`,
-        paceMessage,
-      ],
+      bullets: [`Day ${daysPassed || 0} of ${daysInMonth || 0}.`, paceMessage],
     },
   ];
 
@@ -337,9 +343,10 @@ const buildTopSpendingCategoriesCard = ({ monthKey, topCategories, totalExpense,
     };
   }
 
-  const bullets = topCategories.map((item) => (
-    `${item.name}: ${formatCurrency(item.amount, currency)} (${item.sharePct.toFixed(1)}%)`
-  ));
+  const bullets = topCategories.map(
+    (item) =>
+      `${item.name}: ${formatCurrency(item.amount, currency)} (${item.sharePct.toFixed(1)}%)`,
+  );
 
   return {
     title: 'Top Spending Categories',
@@ -363,7 +370,12 @@ const buildTopSpendingCategoriesCard = ({ monthKey, topCategories, totalExpense,
   };
 };
 
-const buildHabitImprovementCard = ({ insightContext, topLast30, previousCategoryAmount, recurringNoEnd }) => {
+const buildHabitImprovementCard = ({
+  insightContext,
+  topLast30,
+  previousCategoryAmount,
+  recurringNoEnd,
+}) => {
   const currency = insightContext.profile.baseCurrency ?? 'RON';
 
   if (!topLast30 && recurringNoEnd.length === 0) {
@@ -373,7 +385,9 @@ const buildHabitImprovementCard = ({ insightContext, topLast30, previousCategory
       sections: [
         {
           heading: 'Next step',
-          bullets: ['Keep logging expenses for a few days, then ask again for a data-driven habit suggestion.'],
+          bullets: [
+            'Keep logging expenses for a few days, then ask again for a data-driven habit suggestion.',
+          ],
         },
       ],
       actions: [
@@ -387,9 +401,10 @@ const buildHabitImprovementCard = ({ insightContext, topLast30, previousCategory
 
   if (topLast30) {
     const delta = topLast30.amount - (previousCategoryAmount || 0);
-    const trendText = delta > 0
-      ? `${topLast30.name} is up ${formatCurrency(delta, currency)} vs the previous 30 days.`
-      : `${topLast30.name} is down ${formatCurrency(Math.abs(delta), currency)} vs the previous 30 days.`;
+    const trendText =
+      delta > 0
+        ? `${topLast30.name} is up ${formatCurrency(delta, currency)} vs the previous 30 days.`
+        : `${topLast30.name} is down ${formatCurrency(Math.abs(delta), currency)} vs the previous 30 days.`;
 
     return {
       title: 'One Habit to Improve',
@@ -448,7 +463,9 @@ const getPortfolioValueForType = (insightContext, accountType) =>
 // `eurToBaseRate` converts the investing accounts (EUR) into the base currency for the estimate.
 const buildNetWorthSnapshot = (insightContext, { eurToBaseRate = null } = {}) => {
   const currency = insightContext.profile.baseCurrency ?? 'RON';
-  const budgetBalance = Number(insightContext.budget.incomeTotal || 0) - Number(insightContext.budget.expenseTotal || 0);
+  const budgetBalance =
+    Number(insightContext.budget.incomeTotal || 0) -
+    Number(insightContext.budget.expenseTotal || 0);
   const cryptoPortfolioValue = getPortfolioValueForType(insightContext, 'crypto');
   const stocksPortfolioValue = getPortfolioValueForType(insightContext, 'stocks');
   const cryptoCash = Number(insightContext.investing.crypto.buyingPower || 0);
@@ -474,7 +491,12 @@ const buildSavingTipsCard = ({ insightContext }) => {
   const currency = insightContext.profile.baseCurrency ?? 'RON';
   const budget = insightContext.budget ?? {};
   const recurringNoEnd = (insightContext.recurringTransactions ?? [])
-    .filter((transaction) => transaction.type === 'expense' && transaction.isRecurring && transaction.recurrenceEndDate === null)
+    .filter(
+      (transaction) =>
+        transaction.type === 'expense' &&
+        transaction.isRecurring &&
+        transaction.recurrenceEndDate === null,
+    )
     .slice(0, 3);
 
   const quickWinsBullets = [
@@ -483,11 +505,13 @@ const buildSavingTipsCard = ({ insightContext }) => {
     'Use a 24-hour pause for impulse purchases over your usual daily spend.',
   ];
 
-  const recurringBullets = recurringNoEnd.length > 0
-    ? recurringNoEnd.map((transaction) => (
-        `${transaction.description || 'Recurring expense'}: ${formatCurrency(transaction.amount, transaction.currency || currency)} (no end date set)`
-      ))
-    : ['No recurring expenses without end date found in your recent data.'];
+  const recurringBullets =
+    recurringNoEnd.length > 0
+      ? recurringNoEnd.map(
+          (transaction) =>
+            `${transaction.description || 'Recurring expense'}: ${formatCurrency(transaction.amount, transaction.currency || currency)} (no end date set)`,
+        )
+      : ['No recurring expenses without end date found in your recent data.'];
 
   const overBudget = Number(budget.expenseToDate || 0) > Number(budget.budgetGoal || 0);
   const nextHabitSuggestion = overBudget
@@ -546,7 +570,9 @@ const buildNetWorthCard = ({ insightContext, eurToBaseRate }) => {
           `Crypto portfolio value: ${formatCurrency(snapshot.cryptoPortfolioValue, investingCurrency)} + cash ${formatCurrency(snapshot.cryptoCash, investingCurrency)}`,
           `Stocks portfolio value: ${formatCurrency(snapshot.stocksPortfolioValue, investingCurrency)} + cash ${formatCurrency(snapshot.stocksCash, investingCurrency)}`,
           ...(currency !== investingCurrency && snapshot.eurToBaseRate !== null
-            ? [`Investing amounts converted at 1 ${investingCurrency} = ${snapshot.eurToBaseRate} ${currency}.`]
+            ? [
+                `Investing amounts converted at 1 ${investingCurrency} = ${snapshot.eurToBaseRate} ${currency}.`,
+              ]
             : []),
           'Liabilities are not tracked yet in FinVision.',
         ],
@@ -574,7 +600,13 @@ const LOCALE_TO_LANGUAGE = {
   'en-US': 'English',
 };
 
-const buildSystemInstruction = ({ contextTypeUsed, shouldAllowSpendingPatterns, hasInsights, intent, locale }) => {
+const buildSystemInstruction = ({
+  contextTypeUsed,
+  shouldAllowSpendingPatterns,
+  hasInsights,
+  intent,
+  locale,
+}) => {
   const preferredLanguage = LOCALE_TO_LANGUAGE[locale] ?? null;
   const lines = [
     'You are Finny, a finance + FinVision assistant. Refuse out-of-scope topics.',
@@ -596,13 +628,17 @@ const buildSystemInstruction = ({ contextTypeUsed, shouldAllowSpendingPatterns, 
   ];
 
   if (shouldAllowSpendingPatterns) {
-    lines.push('Budget or subscription patterns are relevant for this request. Use provided context when useful.');
+    lines.push(
+      'Budget or subscription patterns are relevant for this request. Use provided context when useful.',
+    );
   } else {
     lines.push('Do not mention subscription or budget warnings unless asked.');
   }
 
   if (hasInsights) {
-    lines.push('When insights are present, prioritize explaining the most relevant insight clearly and practically.');
+    lines.push(
+      'When insights are present, prioritize explaining the most relevant insight clearly and practically.',
+    );
   }
 
   if (contextTypeUsed === 'app') {
@@ -611,7 +647,9 @@ const buildSystemInstruction = ({ contextTypeUsed, shouldAllowSpendingPatterns, 
 
   if (contextTypeUsed === 'crypto') {
     lines.push('Focus on neutral crypto education and comparisons, not portfolio advice.');
-    lines.push('When crypto quote fields are present, use them first. If priceSource is avg_cost_estimate, label it as an estimate.');
+    lines.push(
+      'When crypto quote fields are present, use them first. If priceSource is avg_cost_estimate, label it as an estimate.',
+    );
   }
 
   if (contextTypeUsed === 'stocks') {
@@ -619,17 +657,22 @@ const buildSystemInstruction = ({ contextTypeUsed, shouldAllowSpendingPatterns, 
   }
 
   if (intent === 'SAVING_TIPS') {
-    lines.push('Prioritize practical saving habits for current month cash flow and spending control.');
+    lines.push(
+      'Prioritize practical saving habits for current month cash flow and spending control.',
+    );
   }
 
   if (intent === 'NET_WORTH') {
-    lines.push('Explain net worth clearly and how FinVision computes it from available components.');
+    lines.push(
+      'Explain net worth clearly and how FinVision computes it from available components.',
+    );
   }
 
   return lines.join('\n');
 };
 
-const isPlainObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+const isPlainObject = (value) =>
+  value !== null && typeof value === 'object' && !Array.isArray(value);
 
 const tryParseJsonObject = (rawOutput) => {
   if (typeof rawOutput !== 'string' || rawOutput.trim().length === 0) {
@@ -654,16 +697,18 @@ const normalizeCardSections = (sections) => {
       return accumulator;
     }
 
-    const heading = typeof section.heading === 'string'
-      ? section.heading.trim()
-      : typeof section.title === 'string'
-        ? section.title.trim()
-        : '';
-    const content = typeof section.content === 'string'
-      ? section.content.trim()
-      : typeof section.text === 'string'
-        ? section.text.trim()
-        : '';
+    const heading =
+      typeof section.heading === 'string'
+        ? section.heading.trim()
+        : typeof section.title === 'string'
+          ? section.title.trim()
+          : '';
+    const content =
+      typeof section.content === 'string'
+        ? section.content.trim()
+        : typeof section.text === 'string'
+          ? section.text.trim()
+          : '';
     const bullets = Array.isArray(section.bullets)
       ? section.bullets.map((item) => (typeof item === 'string' ? item.trim() : '')).filter(Boolean)
       : [];
@@ -714,7 +759,8 @@ const normalizeCardPayload = (parsedObject) => {
   const sections = normalizeCardSections(parsedObject.sections);
   const actions = normalizeCardActions(parsedObject.actions);
   const toneNote = typeof parsedObject.toneNote === 'string' ? parsedObject.toneNote.trim() : '';
-  const disclaimer = typeof parsedObject.disclaimer === 'string' ? parsedObject.disclaimer.trim() : '';
+  const disclaimer =
+    typeof parsedObject.disclaimer === 'string' ? parsedObject.disclaimer.trim() : '';
 
   if (!title && !summary && sections.length === 0 && actions.length === 0 && !disclaimer) {
     return null;
@@ -742,11 +788,11 @@ const looksLikeJsonString = (value) => {
   }
 
   return (
-    (trimmed.startsWith('{') && trimmed.endsWith('}'))
-    || (trimmed.startsWith('[') && trimmed.endsWith(']'))
-    || trimmed.includes('"title"')
-    || trimmed.includes('"sections"')
-    || trimmed.includes('"actions"')
+    (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+    (trimmed.startsWith('[') && trimmed.endsWith(']')) ||
+    trimmed.includes('"title"') ||
+    trimmed.includes('"sections"') ||
+    trimmed.includes('"actions"')
   );
 };
 
@@ -765,7 +811,9 @@ const toTextResponse = (rawOutput) => {
 };
 
 const shouldReturnInsightCard = ({ message, contextTypeUsed, intent }) => {
-  const normalizedMessage = String(message ?? '').trim().toLowerCase();
+  const normalizedMessage = String(message ?? '')
+    .trim()
+    .toLowerCase();
 
   if (intent === 'SUBSCRIPTIONS_REVIEW' || contextTypeUsed === 'subscriptions') {
     return true;
@@ -822,35 +870,51 @@ const pickBestInsight = ({ insights, contextTypeUsed }) => {
     return null;
   }
 
-  const preferredTypes = INSIGHT_TYPES_BY_CONTEXT[contextTypeUsed] ?? INSIGHT_TYPES_BY_CONTEXT.general;
+  const preferredTypes =
+    INSIGHT_TYPES_BY_CONTEXT[contextTypeUsed] ?? INSIGHT_TYPES_BY_CONTEXT.general;
 
-  return [...insights].sort((left, right) => {
-    const leftTypeRank = preferredTypes.includes(left.type)
-      ? preferredTypes.indexOf(left.type)
-      : preferredTypes.length + 1;
-    const rightTypeRank = preferredTypes.includes(right.type)
-      ? preferredTypes.indexOf(right.type)
-      : preferredTypes.length + 1;
+  return (
+    [...insights].sort((left, right) => {
+      const leftTypeRank = preferredTypes.includes(left.type)
+        ? preferredTypes.indexOf(left.type)
+        : preferredTypes.length + 1;
+      const rightTypeRank = preferredTypes.includes(right.type)
+        ? preferredTypes.indexOf(right.type)
+        : preferredTypes.length + 1;
 
-    if (leftTypeRank !== rightTypeRank) {
-      return leftTypeRank - rightTypeRank;
-    }
+      if (leftTypeRank !== rightTypeRank) {
+        return leftTypeRank - rightTypeRank;
+      }
 
-    const severityDelta = severityRankForInsight(right.severity) - severityRankForInsight(left.severity);
+      const severityDelta =
+        severityRankForInsight(right.severity) - severityRankForInsight(left.severity);
 
-    if (severityDelta !== 0) {
-      return severityDelta;
-    }
+      if (severityDelta !== 0) {
+        return severityDelta;
+      }
 
-    return new Date(right.updatedAt || right.createdAt || 0).getTime()
-      - new Date(left.updatedAt || left.createdAt || 0).getTime();
-  })[0] ?? null;
+      return (
+        new Date(right.updatedAt || right.createdAt || 0).getTime() -
+        new Date(left.updatedAt || left.createdAt || 0).getTime()
+      );
+    })[0] ?? null
+  );
 };
 
-const buildGeminiContextByType = ({ insightContext, contextTypeUsed, shouldAllowSpendingPatterns, insights }) => {
+const buildGeminiContextByType = ({
+  insightContext,
+  contextTypeUsed,
+  shouldAllowSpendingPatterns,
+  insights,
+}) => {
   const netWorthSnapshot = buildNetWorthSnapshot(insightContext);
   const recurringWithoutEndDate = (insightContext.recurringTransactions ?? [])
-    .filter((transaction) => transaction.type === 'expense' && transaction.isRecurring && transaction.recurrenceEndDate === null)
+    .filter(
+      (transaction) =>
+        transaction.type === 'expense' &&
+        transaction.isRecurring &&
+        transaction.recurrenceEndDate === null,
+    )
     .slice(0, 3);
 
   const context = {
@@ -880,7 +944,11 @@ const buildGeminiContextByType = ({ insightContext, contextTypeUsed, shouldAllow
 
   if (contextTypeUsed === 'app') {
     context.appHints = [
-      { feature: 'Budget', href: '/budget', note: 'Track monthly spending and recurring expenses.' },
+      {
+        feature: 'Budget',
+        href: '/budget',
+        note: 'Track monthly spending and recurring expenses.',
+      },
       { feature: 'Market', href: '/market', note: 'Explore stocks and crypto educational views.' },
       { feature: 'Invest', href: '/invest', note: 'Manage funded or demo investing flows.' },
     ];
@@ -902,9 +970,11 @@ const buildGeminiContextByType = ({ insightContext, contextTypeUsed, shouldAllow
   }
 
   if (contextTypeUsed === 'crypto' || contextTypeUsed === 'stocks') {
-    const holdings = insightContext.holdingsAllocations.filter((holding) => (
-      contextTypeUsed === 'crypto' ? holding.accountType === 'crypto' : holding.accountType === 'stocks'
-    ));
+    const holdings = insightContext.holdingsAllocations.filter((holding) =>
+      contextTypeUsed === 'crypto'
+        ? holding.accountType === 'crypto'
+        : holding.accountType === 'stocks',
+    );
 
     context.investing = {
       [contextTypeUsed]: insightContext.investing[contextTypeUsed],
@@ -931,248 +1001,99 @@ const buildGeminiContextByType = ({ insightContext, contextTypeUsed, shouldAllow
 
 const router = express.Router();
 
-router.post('/chat', requireAuth, finnyChatRateLimit, validateRequest({ body: finnyChatSchema }), async (req, res, next) => {
-  const userId = req.authUser._id.toString();
-  let contextTypeUsed = 'general';
+router.post(
+  '/chat',
+  requireAuth,
+  finnyChatRateLimit,
+  validateRequest({ body: finnyChatSchema }),
+  async (req, res, next) => {
+    const userId = req.authUser._id.toString();
+    let contextTypeUsed = 'general';
 
-  try {
-    if (!consumeUserRateLimit(userId)) {
-      throw new AppError({
-        message: 'Finny is busy, try again shortly.',
-        statusCode: 429,
-        code: 'FINNY_RATE_LIMIT',
-        details: [{ reason: 'USER_RATE_LIMIT_EXCEEDED', max: USER_MAX_REQUESTS_PER_WINDOW, windowMs: USER_WINDOW_MS }],
-      });
-    }
+    try {
+      if (!consumeUserRateLimit(userId)) {
+        throw new AppError({
+          message: 'Finny is busy, try again shortly.',
+          statusCode: 429,
+          code: 'FINNY_RATE_LIMIT',
+          details: [
+            {
+              reason: 'USER_RATE_LIMIT_EXCEEDED',
+              max: USER_MAX_REQUESTS_PER_WINDOW,
+              windowMs: USER_WINDOW_MS,
+            },
+          ],
+        });
+      }
 
-    const { message, contextType, selectedMonth } = req.body;
-    const topicScope = inspectTopicScope(message);
-    const intentInspection = inspectIntent(message);
-    const intent = INTENT_VALUES.includes(intentInspection.intent)
-      ? intentInspection.intent
-      : 'OFF_TOPIC';
+      const { message, contextType, selectedMonth } = req.body;
+      const topicScope = inspectTopicScope(message);
+      const intentInspection = inspectIntent(message);
+      const intent = INTENT_VALUES.includes(intentInspection.intent)
+        ? intentInspection.intent
+        : 'OFF_TOPIC';
 
-    if (!topicScope.inScope || intent === 'OFF_TOPIC') {
-      sendSuccess(res, {
-        format: 'text',
-        role: 'assistant',
-        content: FINNY_OUT_OF_SCOPE_TEXT,
-        text: FINNY_OUT_OF_SCOPE_TEXT,
-        ...(SHOULD_INCLUDE_DEBUG_META
-          ? {
-              meta: {
-                inScope: false,
-                matchedKeywords: topicScope.matchedKeywords,
-                intent,
-                matchedIntentKeywords: intentInspection.matchedIntentKeywords,
-              },
-            }
-          : {}),
-      });
-      return;
-    }
-
-    contextTypeUsed = resolveContextType(contextType, intent, message);
-
-    const insightContext = await buildInsightContext({
-      authUser: req.authUser,
-      selectedMonth,
-    });
-
-    const insightDocs = await generateInsights({
-      userId: req.authUser._id,
-      context: insightContext,
-      limit: 10,
-    });
-    const insights = insightDocs.map((insight) => serializeInsight(insight));
-
-    const shouldAllowSpendingPatterns =
-      contextTypeUsed === 'budget'
-      || contextTypeUsed === 'subscriptions'
-      || intent === 'BUDGET_CHECK'
-      || intent === 'TOP_SPENDING_CATEGORIES'
-      || intent === 'HABIT_IMPROVEMENT_30D'
-      || intent === 'SUBSCRIPTIONS_REVIEW'
-      || intent === 'SAVING_TIPS';
-
-    const recurringNoEnd = (insightContext.recurringTransactions ?? [])
-      .filter((transaction) => transaction.type === 'expense' && transaction.isRecurring && transaction.recurrenceEndDate === null)
-      .slice(0, 3);
-
-    if (intent === 'BUDGET_CHECK') {
-      const card = buildBudgetOverviewCard({
-        insightContext,
-        recurringNoEnd,
-      });
-
-      sendSuccess(res, {
-        format: 'card',
-        card,
-        ...(SHOULD_INCLUDE_DEBUG_META
-          ? {
-              meta: {
-                inScope: topicScope.inScope,
-                matchedKeywords: topicScope.matchedKeywords,
-                matchedIntentKeywords: intentInspection.matchedIntentKeywords,
-                contextTypeUsed,
-                intent,
-                selectedInsightType: null,
-              },
-            }
-          : {}),
-      });
-      return;
-    }
-
-    if (intent === 'TOP_SPENDING_CATEGORIES') {
-      const monthBounds = getMonthBoundsUtc(selectedMonth ?? insightContext.budget?.monthKey);
-      const categoryTotals = await computeCategoryTotals({
-        userId: req.authUser._id,
-        startDate: monthBounds.monthStart,
-        endDate: monthBounds.monthEnd,
-      });
-
-      const topCategories = [...categoryTotals.totals]
-        .sort((left, right) => right.amount - left.amount)
-        .slice(0, 3)
-        .map((item) => ({
-          ...item,
-          sharePct: categoryTotals.totalExpense > 0 ? (item.amount / categoryTotals.totalExpense) * 100 : 0,
-        }));
-
-      const card = buildTopSpendingCategoriesCard({
-        monthKey: monthBounds.monthKey,
-        topCategories,
-        totalExpense: categoryTotals.totalExpense,
-        currency: insightContext.profile.baseCurrency ?? 'RON',
-      });
-
-      sendSuccess(res, {
-        format: 'card',
-        card,
-        ...(SHOULD_INCLUDE_DEBUG_META
-          ? {
-              meta: {
-                inScope: topicScope.inScope,
-                matchedKeywords: topicScope.matchedKeywords,
-                matchedIntentKeywords: intentInspection.matchedIntentKeywords,
-                contextTypeUsed,
-                intent,
-                selectedInsightType: null,
-              },
-            }
-          : {}),
-      });
-      return;
-    }
-
-    if (intent === 'HABIT_IMPROVEMENT_30D') {
-      const last30Range = getLastDaysRange(30);
-      const previous30End = last30Range.start;
-      const previous30Start = new Date(previous30End.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-      const [last30Totals, previous30Totals] = await Promise.all([
-        computeCategoryTotals({
-          userId: req.authUser._id,
-          startDate: last30Range.start,
-          endDate: last30Range.end,
-        }),
-        computeCategoryTotals({
-          userId: req.authUser._id,
-          startDate: previous30Start,
-          endDate: previous30End,
-        }),
-      ]);
-
-      const topLast30 = [...last30Totals.totals].sort((left, right) => right.amount - left.amount)[0] ?? null;
-      const previousCategoryAmount = topLast30
-        ? (previous30Totals.totals.find((item) => item.categoryId === topLast30.categoryId)?.amount ?? 0)
-        : 0;
-
-      const card = buildHabitImprovementCard({
-        insightContext,
-        topLast30,
-        previousCategoryAmount,
-        recurringNoEnd,
-      });
-
-      sendSuccess(res, {
-        format: 'card',
-        card,
-        ...(SHOULD_INCLUDE_DEBUG_META
-          ? {
-              meta: {
-                inScope: topicScope.inScope,
-                matchedKeywords: topicScope.matchedKeywords,
-                matchedIntentKeywords: intentInspection.matchedIntentKeywords,
-                contextTypeUsed,
-                intent,
-                selectedInsightType: null,
-              },
-            }
-          : {}),
-      });
-      return;
-    }
-
-    if (intent === 'SAVING_TIPS') {
-      const card = buildSavingTipsCard({ insightContext });
-
-      sendSuccess(res, {
-        format: 'card',
-        card,
-        ...(SHOULD_INCLUDE_DEBUG_META
-          ? {
-              meta: {
-                inScope: topicScope.inScope,
-                matchedKeywords: topicScope.matchedKeywords,
-                matchedIntentKeywords: intentInspection.matchedIntentKeywords,
-                contextTypeUsed,
-                intent,
-                selectedInsightType: null,
-              },
-            }
-          : {}),
-      });
-      return;
-    }
-
-    if (intent === 'NET_WORTH') {
-      // Investing accounts are in EUR; convert them so the estimate is entirely in the base currency.
-      const eurToBaseRate = await getEurRateTo(insightContext.profile.baseCurrency ?? 'RON');
-      const card = buildNetWorthCard({ insightContext, eurToBaseRate });
-
-      sendSuccess(res, {
-        format: 'card',
-        card,
-        ...(SHOULD_INCLUDE_DEBUG_META
-          ? {
-              meta: {
-                inScope: topicScope.inScope,
-                matchedKeywords: topicScope.matchedKeywords,
-                matchedIntentKeywords: intentInspection.matchedIntentKeywords,
-                contextTypeUsed,
-                intent,
-                selectedInsightType: null,
-              },
-            }
-          : {}),
-      });
-      return;
-    }
-
-    const shouldShowInsightCard = shouldReturnInsightCard({ message, contextTypeUsed, intent });
-
-    if (shouldShowInsightCard) {
-      const bestInsight = pickBestInsight({
-        insights,
-        contextTypeUsed,
-      });
-
-      if (bestInsight) {
+      if (!topicScope.inScope || intent === 'OFF_TOPIC') {
         sendSuccess(res, {
-          format: 'insight_card',
-          card: buildInsightCardFromInsight(bestInsight),
+          format: 'text',
+          role: 'assistant',
+          content: FINNY_OUT_OF_SCOPE_TEXT,
+          text: FINNY_OUT_OF_SCOPE_TEXT,
+          ...(SHOULD_INCLUDE_DEBUG_META
+            ? {
+                meta: {
+                  inScope: false,
+                  matchedKeywords: topicScope.matchedKeywords,
+                  intent,
+                  matchedIntentKeywords: intentInspection.matchedIntentKeywords,
+                },
+              }
+            : {}),
+        });
+        return;
+      }
+
+      contextTypeUsed = resolveContextType(contextType, intent, message);
+
+      const insightContext = await buildInsightContext({
+        authUser: req.authUser,
+        selectedMonth,
+      });
+
+      const insightDocs = await generateInsights({
+        userId: req.authUser._id,
+        context: insightContext,
+        limit: 10,
+      });
+      const insights = insightDocs.map((insight) => serializeInsight(insight));
+
+      const shouldAllowSpendingPatterns =
+        contextTypeUsed === 'budget' ||
+        contextTypeUsed === 'subscriptions' ||
+        intent === 'BUDGET_CHECK' ||
+        intent === 'TOP_SPENDING_CATEGORIES' ||
+        intent === 'HABIT_IMPROVEMENT_30D' ||
+        intent === 'SUBSCRIPTIONS_REVIEW' ||
+        intent === 'SAVING_TIPS';
+
+      const recurringNoEnd = (insightContext.recurringTransactions ?? [])
+        .filter(
+          (transaction) =>
+            transaction.type === 'expense' &&
+            transaction.isRecurring &&
+            transaction.recurrenceEndDate === null,
+        )
+        .slice(0, 3);
+
+      if (intent === 'BUDGET_CHECK') {
+        const card = buildBudgetOverviewCard({
+          insightContext,
+          recurringNoEnd,
+        });
+
+        sendSuccess(res, {
+          format: 'card',
+          card,
           ...(SHOULD_INCLUDE_DEBUG_META
             ? {
                 meta: {
@@ -1181,85 +1102,256 @@ router.post('/chat', requireAuth, finnyChatRateLimit, validateRequest({ body: fi
                   matchedIntentKeywords: intentInspection.matchedIntentKeywords,
                   contextTypeUsed,
                   intent,
-                  selectedInsightType: bestInsight.type,
+                  selectedInsightType: null,
                 },
               }
             : {}),
         });
         return;
       }
-    }
 
-    const { context, attachedContextFields } = buildGeminiContextByType({
-      insightContext,
-      contextTypeUsed,
-      shouldAllowSpendingPatterns,
-      insights,
-    });
+      if (intent === 'TOP_SPENDING_CATEGORIES') {
+        const monthBounds = getMonthBoundsUtc(selectedMonth ?? insightContext.budget?.monthKey);
+        const categoryTotals = await computeCategoryTotals({
+          userId: req.authUser._id,
+          startDate: monthBounds.monthStart,
+          endDate: monthBounds.monthEnd,
+        });
 
-    let reply;
+        const topCategories = [...categoryTotals.totals]
+          .sort((left, right) => right.amount - left.amount)
+          .slice(0, 3)
+          .map((item) => ({
+            ...item,
+            sharePct:
+              categoryTotals.totalExpense > 0
+                ? (item.amount / categoryTotals.totalExpense) * 100
+                : 0,
+          }));
 
-    try {
-      reply = await generateFinnyReply({
-        message,
-        systemInstruction: buildSystemInstruction({
+        const card = buildTopSpendingCategoriesCard({
+          monthKey: monthBounds.monthKey,
+          topCategories,
+          totalExpense: categoryTotals.totalExpense,
+          currency: insightContext.profile.baseCurrency ?? 'RON',
+        });
+
+        sendSuccess(res, {
+          format: 'card',
+          card,
+          ...(SHOULD_INCLUDE_DEBUG_META
+            ? {
+                meta: {
+                  inScope: topicScope.inScope,
+                  matchedKeywords: topicScope.matchedKeywords,
+                  matchedIntentKeywords: intentInspection.matchedIntentKeywords,
+                  contextTypeUsed,
+                  intent,
+                  selectedInsightType: null,
+                },
+              }
+            : {}),
+        });
+        return;
+      }
+
+      if (intent === 'HABIT_IMPROVEMENT_30D') {
+        const last30Range = getLastDaysRange(30);
+        const previous30End = last30Range.start;
+        const previous30Start = new Date(previous30End.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+        const [last30Totals, previous30Totals] = await Promise.all([
+          computeCategoryTotals({
+            userId: req.authUser._id,
+            startDate: last30Range.start,
+            endDate: last30Range.end,
+          }),
+          computeCategoryTotals({
+            userId: req.authUser._id,
+            startDate: previous30Start,
+            endDate: previous30End,
+          }),
+        ]);
+
+        const topLast30 =
+          [...last30Totals.totals].sort((left, right) => right.amount - left.amount)[0] ?? null;
+        const previousCategoryAmount = topLast30
+          ? (previous30Totals.totals.find((item) => item.categoryId === topLast30.categoryId)
+              ?.amount ?? 0)
+          : 0;
+
+        const card = buildHabitImprovementCard({
+          insightContext,
+          topLast30,
+          previousCategoryAmount,
+          recurringNoEnd,
+        });
+
+        sendSuccess(res, {
+          format: 'card',
+          card,
+          ...(SHOULD_INCLUDE_DEBUG_META
+            ? {
+                meta: {
+                  inScope: topicScope.inScope,
+                  matchedKeywords: topicScope.matchedKeywords,
+                  matchedIntentKeywords: intentInspection.matchedIntentKeywords,
+                  contextTypeUsed,
+                  intent,
+                  selectedInsightType: null,
+                },
+              }
+            : {}),
+        });
+        return;
+      }
+
+      if (intent === 'SAVING_TIPS') {
+        const card = buildSavingTipsCard({ insightContext });
+
+        sendSuccess(res, {
+          format: 'card',
+          card,
+          ...(SHOULD_INCLUDE_DEBUG_META
+            ? {
+                meta: {
+                  inScope: topicScope.inScope,
+                  matchedKeywords: topicScope.matchedKeywords,
+                  matchedIntentKeywords: intentInspection.matchedIntentKeywords,
+                  contextTypeUsed,
+                  intent,
+                  selectedInsightType: null,
+                },
+              }
+            : {}),
+        });
+        return;
+      }
+
+      if (intent === 'NET_WORTH') {
+        // Investing accounts are in EUR; convert them so the estimate is entirely in the base currency.
+        const eurToBaseRate = await getEurRateTo(insightContext.profile.baseCurrency ?? 'RON');
+        const card = buildNetWorthCard({ insightContext, eurToBaseRate });
+
+        sendSuccess(res, {
+          format: 'card',
+          card,
+          ...(SHOULD_INCLUDE_DEBUG_META
+            ? {
+                meta: {
+                  inScope: topicScope.inScope,
+                  matchedKeywords: topicScope.matchedKeywords,
+                  matchedIntentKeywords: intentInspection.matchedIntentKeywords,
+                  contextTypeUsed,
+                  intent,
+                  selectedInsightType: null,
+                },
+              }
+            : {}),
+        });
+        return;
+      }
+
+      const shouldShowInsightCard = shouldReturnInsightCard({ message, contextTypeUsed, intent });
+
+      if (shouldShowInsightCard) {
+        const bestInsight = pickBestInsight({
+          insights,
           contextTypeUsed,
-          shouldAllowSpendingPatterns,
-          hasInsights: insights.length > 0,
-          intent,
-          locale: insightContext.profile?.locale,
-        }),
-        context,
+        });
+
+        if (bestInsight) {
+          sendSuccess(res, {
+            format: 'insight_card',
+            card: buildInsightCardFromInsight(bestInsight),
+            ...(SHOULD_INCLUDE_DEBUG_META
+              ? {
+                  meta: {
+                    inScope: topicScope.inScope,
+                    matchedKeywords: topicScope.matchedKeywords,
+                    matchedIntentKeywords: intentInspection.matchedIntentKeywords,
+                    contextTypeUsed,
+                    intent,
+                    selectedInsightType: bestInsight.type,
+                  },
+                }
+              : {}),
+          });
+          return;
+        }
+      }
+
+      const { context, attachedContextFields } = buildGeminiContextByType({
+        insightContext,
+        contextTypeUsed,
+        shouldAllowSpendingPatterns,
+        insights,
       });
-    } catch {
+
+      let reply;
+
+      try {
+        reply = await generateFinnyReply({
+          message,
+          systemInstruction: buildSystemInstruction({
+            contextTypeUsed,
+            shouldAllowSpendingPatterns,
+            hasInsights: insights.length > 0,
+            intent,
+            locale: insightContext.profile?.locale,
+          }),
+          context,
+        });
+      } catch {
+        sendSuccess(res, {
+          format: 'text',
+          text: FINNY_PROVIDER_UNAVAILABLE_TEXT,
+          ...(SHOULD_INCLUDE_DEBUG_META
+            ? {
+                meta: {
+                  inScope: topicScope.inScope,
+                  contextTypeUsed,
+                  intent,
+                  providerError: true,
+                },
+              }
+            : {}),
+        });
+        return;
+      }
+
+      const parsedObject = tryParseJsonObject(reply);
+      const normalizedCard = normalizeCardPayload(parsedObject);
+      const meta = SHOULD_INCLUDE_DEBUG_META
+        ? {
+            inScope: topicScope.inScope,
+            matchedKeywords: topicScope.matchedKeywords,
+            matchedIntentKeywords: intentInspection.matchedIntentKeywords,
+            contextTypeUsed,
+            intent,
+            attachedContextFields,
+            activeInsightCount: insights.length,
+          }
+        : undefined;
+
+      if (normalizedCard) {
+        sendSuccess(res, {
+          format: 'card',
+          card: normalizedCard,
+          ...(meta ? { meta } : {}),
+        });
+        return;
+      }
+
       sendSuccess(res, {
         format: 'text',
-        text: FINNY_PROVIDER_UNAVAILABLE_TEXT,
-        ...(SHOULD_INCLUDE_DEBUG_META
-          ? {
-              meta: {
-                inScope: topicScope.inScope,
-                contextTypeUsed,
-                intent,
-                providerError: true,
-              },
-            }
-          : {}),
-      });
-      return;
-    }
-
-    const parsedObject = tryParseJsonObject(reply);
-    const normalizedCard = normalizeCardPayload(parsedObject);
-    const meta = SHOULD_INCLUDE_DEBUG_META
-      ? {
-          inScope: topicScope.inScope,
-          matchedKeywords: topicScope.matchedKeywords,
-          matchedIntentKeywords: intentInspection.matchedIntentKeywords,
-          contextTypeUsed,
-          intent,
-          attachedContextFields,
-          activeInsightCount: insights.length,
-        }
-      : undefined;
-
-    if (normalizedCard) {
-      sendSuccess(res, {
-        format: 'card',
-        card: normalizedCard,
+        text: toTextResponse(reply),
         ...(meta ? { meta } : {}),
       });
-      return;
+    } catch (err) {
+      next(err);
     }
-
-    sendSuccess(res, {
-      format: 'text',
-      text: toTextResponse(reply),
-      ...(meta ? { meta } : {}),
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+  },
+);
 
 export default router;

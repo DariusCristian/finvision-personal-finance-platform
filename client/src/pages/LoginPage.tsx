@@ -343,103 +343,103 @@ export function LoginPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="mb-2 block text-sm font-semibold text-[var(--color-text-heading)] sm:text-base"
-                >
-                  Email Address
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
-                    <MailIcon className="h-5 w-5" />
-                  </span>
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(event) => {
-                      setEmail(event.target.value);
-                      if (formError) {
-                        setFormError(null);
-                      }
-                    }}
-                    placeholder="Enter Your Email"
-                    className="h-14 w-full rounded-2xl border border-[var(--color-input-border)] bg-slate-50/70 pl-12 pr-4 text-base text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                  />
-                </div>
-              </div>
+        <div>
+          <label
+            htmlFor="email"
+            className="mb-2 block text-sm font-semibold text-[var(--color-text-heading)] sm:text-base"
+          >
+            Email Address
+          </label>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+              <MailIcon className="h-5 w-5" />
+            </span>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (formError) {
+                  setFormError(null);
+                }
+              }}
+              placeholder="Enter Your Email"
+              className="h-14 w-full rounded-2xl border border-[var(--color-input-border)] bg-slate-50/70 pl-12 pr-4 text-base text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            />
+          </div>
+        </div>
 
-              <div>
-                <div className="mb-2 flex items-center justify-between gap-4">
-                  <label
-                    htmlFor="password"
-                    className="text-sm font-semibold text-[var(--color-text-heading)] sm:text-base"
-                  >
-                    Password
-                  </label>
-                  <button
-                    type="button"
-                    className="text-sm font-semibold text-[var(--color-link)] transition hover:text-[#1D4ED8]"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
-                    <LockIcon className="h-5 w-5" />
-                  </span>
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(event) => {
-                      setPassword(event.target.value);
-                      if (formError) {
-                        setFormError(null);
-                      }
-                    }}
-                    placeholder="Enter Your Password"
-                    className="h-14 w-full rounded-2xl border border-[var(--color-input-border)] bg-slate-50/70 pl-12 pr-12 text-base text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((current) => !current)}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700"
-                  >
-                    <EyeIcon open={showPassword} className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-4">
+            <label
+              htmlFor="password"
+              className="text-sm font-semibold text-[var(--color-text-heading)] sm:text-base"
+            >
+              Password
+            </label>
+            <button
+              type="button"
+              className="text-sm font-semibold text-[var(--color-link)] transition hover:text-[#1D4ED8]"
+            >
+              Forgot password?
+            </button>
+          </div>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+              <LockIcon className="h-5 w-5" />
+            </span>
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                if (formError) {
+                  setFormError(null);
+                }
+              }}
+              placeholder="Enter Your Password"
+              className="h-14 w-full rounded-2xl border border-[var(--color-input-border)] bg-slate-50/70 pl-12 pr-12 text-base text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((current) => !current)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700"
+            >
+              <EyeIcon open={showPassword} className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
 
-              <label className="flex cursor-pointer items-center gap-3 text-base text-[var(--color-text-muted)]">
-                <span className="relative flex h-5 w-5 items-center justify-center">
-                  <input
-                    type="checkbox"
-                    checked={keepSignedIn}
-                    onChange={(event) => setKeepSignedIn(event.target.checked)}
-                    className="peer h-5 w-5 appearance-none rounded-full border border-slate-300 bg-white checked:border-blue-600 checked:bg-blue-600"
-                  />
-                  <span className="pointer-events-none absolute h-2 w-2 rounded-full bg-white opacity-0 transition peer-checked:opacity-100" />
-                </span>
-                <span>Keep me signed in</span>
-              </label>
+        <label className="flex cursor-pointer items-center gap-3 text-base text-[var(--color-text-muted)]">
+          <span className="relative flex h-5 w-5 items-center justify-center">
+            <input
+              type="checkbox"
+              checked={keepSignedIn}
+              onChange={(event) => setKeepSignedIn(event.target.checked)}
+              className="peer h-5 w-5 appearance-none rounded-full border border-slate-300 bg-white checked:border-blue-600 checked:bg-blue-600"
+            />
+            <span className="pointer-events-none absolute h-2 w-2 rounded-full bg-white opacity-0 transition peer-checked:opacity-100" />
+          </span>
+          <span>Keep me signed in</span>
+        </label>
 
-              {formError ? <p className="text-sm font-medium text-rose-500">{formError}</p> : null}
+        {formError ? <p className="text-sm font-medium text-rose-500">{formError}</p> : null}
 
-              <button
-                type="submit"
-                disabled={isSubmitting || !email.trim() || !password}
-                className={[
-                  'h-14 w-full rounded-2xl text-lg font-semibold text-white shadow-[0_16px_32px_rgba(37,99,235,0.24)] transition',
-                  isSubmitting || !email.trim() || !password
-                    ? 'cursor-not-allowed bg-blue-300 shadow-none'
-                    : 'bg-[var(--color-button-primary)] hover:bg-[var(--color-button-primary-hover)]',
-                ].join(' ')}
-              >
-                {isSubmitting ? 'Signing In...' : 'Sign In'}
-              </button>
+        <button
+          type="submit"
+          disabled={isSubmitting || !email.trim() || !password}
+          className={[
+            'h-14 w-full rounded-2xl text-lg font-semibold text-white shadow-[0_16px_32px_rgba(37,99,235,0.24)] transition',
+            isSubmitting || !email.trim() || !password
+              ? 'cursor-not-allowed bg-blue-300 shadow-none'
+              : 'bg-[var(--color-button-primary)] hover:bg-[var(--color-button-primary-hover)]',
+          ].join(' ')}
+        >
+          {isSubmitting ? 'Signing In...' : 'Sign In'}
+        </button>
       </form>
 
       <p className="mt-8 text-center text-base text-[var(--color-text-muted)]">

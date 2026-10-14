@@ -180,4 +180,10 @@ const ensureSystemCategories = async () => {
   }
 };
 
-export { Category, SYSTEM_CATEGORIES, ensureSystemCategories, serializeCategory, slugifyCategoryName };
+export {
+  Category,
+  SYSTEM_CATEGORIES,
+  ensureSystemCategories,
+  serializeCategory,
+  slugifyCategoryName,
+};

@@ -31,7 +31,8 @@ const normalizeActions = (actions) => {
 export const serializeInsight = (insight) => {
   const related = insight?.related ?? {};
   const relatedTransactionId = related?.transactionId?.toString?.() ?? null;
-  const relatedHoldingSymbol = typeof related?.holdingSymbol === 'string' ? related.holdingSymbol : null;
+  const relatedHoldingSymbol =
+    typeof related?.holdingSymbol === 'string' ? related.holdingSymbol : null;
   const relatedMonth = typeof related?.month === 'string' ? related.month : null;
   const relatedCategoryId = related?.categoryId?.toString?.() ?? null;
   const whatNoticed = insight?.whatNoticed ?? '';
@@ -62,9 +63,10 @@ export const serializeInsight = (insight) => {
   };
 };
 
-export const getActiveInsightsForUser = async (userId, limit = 5) => Insight.find({
-  userId,
-  status: 'active',
-})
-  .sort({ updatedAt: -1, createdAt: -1 })
-  .limit(limit);
+export const getActiveInsightsForUser = async (userId, limit = 5) =>
+  Insight.find({
+    userId,
+    status: 'active',
+  })
+    .sort({ updatedAt: -1, createdAt: -1 })
+    .limit(limit);

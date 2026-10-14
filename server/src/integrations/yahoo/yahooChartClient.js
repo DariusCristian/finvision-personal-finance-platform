@@ -9,7 +9,8 @@ export class YahooProviderError extends Error {
 
 const YAHOO_CHART_ENDPOINT = 'https://query1.finance.yahoo.com/v8/finance/chart/';
 const REQUEST_TIMEOUT_MS = 10_000;
-const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
+const USER_AGENT =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
 
 const RANGE_TO_YAHOO = {
   '1D': { range: '5d', interval: '1h', maxPoints: 48 },
@@ -22,7 +23,10 @@ const RANGE_TO_YAHOO = {
 
 const normalizeRange = (range) => (Object.hasOwn(RANGE_TO_YAHOO, range) ? range : '1M');
 
-const normalizeSymbol = (symbol) => String(symbol || '').trim().toUpperCase();
+const normalizeSymbol = (symbol) =>
+  String(symbol || '')
+    .trim()
+    .toUpperCase();
 
 export const fetchYahooStockHistory = async (symbol, range = '1M') => {
   const normalizedSymbol = normalizeSymbol(symbol);
@@ -63,7 +67,9 @@ export const fetchYahooStockHistory = async (symbol, range = '1M') => {
   } catch (error) {
     clearTimeout(timeoutId);
 
-    const isTimeout = error instanceof Error && (error.name === 'AbortError' || error.message.toLowerCase().includes('aborted'));
+    const isTimeout =
+      error instanceof Error &&
+      (error.name === 'AbortError' || error.message.toLowerCase().includes('aborted'));
 
     throw new YahooProviderError(
       isTimeout ? 'Yahoo Finance request timed out.' : 'Yahoo Finance network error.',
@@ -101,7 +107,7 @@ export const fetchYahooStockHistory = async (symbol, range = '1M') => {
   const result = Array.isArray(payload?.chart?.result) ? payload.chart.result[0] : null;
   const timestamps = Array.isArray(result?.timestamp) ? result.timestamp : [];
   const closes = Array.isArray(result?.indicators?.quote)
-    ? result.indicators.quote[0]?.close ?? []
+    ? (result.indicators.quote[0]?.close ?? [])
     : [];
 
   if (!Array.isArray(closes) || timestamps.length === 0) {

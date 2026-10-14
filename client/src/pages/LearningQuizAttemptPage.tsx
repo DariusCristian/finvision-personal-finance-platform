@@ -40,9 +40,7 @@ export function LearningQuizAttemptPage() {
         startedAtRef.current = Date.now();
       } catch (error) {
         setErrorMessage(
-          error instanceof ApiRequestError
-            ? error.message
-            : 'Unable to load quiz right now.',
+          error instanceof ApiRequestError ? error.message : 'Unable to load quiz right now.',
         );
       } finally {
         setIsLoading(false);
@@ -99,10 +97,7 @@ export function LearningQuizAttemptPage() {
         accessToken,
       );
 
-      sessionStorage.setItem(
-        `finvision.quizResult.${quiz.id}`,
-        JSON.stringify({ quiz, result }),
-      );
+      sessionStorage.setItem(`finvision.quizResult.${quiz.id}`, JSON.stringify({ quiz, result }));
 
       navigate(`/learn/quizzes/${quiz.id}/results`, {
         state: {
@@ -112,9 +107,7 @@ export function LearningQuizAttemptPage() {
       });
     } catch (error) {
       setErrorMessage(
-        error instanceof ApiRequestError
-          ? error.message
-          : 'Unable to submit quiz right now.',
+        error instanceof ApiRequestError ? error.message : 'Unable to submit quiz right now.',
       );
     } finally {
       setIsSubmitting(false);
@@ -124,7 +117,10 @@ export function LearningQuizAttemptPage() {
   return (
     <AppShell activeTab="learning">
       <div className="space-y-5">
-        <Link to="/learn" className="inline-flex text-sm font-medium text-[#2563eb] hover:text-[#1d4ed8] dark:text-blue-400 dark:hover:text-blue-300">
+        <Link
+          to="/learn"
+          className="inline-flex text-sm font-medium text-[#2563eb] hover:text-[#1d4ed8] dark:text-blue-400 dark:hover:text-blue-300"
+        >
           ← Back to Learning Center
         </Link>
 
@@ -144,7 +140,9 @@ export function LearningQuizAttemptPage() {
           <section className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800 md:p-8">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h1 className="text-3xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">{quiz.title}</h1>
+                <h1 className="text-3xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                  {quiz.title}
+                </h1>
                 <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                   {quiz.category} • {quiz.difficulty} • Passing score {quiz.passingScore}%
                 </p>
@@ -162,7 +160,9 @@ export function LearningQuizAttemptPage() {
             </div>
 
             <div className="mt-8 space-y-4">
-              <h2 className="text-2xl font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-100">{currentQuestion.prompt}</h2>
+              <h2 className="text-2xl font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-100">
+                {currentQuestion.prompt}
+              </h2>
               <div className="space-y-3">
                 {currentQuestion.options.map((option) => {
                   const isSelected = selectedAnswers[currentQuestion.id] === option.id;
@@ -199,7 +199,9 @@ export function LearningQuizAttemptPage() {
               {currentIndex < quiz.questions.length - 1 ? (
                 <button
                   type="button"
-                  onClick={() => setCurrentIndex((value) => Math.min(quiz.questions.length - 1, value + 1))}
+                  onClick={() =>
+                    setCurrentIndex((value) => Math.min(quiz.questions.length - 1, value + 1))
+                  }
                   className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] dark:bg-blue-600 dark:hover:bg-blue-700"
                 >
                   Next

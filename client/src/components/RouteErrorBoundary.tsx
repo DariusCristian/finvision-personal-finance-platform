@@ -10,7 +10,10 @@ type RouteErrorBoundaryState = {
   errorMessage: string;
 };
 
-export class RouteErrorBoundary extends Component<RouteErrorBoundaryProps, RouteErrorBoundaryState> {
+export class RouteErrorBoundary extends Component<
+  RouteErrorBoundaryProps,
+  RouteErrorBoundaryState
+> {
   state: RouteErrorBoundaryState = {
     hasError: false,
     errorMessage: '',
@@ -41,12 +44,9 @@ export class RouteErrorBoundary extends Component<RouteErrorBoundaryProps, Route
 
     return (
       <div className="mx-auto mt-6 max-w-3xl rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
-        <p className="text-sm font-semibold">
-          Route failed to render: {this.props.routeName}
-        </p>
+        <p className="text-sm font-semibold">Route failed to render: {this.props.routeName}</p>
         <p className="mt-1 text-sm">{this.state.errorMessage}</p>
       </div>
     );
   }
 }
-

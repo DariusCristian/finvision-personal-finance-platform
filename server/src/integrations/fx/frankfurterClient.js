@@ -169,9 +169,15 @@ const fetchFrankfurter = async ({ path, query }) => {
 };
 
 export const getLatestRates = async (base = 'EUR', symbols = ['USD', 'RON']) => {
-  const normalizedBase = String(base || 'EUR').trim().toUpperCase();
+  const normalizedBase = String(base || 'EUR')
+    .trim()
+    .toUpperCase();
   const normalizedSymbols = symbols
-    .map((symbol) => String(symbol || '').trim().toUpperCase())
+    .map((symbol) =>
+      String(symbol || '')
+        .trim()
+        .toUpperCase(),
+    )
     .filter(Boolean);
   const cacheKey = `fx:latest:${normalizedBase}:${normalizedSymbols.join(',')}`;
 
@@ -184,10 +190,13 @@ export const getLatestRates = async (base = 'EUR', symbols = ['USD', 'RON']) => 
       },
     });
 
-    const rateMap = typeof payload?.rates === 'object' && payload?.rates !== null ? payload.rates : {};
+    const rateMap =
+      typeof payload?.rates === 'object' && payload?.rates !== null ? payload.rates : {};
 
     return {
-      base: String(payload?.base || normalizedBase).trim().toUpperCase(),
+      base: String(payload?.base || normalizedBase)
+        .trim()
+        .toUpperCase(),
       date: String(payload?.date || ''),
       rates: Object.entries(rateMap).reduce((accumulator, [symbol, value]) => {
         const numericValue = Number(value);
@@ -209,8 +218,16 @@ const CURRENT_RATES_CACHE_TTL_MS = 60 * 60 * 1000;
 // before that day (weekends and holidays fall back to the previous business day); today and future days use the
 // latest rates. Throws FxProviderError when a requested rate is missing.
 export const getRatesForDate = async ({ base, symbols, date }) => {
-  const normalizedBase = String(base || '').trim().toUpperCase();
-  const normalizedSymbols = symbols.map((symbol) => String(symbol || '').trim().toUpperCase()).filter(Boolean);
+  const normalizedBase = String(base || '')
+    .trim()
+    .toUpperCase();
+  const normalizedSymbols = symbols
+    .map((symbol) =>
+      String(symbol || '')
+        .trim()
+        .toUpperCase(),
+    )
+    .filter(Boolean);
   const day = String(date || '').slice(0, 10);
 
   if (!normalizedBase || normalizedSymbols.length === 0 || !/^\d{4}-\d{2}-\d{2}$/.test(day)) {
@@ -253,8 +270,12 @@ export const getRatesForDate = async ({ base, symbols, date }) => {
 };
 
 export const convert = async ({ from, to, amount }) => {
-  const normalizedFrom = String(from || '').trim().toUpperCase();
-  const normalizedTo = String(to || '').trim().toUpperCase();
+  const normalizedFrom = String(from || '')
+    .trim()
+    .toUpperCase();
+  const normalizedTo = String(to || '')
+    .trim()
+    .toUpperCase();
   const numericAmount = Number(amount);
 
   if (!normalizedFrom || !normalizedTo || !Number.isFinite(numericAmount) || numericAmount <= 0) {
@@ -267,28 +288,32 @@ export const convert = async ({ from, to, amount }) => {
 
   const cacheKey = `fx:convert:${normalizedFrom}:${normalizedTo}`;
 
-  const { rate: rateToPerFrom, date } = await withCachedRequest(cacheKey, CONVERT_CACHE_TTL_MS, async () => {
-    const payload = await fetchFrankfurter({
-      path: '/latest',
-      query: {
-        from: normalizedFrom,
-        to: normalizedTo,
-      },
-    });
-
-    const rates = payload?.rates || {};
-    const rate = Number(rates?.[normalizedTo]);
-
-    if (!Number.isFinite(rate)) {
-      throw new FxProviderError('FX conversion result is unavailable.', {
-        status: 502,
-        code: 'FX_PROVIDER_ERROR',
-        details: [{ reason: 'MISSING_RATE', from: normalizedFrom, to: normalizedTo }],
+  const { rate: rateToPerFrom, date } = await withCachedRequest(
+    cacheKey,
+    CONVERT_CACHE_TTL_MS,
+    async () => {
+      const payload = await fetchFrankfurter({
+        path: '/latest',
+        query: {
+          from: normalizedFrom,
+          to: normalizedTo,
+        },
       });
-    }
 
-    return { rate, date: String(payload?.date || '') };
-  });
+      const rates = payload?.rates || {};
+      const rate = Number(rates?.[normalizedTo]);
+
+      if (!Number.isFinite(rate)) {
+        throw new FxProviderError('FX conversion result is unavailable.', {
+          status: 502,
+          code: 'FX_PROVIDER_ERROR',
+          details: [{ reason: 'MISSING_RATE', from: normalizedFrom, to: normalizedTo }],
+        });
+      }
+
+      return { rate, date: String(payload?.date || '') };
+    },
+  );
 
   const convertedAmount = rateToPerFrom * numericAmount;
   const rateFromPerTo = convertedAmount > 0 ? numericAmount / convertedAmount : null;

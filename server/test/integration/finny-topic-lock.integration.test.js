@@ -111,7 +111,9 @@ test('track expenses and budget check return budget overview card instead of sub
     .set('Authorization', `Bearer ${accessToken}`)
     .expect(200);
 
-  const expenseCategory = categoriesResponse.body.data.categories.find((item) => item.type === 'expense');
+  const expenseCategory = categoriesResponse.body.data.categories.find(
+    (item) => item.type === 'expense',
+  );
   assert.ok(expenseCategory?.id);
 
   await createExpense({
@@ -144,7 +146,9 @@ test('top spending categories intent returns structured categories card', async 
     .set('Authorization', `Bearer ${accessToken}`)
     .expect(200);
 
-  const expenseCategories = categoriesResponse.body.data.categories.filter((item) => item.type === 'expense');
+  const expenseCategories = categoriesResponse.body.data.categories.filter(
+    (item) => item.type === 'expense',
+  );
   assert.ok(expenseCategories.length >= 3);
 
   await createExpense({
@@ -191,7 +195,9 @@ test('habit improvement 30d intent returns one-habit card grounded in recent dat
     .set('Authorization', `Bearer ${accessToken}`)
     .expect(200);
 
-  const expenseCategory = categoriesResponse.body.data.categories.find((item) => item.type === 'expense');
+  const expenseCategory = categoriesResponse.body.data.categories.find(
+    (item) => item.type === 'expense',
+  );
   assert.ok(expenseCategory?.id);
 
   const now = new Date();

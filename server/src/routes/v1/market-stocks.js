@@ -2,7 +2,11 @@ import { Router } from 'express';
 
 import { env } from '../../config/env.js';
 import { AppError } from '../../errors/app-error.js';
-import { FxProviderError, convert, getLatestRates } from '../../integrations/fx/frankfurterClient.js';
+import {
+  FxProviderError,
+  convert,
+  getLatestRates,
+} from '../../integrations/fx/frankfurterClient.js';
 import {
   FinnhubProviderError,
   getCandles,
@@ -15,7 +19,10 @@ import {
   fetchDailyHistory as fetchStooqDailyHistory,
   StooqProviderError,
 } from '../../integrations/stooq/stooqClient.js';
-import { fetchYahooStockHistory, YahooProviderError } from '../../integrations/yahoo/yahooChartClient.js';
+import {
+  fetchYahooStockHistory,
+  YahooProviderError,
+} from '../../integrations/yahoo/yahooChartClient.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { PortfolioAccount } from '../../models/portfolio-account.js';
 import { PortfolioHolding } from '../../models/portfolio-holding.js';
@@ -91,7 +98,9 @@ const resolveSelectedModeOrNull = (authUser) =>
   isStocksMode(authUser?.marketStocksMode) ? authUser.marketStocksMode : null;
 const resolveActiveMode = (authUser) => resolveSelectedModeOrNull(authUser) ?? STOCKS_DEFAULT_MODE;
 const getStartingCashBalanceForMode = (mode) =>
-  mode === STOCKS_DEMO_MODE ? DEMO_STARTING_STOCKS_CASH_BALANCE : FUNDED_STARTING_STOCKS_CASH_BALANCE;
+  mode === STOCKS_DEMO_MODE
+    ? DEMO_STARTING_STOCKS_CASH_BALANCE
+    : FUNDED_STARTING_STOCKS_CASH_BALANCE;
 const logModeScopedAccount = ({ selectedMode, account, holdingsCount }) => {
   if (env.NODE_ENV !== 'development') {
     return;
@@ -109,7 +118,12 @@ const toDayTimestampUtc = (value) => {
   const date = new Date(value);
   return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 };
-const getCandlesCacheKey = (symbol, range) => `${String(symbol || '').trim().toUpperCase()}|${String(range || '').trim().toUpperCase()}`;
+const getCandlesCacheKey = (symbol, range) =>
+  `${String(symbol || '')
+    .trim()
+    .toUpperCase()}|${String(range || '')
+    .trim()
+    .toUpperCase()}`;
 const getCachedCandlesResponse = ({ symbol, range }) => {
   const cacheKey = getCandlesCacheKey(symbol, range);
   const cacheEntry = candlesResponseCache.get(cacheKey);
@@ -143,9 +157,10 @@ const buildRangeDayTimestamps = (days) => {
     today.getUTCDate(),
   );
 
-  return Array.from({ length: days }, (_item, index) => (
-    todayDayTimestamp - ((days - 1 - index) * DAY_MS)
-  ));
+  return Array.from(
+    { length: days },
+    (_item, index) => todayDayTimestamp - (days - 1 - index) * DAY_MS,
+  );
 };
 
 const assertFinnhubAvailable = () => {
@@ -337,28 +352,29 @@ const buildSyntheticCandlesFromQuotePrice = ({ price, range, symbol }) => {
     hash = ((hash << 5) - hash + seedText.charCodeAt(index)) | 0;
   }
 
-  let state = (Math.abs(hash) % 2147483647) || 1;
+  let state = Math.abs(hash) % 2147483647 || 1;
   const nextRandom = () => {
     state = (state * 16807) % 2147483647;
     return (state - 1) / 2147483646;
   };
 
   const denominator = Math.max(pointsCount - 1, 1);
-  const baseVolatilityPct = 0.004 + ((Math.abs(hash) % 6) * 0.0011);
+  const baseVolatilityPct = 0.004 + (Math.abs(hash) % 6) * 0.0011;
   const driftPerStep = ((nextRandom() - 0.5) * 0.018) / denominator;
   const primaryCycles = 2 + (Math.abs(hash) % 4);
   const phaseShift = ((Math.abs(hash) % 360) * Math.PI) / 180;
-  let runningPrice = numericPrice * (0.96 + (nextRandom() * 0.08));
+  let runningPrice = numericPrice * (0.96 + nextRandom() * 0.08);
 
   const rawSeries = Array.from({ length: pointsCount }, (_value, index) => {
     const progress = index / denominator;
-    const wave = Math.sin((progress * Math.PI * 2 * primaryCycles) + phaseShift) * baseVolatilityPct * 0.36;
+    const wave =
+      Math.sin(progress * Math.PI * 2 * primaryCycles + phaseShift) * baseVolatilityPct * 0.36;
     const noise = (nextRandom() - 0.5) * 2 * baseVolatilityPct;
     const stepReturn = driftPerStep + wave + noise;
     runningPrice = Math.max(0.01, runningPrice * (1 + stepReturn));
 
     return {
-      t: todayUtcMs - ((pointsCount - 1 - index) * DAY_MS),
+      t: todayUtcMs - (pointsCount - 1 - index) * DAY_MS,
       c: runningPrice,
     };
   });
@@ -438,7 +454,9 @@ const getStockCandlesByRange = async (symbol, range) => {
 
           if (env.NODE_ENV === 'development') {
             logger.info('market.stocks.candles.fallback_used', {
-              symbol: String(symbol || '').trim().toUpperCase(),
+              symbol: String(symbol || '')
+                .trim()
+                .toUpperCase(),
               range: normalizedRange,
               provider: 'yahoo',
               reason: 'STOOQ_QUOTE_FALLBACK',
@@ -450,7 +468,9 @@ const getStockCandlesByRange = async (symbol, range) => {
       } catch (error) {
         // Fallback attempt failed: log it and continue with the next source.
         logger.warn('market.stocks.candles.fallback_failed', {
-          symbol: String(symbol || '').trim().toUpperCase(),
+          symbol: String(symbol || '')
+            .trim()
+            .toUpperCase(),
           range: normalizedRange,
           provider: 'yahoo',
           reason: 'STOOQ_QUOTE_FALLBACK',
@@ -487,7 +507,9 @@ const getStockCandlesByRange = async (symbol, range) => {
 
           if (env.NODE_ENV === 'development') {
             logger.info('market.stocks.candles.fallback_used', {
-              symbol: String(symbol || '').trim().toUpperCase(),
+              symbol: String(symbol || '')
+                .trim()
+                .toUpperCase(),
               range: normalizedRange,
               provider: 'yahoo',
               reason: 'STOOQ_NO_DATA',
@@ -499,7 +521,9 @@ const getStockCandlesByRange = async (symbol, range) => {
       } catch (error) {
         // Fallback attempt failed: log it and continue with the next source.
         logger.warn('market.stocks.candles.fallback_failed', {
-          symbol: String(symbol || '').trim().toUpperCase(),
+          symbol: String(symbol || '')
+            .trim()
+            .toUpperCase(),
           range: normalizedRange,
           provider: 'yahoo',
           reason: 'STOOQ_NO_DATA',
@@ -537,7 +561,9 @@ const getStockCandlesByRange = async (symbol, range) => {
 
           if (env.NODE_ENV === 'development') {
             logger.info('market.stocks.candles.fallback_used', {
-              symbol: String(symbol || '').trim().toUpperCase(),
+              symbol: String(symbol || '')
+                .trim()
+                .toUpperCase(),
               range: normalizedRange,
               provider: 'finnhub_quote',
               reason: 'STOOQ_NO_DATA',
@@ -549,7 +575,9 @@ const getStockCandlesByRange = async (symbol, range) => {
       } catch (error) {
         // Fallback attempt failed: log it and continue with the next source.
         logger.warn('market.stocks.candles.fallback_failed', {
-          symbol: String(symbol || '').trim().toUpperCase(),
+          symbol: String(symbol || '')
+            .trim()
+            .toUpperCase(),
           range: normalizedRange,
           provider: 'finnhub_quote',
           reason: 'STOOQ_NO_DATA',
@@ -593,7 +621,9 @@ const getStockCandlesByRange = async (symbol, range) => {
 
         if (env.NODE_ENV === 'development') {
           logger.info('market.stocks.candles.fallback_used', {
-            symbol: String(symbol || '').trim().toUpperCase(),
+            symbol: String(symbol || '')
+              .trim()
+              .toUpperCase(),
             range: normalizedRange,
             provider: 'yahoo',
             reason: 'STOOQ_PROVIDER_ERROR',
@@ -605,7 +635,9 @@ const getStockCandlesByRange = async (symbol, range) => {
     } catch (error) {
       // Fallback attempt failed: log it and continue with the next source.
       logger.warn('market.stocks.candles.fallback_failed', {
-        symbol: String(symbol || '').trim().toUpperCase(),
+        symbol: String(symbol || '')
+          .trim()
+          .toUpperCase(),
         range: normalizedRange,
         provider: 'yahoo',
         reason: 'STOOQ_PROVIDER_ERROR',
@@ -644,7 +676,9 @@ const getStockCandlesByRange = async (symbol, range) => {
 
           if (env.NODE_ENV === 'development') {
             logger.info('market.stocks.candles.fallback_used', {
-              symbol: String(symbol || '').trim().toUpperCase(),
+              symbol: String(symbol || '')
+                .trim()
+                .toUpperCase(),
               range: normalizedRange,
               provider: 'finnhub_quote',
               reason: 'STOOQ_NO_DATA',
@@ -656,7 +690,9 @@ const getStockCandlesByRange = async (symbol, range) => {
       } catch (error) {
         // Fallback attempt failed: log it and continue with the next source.
         logger.warn('market.stocks.candles.fallback_failed', {
-          symbol: String(symbol || '').trim().toUpperCase(),
+          symbol: String(symbol || '')
+            .trim()
+            .toUpperCase(),
           range: normalizedRange,
           provider: 'finnhub_quote',
           reason: 'STOOQ_NO_DATA',
@@ -669,7 +705,7 @@ const getStockCandlesByRange = async (symbol, range) => {
       const rangeConfig = CANDLE_RANGE_CONFIG[normalizedRange] ?? CANDLE_RANGE_CONFIG['1M'];
       const nowMs = Date.now();
       const to = toUnixTimestampSeconds(nowMs);
-      const from = toUnixTimestampSeconds(nowMs - (rangeConfig.windowDays * DAY_MS));
+      const from = toUnixTimestampSeconds(nowMs - rangeConfig.windowDays * DAY_MS);
       let finnhubResult = null;
       let finnhubError = null;
 
@@ -680,9 +716,9 @@ const getStockCandlesByRange = async (symbol, range) => {
       }
 
       if (
-        finnhubResult?.status === 'ok'
-        && Array.isArray(finnhubResult.series)
-        && finnhubResult.series.length > 0
+        finnhubResult?.status === 'ok' &&
+        Array.isArray(finnhubResult.series) &&
+        finnhubResult.series.length > 0
       ) {
         const finnhubPayload = {
           provider: 'finnhub',
@@ -707,7 +743,9 @@ const getStockCandlesByRange = async (symbol, range) => {
 
         if (env.NODE_ENV === 'development') {
           logger.info('market.stocks.candles.fallback_used', {
-            symbol: String(symbol || '').trim().toUpperCase(),
+            symbol: String(symbol || '')
+              .trim()
+              .toUpperCase(),
             range: normalizedRange,
             provider: 'finnhub',
             reason: 'STOOQ_PROVIDER_ERROR',
@@ -724,10 +762,13 @@ const getStockCandlesByRange = async (symbol, range) => {
         details: [
           {
             reason: 'ALL_PROVIDERS_UNAVAILABLE',
-            symbol: String(symbol || '').trim().toUpperCase(),
+            symbol: String(symbol || '')
+              .trim()
+              .toUpperCase(),
             range: normalizedRange,
             stooqErrorCode: stooqError instanceof StooqProviderError ? stooqError.code : null,
-            finnhubErrorCode: finnhubError instanceof FinnhubProviderError ? finnhubError.code : null,
+            finnhubErrorCode:
+              finnhubError instanceof FinnhubProviderError ? finnhubError.code : null,
             finnhubStatus: finnhubResult?.finnhubStatus ?? null,
           },
         ],
@@ -741,7 +782,9 @@ const getStockCandlesByRange = async (symbol, range) => {
       details: [
         {
           reason: 'STOOQ_PROVIDER_ERROR',
-          symbol: String(symbol || '').trim().toUpperCase(),
+          symbol: String(symbol || '')
+            .trim()
+            .toUpperCase(),
           range: normalizedRange,
           stooqErrorCode: stooqError instanceof StooqProviderError ? stooqError.code : null,
         },
@@ -776,7 +819,15 @@ const fetchStockExecutionQuote = async (symbol) => {
 
 const fetchStockQuotesMap = async (symbols) => {
   const uniqueSymbols = [
-    ...new Set(symbols.map((symbol) => String(symbol || '').trim().toUpperCase()).filter(Boolean)),
+    ...new Set(
+      symbols
+        .map((symbol) =>
+          String(symbol || '')
+            .trim()
+            .toUpperCase(),
+        )
+        .filter(Boolean),
+    ),
   ];
 
   if (uniqueSymbols.length === 0 || !isFinnhubConfigured()) {
@@ -862,13 +913,13 @@ const buildStocksSummary = async ({ account, holdings }) => {
       return sum + item.marketValue;
     }
 
-    const factor = 1 + (changePct / 100);
+    const factor = 1 + changePct / 100;
 
     if (!Number.isFinite(factor) || Math.abs(factor) < 0.000001) {
       return sum + item.marketValue;
     }
 
-    return sum + (item.marketValue / factor);
+    return sum + item.marketValue / factor;
   }, 0);
   const previousPortfolioValue = cashBalance + previousHoldingsValue;
   const dayPnL = holdingsValue - previousHoldingsValue;
@@ -892,7 +943,10 @@ const buildStocksSummary = async ({ account, holdings }) => {
 };
 
 const computeAllocation = ({ holdingsSummary }) => {
-  const stocksValue = holdingsSummary.holdings.reduce((sum, holding) => sum + holding.marketValue, 0);
+  const stocksValue = holdingsSummary.holdings.reduce(
+    (sum, holding) => sum + holding.marketValue,
+    0,
+  );
   const cashValue = holdingsSummary.totals.cashBalance;
   const total = toNumber(stocksValue + cashValue);
 
@@ -917,8 +971,7 @@ const computeAllocation = ({ holdingsSummary }) => {
       id: holding.id,
       symbol: holding.symbol,
       value: holding.marketValue,
-      pctOfAssets:
-        stocksValue > 0 ? toNumber((holding.marketValue / stocksValue) * 100, 4) : 0,
+      pctOfAssets: stocksValue > 0 ? toNumber((holding.marketValue / stocksValue) * 100, 4) : 0,
       pctOfTotal: total > 0 ? toNumber((holding.marketValue / total) * 100, 4) : 0,
     }));
 
@@ -934,7 +987,9 @@ const computePerformanceSeries = async ({ account, holdings, range }) => {
   const days = PERFORMANCE_DAYS_BY_RANGE[range] ?? PERFORMANCE_DAYS_BY_RANGE['7d'];
   const dayTimestamps = buildRangeDayTimestamps(days);
   const cashBalanceEUR = typeof account.cashBalance === 'number' ? account.cashBalance : 0;
-  const stockHoldings = holdings.filter((holding) => holding.assetType === 'stock' && holding.symbol);
+  const stockHoldings = holdings.filter(
+    (holding) => holding.assetType === 'stock' && holding.symbol,
+  );
 
   if (stockHoldings.length === 0) {
     return {
@@ -956,7 +1011,9 @@ const computePerformanceSeries = async ({ account, holdings, range }) => {
 
       try {
         const candlesPayload = await getStockCandlesByRange(symbol, '1M');
-        candlesBySymbol[symbol] = Array.isArray(candlesPayload?.series) ? candlesPayload.series : [];
+        candlesBySymbol[symbol] = Array.isArray(candlesPayload?.series)
+          ? candlesPayload.series
+          : [];
       } catch {
         candlesBySymbol[symbol] = [];
       }
@@ -984,9 +1041,10 @@ const computePerformanceSeries = async ({ account, holdings, range }) => {
   });
 
   const series = dayTimestamps.map((dayTimestamp) => {
-    const holdingsValue = priceResolvers.reduce((sum, resolver) => (
-      sum + (resolver.quantity * resolver.resolvePrice(dayTimestamp))
-    ), 0);
+    const holdingsValue = priceResolvers.reduce(
+      (sum, resolver) => sum + resolver.quantity * resolver.resolvePrice(dayTimestamp),
+      0,
+    );
 
     return {
       t: dayTimestamp,
@@ -1150,7 +1208,9 @@ marketStocksRouter.get(
     try {
       assertFinnhubAvailable();
 
-      const settledResults = await Promise.allSettled(req.query.symbols.map((symbol) => getQuote(symbol)));
+      const settledResults = await Promise.allSettled(
+        req.query.symbols.map((symbol) => getQuote(symbol)),
+      );
       const quotes = [];
       const failures = [];
 
@@ -1367,23 +1427,32 @@ marketStocksRouter.post(
       await ensureStocksAccount(req.authUser, STOCKS_DEMO_MODE);
 
       const demoAccount = await runInTransaction(async (session) => {
-        await PortfolioHolding.deleteMany({
-          userId: req.authUser._id,
-          accountType: STOCKS_ACCOUNT_TYPE,
-          mode: STOCKS_DEMO_MODE,
-          assetType: 'stock',
-        }, { session });
-        await PortfolioTrade.deleteMany({
-          userId: req.authUser._id,
-          accountType: STOCKS_ACCOUNT_TYPE,
-          mode: STOCKS_DEMO_MODE,
-          assetType: 'stock',
-        }, { session });
-        await PortfolioSnapshot.deleteMany({
-          userId: req.authUser._id,
-          accountType: STOCKS_ACCOUNT_TYPE,
-          mode: STOCKS_DEMO_MODE,
-        }, { session });
+        await PortfolioHolding.deleteMany(
+          {
+            userId: req.authUser._id,
+            accountType: STOCKS_ACCOUNT_TYPE,
+            mode: STOCKS_DEMO_MODE,
+            assetType: 'stock',
+          },
+          { session },
+        );
+        await PortfolioTrade.deleteMany(
+          {
+            userId: req.authUser._id,
+            accountType: STOCKS_ACCOUNT_TYPE,
+            mode: STOCKS_DEMO_MODE,
+            assetType: 'stock',
+          },
+          { session },
+        );
+        await PortfolioSnapshot.deleteMany(
+          {
+            userId: req.authUser._id,
+            accountType: STOCKS_ACCOUNT_TYPE,
+            mode: STOCKS_DEMO_MODE,
+          },
+          { session },
+        );
 
         return setAccountCash(
           { userId: req.authUser._id, accountType: STOCKS_ACCOUNT_TYPE, mode: STOCKS_DEMO_MODE },
@@ -1711,23 +1780,32 @@ marketStocksRouter.post('/reset', requireAuth, async (req, res, next) => {
     await ensureStocksAccount(req.authUser, selectedMode);
 
     const account = await runInTransaction(async (session) => {
-      await PortfolioHolding.deleteMany({
-        userId: req.authUser._id,
-        accountType: STOCKS_ACCOUNT_TYPE,
-        mode: selectedMode,
-        assetType: 'stock',
-      }, { session });
-      await PortfolioTrade.deleteMany({
-        userId: req.authUser._id,
-        accountType: STOCKS_ACCOUNT_TYPE,
-        mode: selectedMode,
-        assetType: 'stock',
-      }, { session });
-      await PortfolioSnapshot.deleteMany({
-        userId: req.authUser._id,
-        accountType: STOCKS_ACCOUNT_TYPE,
-        mode: selectedMode,
-      }, { session });
+      await PortfolioHolding.deleteMany(
+        {
+          userId: req.authUser._id,
+          accountType: STOCKS_ACCOUNT_TYPE,
+          mode: selectedMode,
+          assetType: 'stock',
+        },
+        { session },
+      );
+      await PortfolioTrade.deleteMany(
+        {
+          userId: req.authUser._id,
+          accountType: STOCKS_ACCOUNT_TYPE,
+          mode: selectedMode,
+          assetType: 'stock',
+        },
+        { session },
+      );
+      await PortfolioSnapshot.deleteMany(
+        {
+          userId: req.authUser._id,
+          accountType: STOCKS_ACCOUNT_TYPE,
+          mode: selectedMode,
+        },
+        { session },
+      );
 
       return setAccountCash(
         { userId: req.authUser._id, accountType: STOCKS_ACCOUNT_TYPE, mode: selectedMode },

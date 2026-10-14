@@ -52,7 +52,8 @@ before(async () => {
   realFetch = globalThis.fetch;
   globalThis.fetch = stubFetch;
   runtime = await getTestRuntime();
-  ({ backfillTransactionCurrencies, parseBackfillArgs } = await import('../../src/services/currency-backfill.js'));
+  ({ backfillTransactionCurrencies, parseBackfillArgs } =
+    await import('../../src/services/currency-backfill.js'));
 });
 
 beforeEach(async () => {
@@ -97,8 +98,15 @@ test('--apply writes conversions with the transaction date rates, in batches, an
 
   assert.equal(first.updated, 5);
   assert.equal(first.rateRequests, 4, 'one lookup per currency and day');
-  assert.ok(fxCalls.every((path) => /\/v1\/2025-06-0[234]$/.test(path)), 'historical endpoints only');
-  assert.deepEqual(stored.find((doc) => doc.amount === 200).convertedAmounts, { RON: 1000, EUR: 200, USD: 222.22 });
+  assert.ok(
+    fxCalls.every((path) => /\/v1\/2025-06-0[234]$/.test(path)),
+    'historical endpoints only',
+  );
+  assert.deepEqual(stored.find((doc) => doc.amount === 200).convertedAmounts, {
+    RON: 1000,
+    EUR: 200,
+    USD: 222.22,
+  });
   assert.equal(stored.find((doc) => doc.amount === 10).convertedAmounts.EUR, 9);
   assert.equal(stored.find((doc) => doc.amount === 50).fxRateDate, '2025-06-03');
   assert.equal(second.candidates, 0);
@@ -142,7 +150,10 @@ test('a date whose rate is unavailable is skipped and reported; the rest is appl
 
 test('backfill arguments default to a dry run and only accept known flags', () => {
   assert.deepEqual(parseBackfillArgs([]), { apply: false, batchSize: 200 });
-  assert.deepEqual(parseBackfillArgs(['--apply', '--batch-size=50']), { apply: true, batchSize: 50 });
+  assert.deepEqual(parseBackfillArgs(['--apply', '--batch-size=50']), {
+    apply: true,
+    batchSize: 50,
+  });
   assert.throws(() => parseBackfillArgs(['--aply']), /Unknown argument/);
   assert.throws(() => parseBackfillArgs(['--batch-size=0']), /Invalid --batch-size/);
 });

@@ -119,8 +119,7 @@ export const marketQuoteQuerySchema = z
 export const marketChartQuerySchema = z.object({
   coinId: z.string().trim().min(1, 'coinId is required.'),
   vs: vsCurrencySchema.optional().default('eur'),
-  days: z
-    .coerce
+  days: z.coerce
     .number()
     .int()
     .optional()

@@ -11,7 +11,11 @@ import { ApiRequestError, sendFinnyChatMessage, type FinnyContextType } from '..
 const HIDDEN_PATH_PREFIXES = ['/finny', '/login', '/register'];
 
 const QUICK_CHIPS: { label: string; contextType: FinnyContextType; prompt: string }[] = [
-  { label: 'Track expenses', contextType: 'budget', prompt: 'Help me track and improve my monthly expenses.' },
+  {
+    label: 'Track expenses',
+    contextType: 'budget',
+    prompt: 'Help me track and improve my monthly expenses.',
+  },
   {
     label: 'Saving tips',
     contextType: 'budget',
@@ -36,7 +40,9 @@ const formatMessageTime = (timestampMs: number) =>
   });
 
 const detectContextTypeFromInput = (input: string) => {
-  const value = String(input ?? '').trim().toLowerCase();
+  const value = String(input ?? '')
+    .trim()
+    .toLowerCase();
 
   if (!value) {
     return 'general';
@@ -53,7 +59,16 @@ const detectContextTypeFromInput = (input: string) => {
   }
 
   if (
-    contains(['budget', 'budgeting', 'spending', 'expense', 'expenses', 'cash flow', 'save', 'saving tips'])
+    contains([
+      'budget',
+      'budgeting',
+      'spending',
+      'expense',
+      'expenses',
+      'cash flow',
+      'save',
+      'saving tips',
+    ])
   ) {
     return 'budget';
   }
@@ -167,7 +182,10 @@ export function FinnyWidget() {
     return () => window.clearTimeout(timeoutId);
   }, [isOpen]);
 
-  const sendMessage = async ({ message: rawMessage, contextType }: { message?: string; contextType?: FinnyContextType } = {}) => {
+  const sendMessage = async ({
+    message: rawMessage,
+    contextType,
+  }: { message?: string; contextType?: FinnyContextType } = {}) => {
     const message = (rawMessage ?? draft).trim();
 
     if (!message || isSending || inFlightRef.current) {
@@ -186,7 +204,8 @@ export function FinnyWidget() {
       return;
     }
 
-    const resolvedContextType = (contextType ?? detectContextTypeFromInput(message)) as FinnyContextType;
+    const resolvedContextType = (contextType ??
+      detectContextTypeFromInput(message)) as FinnyContextType;
     const now = Date.now();
 
     setMessages((current) => [
@@ -306,7 +325,13 @@ export function FinnyWidget() {
                 className="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 aria-label="Close Finny chat"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="h-4 w-4"
+                >
                   <path d="m6 6 12 12" />
                   <path d="m18 6-12 12" />
                 </svg>
@@ -328,7 +353,9 @@ export function FinnyWidget() {
                       className="ml-auto max-w-[88%] rounded-2xl rounded-br-sm bg-[#2563eb] px-3 py-2.5 text-sm leading-5 text-white shadow-sm"
                     >
                       <p className="whitespace-pre-wrap">{message.text}</p>
-                      <p className="mt-1 text-[10px] text-white/75">{formatMessageTime(message.createdAt)}</p>
+                      <p className="mt-1 text-[10px] text-white/75">
+                        {formatMessageTime(message.createdAt)}
+                      </p>
                     </article>
                   ) : (
                     <article
@@ -421,7 +448,13 @@ export function FinnyWidget() {
                 {isSending ? (
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="h-4 w-4"
+                  >
                     <path d="M5 12h13" />
                     <path d="m13 6 6 6-6 6" />
                   </svg>

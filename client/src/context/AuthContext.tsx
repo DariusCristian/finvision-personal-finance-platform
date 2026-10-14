@@ -75,19 +75,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(authPayload.user);
   }, []);
 
-  const register = useCallback(async ({
-    email,
-    password,
-    displayName,
-    baseCurrency = 'RON',
-  }: RegisterArgs) => {
-    await registerWithPassword({
-      email,
-      password,
-      displayName,
-      baseCurrency,
-    });
-  }, []);
+  const register = useCallback(
+    async ({ email, password, displayName, baseCurrency = 'RON' }: RegisterArgs) => {
+      await registerWithPassword({
+        email,
+        password,
+        displayName,
+        baseCurrency,
+      });
+    },
+    [],
+  );
 
   const clearSessionState = useCallback(() => {
     window.localStorage.removeItem(TOKEN_STORAGE_KEY);

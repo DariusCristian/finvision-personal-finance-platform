@@ -150,9 +150,7 @@ export function TransactionsPage() {
       setMeta(payload.meta ?? DEFAULT_META);
     } catch (error) {
       setLoadError(
-        error instanceof ApiRequestError
-          ? error.message
-          : 'Unable to load transactions right now.',
+        error instanceof ApiRequestError ? error.message : 'Unable to load transactions right now.',
       );
       setTransactions([]);
       setMeta(DEFAULT_META);
@@ -172,7 +170,8 @@ export function TransactionsPage() {
 
     const matchingTransaction = transactions.find(
       (transaction) =>
-        transaction.originalTransactionId === editTransactionId || transaction.id === editTransactionId,
+        transaction.originalTransactionId === editTransactionId ||
+        transaction.id === editTransactionId,
     );
 
     if (!matchingTransaction) {
@@ -253,41 +252,47 @@ export function TransactionsPage() {
     }
   };
 
-  const handleDeleteTransaction = useCallback(async (transaction: BudgetTransaction) => {
-    const targetLabel = transaction.isProjected
-      ? 'this recurring source transaction'
-      : 'this transaction';
-    const confirmed = window.confirm(`Delete ${targetLabel}? This action cannot be undone.`);
+  const handleDeleteTransaction = useCallback(
+    async (transaction: BudgetTransaction) => {
+      const targetLabel = transaction.isProjected
+        ? 'this recurring source transaction'
+        : 'this transaction';
+      const confirmed = window.confirm(`Delete ${targetLabel}? This action cannot be undone.`);
 
-    if (!confirmed || !accessToken) {
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      await deleteTransaction(transaction.originalTransactionId, accessToken);
-
-      if (editingTransaction?.originalTransactionId === transaction.originalTransactionId) {
-        setEditingTransaction(null);
-        setIsModalOpen(false);
+      if (!confirmed || !accessToken) {
+        return;
       }
 
-      await loadTransactions();
-    } catch (error) {
-      setLoadError(
-        error instanceof ApiRequestError
-          ? error.message
-          : 'Unable to delete the transaction right now.',
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [accessToken, editingTransaction, loadTransactions]);
+      setIsSubmitting(true);
 
-  const handleDeleteTransactionClick = useCallback((transaction: BudgetTransaction) => {
-    void handleDeleteTransaction(transaction);
-  }, [handleDeleteTransaction]);
+      try {
+        await deleteTransaction(transaction.originalTransactionId, accessToken);
+
+        if (editingTransaction?.originalTransactionId === transaction.originalTransactionId) {
+          setEditingTransaction(null);
+          setIsModalOpen(false);
+        }
+
+        await loadTransactions();
+      } catch (error) {
+        setLoadError(
+          error instanceof ApiRequestError
+            ? error.message
+            : 'Unable to delete the transaction right now.',
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [accessToken, editingTransaction, loadTransactions],
+  );
+
+  const handleDeleteTransactionClick = useCallback(
+    (transaction: BudgetTransaction) => {
+      void handleDeleteTransaction(transaction);
+    },
+    [handleDeleteTransaction],
+  );
 
   return (
     <AppShell activeTab="budget">
@@ -416,13 +421,10 @@ export function TransactionsPage() {
             <button
               type="button"
               onClick={() =>
-                setPage((current) =>
-                  Math.min(meta.totalPages ?? current, current + 1),
-                )
+                setPage((current) => Math.min(meta.totalPages ?? current, current + 1))
               }
               disabled={
-                isLoading ||
-                (meta.totalPages !== null && (meta.page ?? 1) >= meta.totalPages)
+                isLoading || (meta.totalPages !== null && (meta.page ?? 1) >= meta.totalPages)
               }
               className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700"
             >

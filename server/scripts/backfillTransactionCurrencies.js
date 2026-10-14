@@ -1,7 +1,10 @@
 import mongoose from 'mongoose';
 
 import { connectToDatabase, disconnectFromDatabase } from '../src/database/mongoose.js';
-import { backfillTransactionCurrencies, parseBackfillArgs } from '../src/services/currency-backfill.js';
+import {
+  backfillTransactionCurrencies,
+  parseBackfillArgs,
+} from '../src/services/currency-backfill.js';
 
 // Stores RON/EUR/USD amounts on transactions created before conversions existed.
 //   npm run backfill:transaction-currencies               dry run: reports what would change, writes nothing

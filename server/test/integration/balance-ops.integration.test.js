@@ -23,7 +23,13 @@ let runtime;
 
 const newUserId = () => new mongoose.Types.ObjectId();
 const accountKey = (userId) => ({ userId, accountType: 'crypto', mode: 'demo' });
-const holdingKey = (userId) => ({ userId, accountType: 'crypto', mode: 'demo', assetType: 'crypto', coinId: 'bitcoin' });
+const holdingKey = (userId) => ({
+  userId,
+  accountType: 'crypto',
+  mode: 'demo',
+  assetType: 'crypto',
+  coinId: 'bitcoin',
+});
 
 const createAccount = (userId, startingCashBalance) =>
   ensurePortfolioAccount({ ...accountKey(userId), baseCurrency: 'EUR', startingCashBalance });
@@ -58,7 +64,9 @@ test('ensureInvestingWallet creates a wallet with schema defaults once and retur
 test('concurrent ensureInvestingWallet calls create exactly one wallet', async () => {
   const userId = newUserId();
 
-  const wallets = await Promise.all(Array.from({ length: 20 }, () => ensureInvestingWallet(userId)));
+  const wallets = await Promise.all(
+    Array.from({ length: 20 }, () => ensureInvestingWallet(userId)),
+  );
 
   assert.equal(new Set(wallets.map((wallet) => String(wallet._id))).size, 1);
   assert.equal(await InvestingWallet.countDocuments({ userId }), 1);
@@ -79,7 +87,9 @@ test('ensurePortfolioAccount sets starting cash only on insert', async () => {
 test('ensurePortfolioAccount repairs a wrong base currency', async () => {
   const userId = newUserId();
   await createAccount(userId, 0);
-  await PortfolioAccount.collection.updateOne(accountKey(userId), { $set: { baseCurrency: 'USD' } });
+  await PortfolioAccount.collection.updateOne(accountKey(userId), {
+    $set: { baseCurrency: 'USD' },
+  });
 
   const account = await createAccount(userId, 0);
 
@@ -161,7 +171,11 @@ test('addToHolding creates a holding and then keeps a weighted average cost', as
 
 test('removeFromHolding returns null when quantity is insufficient and deletes an emptied holding', async () => {
   const userId = newUserId();
-  await addToHolding(holdingKey(userId), { quantity: 2, price: 100, insertFields: { symbol: 'BTC' } });
+  await addToHolding(holdingKey(userId), {
+    quantity: 2,
+    price: 100,
+    insertFields: { symbol: 'BTC' },
+  });
 
   assert.equal(await removeFromHolding(holdingKey(userId), 2.5), null);
 
@@ -179,12 +193,19 @@ test('claimAutoFund credits once per month and only on the configured day', asyn
   const now = new Date(Date.UTC(2026, 9, 14, 12));
   await InvestingWallet.updateOne(
     { _id: wallet._id },
-    { autoFundEnabled: true, autoFundAmount: 50, autoFundDayOfMonth: 14, lastAutoFundAt: new Date(Date.UTC(2026, 8, 14)) },
+    {
+      autoFundEnabled: true,
+      autoFundAmount: 50,
+      autoFundDayOfMonth: 14,
+      lastAutoFundAt: new Date(Date.UTC(2026, 8, 14)),
+    },
   );
 
   assert.equal(await claimAutoFund(wallet._id, { now: new Date(Date.UTC(2026, 9, 13, 12)) }), null);
 
-  const claims = await Promise.all(Array.from({ length: 20 }, () => claimAutoFund(wallet._id, { now })));
+  const claims = await Promise.all(
+    Array.from({ length: 20 }, () => claimAutoFund(wallet._id, { now })),
+  );
   const claimed = claims.filter(Boolean);
 
   assert.equal(claimed.length, 1);

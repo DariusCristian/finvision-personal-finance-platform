@@ -70,7 +70,9 @@ export const executeOrder = async ({
     }
 
     if (!account) {
-      throw new Error(`Portfolio account ${accountType}/${mode} does not exist for user ${userId}.`);
+      throw new Error(
+        `Portfolio account ${accountType}/${mode} does not exist for user ${userId}.`,
+      );
     }
 
     const [trade] = await PortfolioTrade.create(

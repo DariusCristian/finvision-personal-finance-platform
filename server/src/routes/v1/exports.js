@@ -1,7 +1,10 @@
 import { Router } from 'express';
 
 import { AppError } from '../../errors/app-error.js';
-import { getSimplePrices, isCoinGeckoConfigured } from '../../integrations/coingecko/coingeckoClient.js';
+import {
+  getSimplePrices,
+  isCoinGeckoConfigured,
+} from '../../integrations/coingecko/coingeckoClient.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { InvestFunding } from '../../models/invest-funding.js';
@@ -71,7 +74,8 @@ exportsRouter.get(
         });
       }
 
-      const rangeDays = Math.floor((rangeEnd.getTime() - rangeStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+      const rangeDays =
+        Math.floor((rangeEnd.getTime() - rangeStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
 
       if (rangeDays > MAX_BUDGET_EXPORT_RANGE_DAYS) {
         throw new AppError({
@@ -79,7 +83,10 @@ exportsRouter.get(
           statusCode: 400,
           code: 'EXPORT_RANGE_TOO_LARGE',
           details: [
-            { maxDays: MAX_BUDGET_EXPORT_RANGE_DAYS, message: 'Please export a range under 2 years.' },
+            {
+              maxDays: MAX_BUDGET_EXPORT_RANGE_DAYS,
+              message: 'Please export a range under 2 years.',
+            },
           ],
         });
       }
@@ -146,15 +153,14 @@ exportsRouter.get(
         month: req.query.month,
       });
 
-      const createdAtFilter =
-        monthWindow
-          ? {
+      const createdAtFilter = monthWindow
+        ? {
             createdAt: {
               $gte: monthWindow.start,
               $lt: monthWindow.endExclusive,
             },
           }
-          : {};
+        : {};
 
       const [trades, holdings, ledgerEntries, fundingEntries] = await Promise.all([
         PortfolioTrade.find({
@@ -349,4 +355,3 @@ exportsRouter.get(
 );
 
 export { exportsRouter };
-

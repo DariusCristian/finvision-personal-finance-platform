@@ -7,7 +7,13 @@ const toSafeArray = <T,>(value: unknown): T[] => (Array.isArray(value) ? (value 
 function Icon({ type }: { type: string }) {
   if (type === 'budget') {
     return (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-5 w-5">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        className="h-5 w-5"
+      >
         <path d="M4.5 7.5h15" />
         <path d="M4.5 12h15" />
         <path d="M4.5 16.5h9" />
@@ -17,7 +23,13 @@ function Icon({ type }: { type: string }) {
 
   if (type === 'invest') {
     return (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-5 w-5">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        className="h-5 w-5"
+      >
         <path d="M4 16.5 9 11.5l3.5 3.5L20 7" />
         <path d="M14 7h6v6" />
       </svg>
@@ -25,7 +37,13 @@ function Icon({ type }: { type: string }) {
   }
 
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-5 w-5">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      className="h-5 w-5"
+    >
       <rect x="5" y="6" width="14" height="12" rx="3" />
       <path d="M9 10h6" />
       <path d="M9 14h4" />
@@ -80,8 +98,13 @@ export function InsightCard({ card }: { card: FinnyInsightCard | null | undefine
           }
 
           return (
-            <section key={`${heading || 'block'}-${index}`} className="rounded-xl bg-slate-100/90 p-4">
-              {heading ? <p className="text-xs font-semibold tracking-[0.08em] text-[#1d4ed8]">{heading}</p> : null}
+            <section
+              key={`${heading || 'block'}-${index}`}
+              className="rounded-xl bg-slate-100/90 p-4"
+            >
+              {heading ? (
+                <p className="text-xs font-semibold tracking-[0.08em] text-[#1d4ed8]">{heading}</p>
+              ) : null}
               {text ? <p className="mt-2 text-sm leading-relaxed text-slate-800">{text}</p> : null}
             </section>
           );
@@ -91,7 +114,9 @@ export function InsightCard({ card }: { card: FinnyInsightCard | null | undefine
       {actionBlock ? (
         <section className="mt-3 rounded-xl bg-slate-100/90 p-4">
           {typeof actionBlock['heading'] === 'string' ? (
-            <p className="text-xs font-semibold tracking-[0.08em] text-[#1d4ed8]">{actionBlock['heading']}</p>
+            <p className="text-xs font-semibold tracking-[0.08em] text-[#1d4ed8]">
+              {actionBlock['heading']}
+            </p>
           ) : null}
           {typeof actionBlock['text'] === 'string' ? (
             <p className="mt-2 text-sm leading-relaxed text-slate-800">{actionBlock['text']}</p>

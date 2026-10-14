@@ -41,14 +41,10 @@ const portfolioAccountSchema = new mongoose.Schema(
   },
 );
 
-portfolioAccountSchema.index(
-  { userId: 1, accountType: 1, mode: 1 },
-  { unique: true },
-);
+portfolioAccountSchema.index({ userId: 1, accountType: 1, mode: 1 }, { unique: true });
 
 export const PortfolioAccount =
-  mongoose.models.PortfolioAccount ??
-  mongoose.model('PortfolioAccount', portfolioAccountSchema);
+  mongoose.models.PortfolioAccount ?? mongoose.model('PortfolioAccount', portfolioAccountSchema);
 
 export const backfillPortfolioAccountType = async () => {
   await PortfolioAccount.updateMany(
@@ -73,10 +69,7 @@ export const backfillPortfolioAccountMode = async () => {
 };
 
 export const ensureStockPortfolioAccounts = async () => {
-  const cryptoAccounts = await PortfolioAccount.find(
-    { accountType: 'crypto' },
-    { userId: 1 },
-  );
+  const cryptoAccounts = await PortfolioAccount.find({ accountType: 'crypto' }, { userId: 1 });
 
   if (cryptoAccounts.length === 0) {
     return;
@@ -91,7 +84,9 @@ export const ensureStockPortfolioAccounts = async () => {
     { userId: 1, mode: 1 },
   );
   const existingByUserAndMode = new Set(
-    existingStockAccounts.map((account) => `${String(account.userId)}:${String(account.mode || 'funded')}`),
+    existingStockAccounts.map(
+      (account) => `${String(account.userId)}:${String(account.mode || 'funded')}`,
+    ),
   );
 
   const accountsToCreate = userIds.flatMap((userId) => {

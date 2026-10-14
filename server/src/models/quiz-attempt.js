@@ -64,7 +64,6 @@ const quizAttemptSchema = new mongoose.Schema(
 
 quizAttemptSchema.index({ userId: 1, createdAt: -1 });
 
-const QuizAttempt =
-  mongoose.models.QuizAttempt ?? mongoose.model('QuizAttempt', quizAttemptSchema);
+const QuizAttempt = mongoose.models.QuizAttempt ?? mongoose.model('QuizAttempt', quizAttemptSchema);
 
 export { QuizAttempt };

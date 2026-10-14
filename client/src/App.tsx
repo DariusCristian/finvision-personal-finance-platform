@@ -37,7 +37,7 @@ export default function App() {
             '/budget',
             <ProtectedRoute>
               <BudgetPage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
         <Route
@@ -46,7 +46,7 @@ export default function App() {
             '/home',
             <ProtectedRoute>
               <DashboardPage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
         <Route path="/dashboard" element={<Navigate to="/home" replace />} />
@@ -56,7 +56,7 @@ export default function App() {
             '/transactions',
             <ProtectedRoute>
               <TransactionsPage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
         <Route
@@ -65,7 +65,7 @@ export default function App() {
             '/invest',
             <ProtectedRoute>
               <PortfolioPage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
         <Route
@@ -74,7 +74,7 @@ export default function App() {
             '/invest/discovery',
             <ProtectedRoute>
               <InvestDiscoveryPage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
         <Route
@@ -83,7 +83,7 @@ export default function App() {
             '/invest/market',
             <ProtectedRoute>
               <InvestDiscoveryPage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
         <Route path="/portfolio" element={<Navigate to="/invest" replace />} />
@@ -93,7 +93,7 @@ export default function App() {
             '/market',
             <ProtectedRoute>
               <MarketPage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
         <Route
@@ -102,7 +102,7 @@ export default function App() {
             '/news',
             <ProtectedRoute>
               <NewsPage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
         <Route
@@ -111,7 +111,7 @@ export default function App() {
             '/settings',
             <ProtectedRoute>
               <SettingsPage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
         <Route
@@ -120,7 +120,7 @@ export default function App() {
             '/finny',
             <ProtectedRoute>
               <FinnyPage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
         <Route path="/assistant" element={<Navigate to="/finny" replace />} />
@@ -130,7 +130,7 @@ export default function App() {
             '/learn',
             <ProtectedRoute>
               <LearningCenterPage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
         <Route
@@ -139,7 +139,7 @@ export default function App() {
             '/learn/articles/:slugOrId',
             <ProtectedRoute>
               <LearningArticlePage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
         <Route
@@ -148,7 +148,7 @@ export default function App() {
             '/learn/quizzes/:id',
             <ProtectedRoute>
               <LearningQuizAttemptPage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
         <Route
@@ -157,7 +157,7 @@ export default function App() {
             '/learn/quizzes/:id/results',
             <ProtectedRoute>
               <LearningQuizResultsPage />
-            </ProtectedRoute>
+            </ProtectedRoute>,
           )}
         />
       </Routes>

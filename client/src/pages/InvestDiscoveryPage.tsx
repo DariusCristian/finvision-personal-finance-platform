@@ -79,7 +79,13 @@ function AssetChart({ points, isLoading }: { points: CryptoChartPoint[]; isLoadi
   return (
     <div className="h-64 rounded-2xl border border-slate-200 bg-slate-50 p-2 dark:border-slate-600 dark:bg-slate-700/60">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full">
-        <polyline points={polyline} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" />
+        <polyline
+          points={polyline}
+          fill="none"
+          stroke="#2563EB"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
       </svg>
     </div>
   );
@@ -284,7 +290,13 @@ export function InvestDiscoveryPage() {
     };
   }, [accessToken, chartRange, selectedCoin]);
 
-  const handlePlaceOrder = async ({ side, quantity }: { side: 'buy' | 'sell'; quantity: number }) => {
+  const handlePlaceOrder = async ({
+    side,
+    quantity,
+  }: {
+    side: 'buy' | 'sell';
+    quantity: number;
+  }) => {
     if (!accessToken || !selectedCoin) {
       return;
     }
@@ -315,8 +327,12 @@ export function InvestDiscoveryPage() {
       <div className="space-y-6">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb] dark:text-blue-400">{PAGE_TITLE}</p>
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Crypto Discovery</h1>
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb] dark:text-blue-400">
+              {PAGE_TITLE}
+            </p>
+            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+              Crypto Discovery
+            </h1>
             <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">
               Explore crypto assets, inspect live quotes, and place demo buy/sell orders.
             </p>
@@ -344,7 +360,10 @@ export function InvestDiscoveryPage() {
         <section className="grid gap-6 xl:grid-cols-[360px_1fr]">
           <article className="rounded-[1.5rem] border border-slate-100 bg-white p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-700 dark:bg-slate-800">
             <div className="mb-4 flex items-center gap-2">
-              <button type="button" className="rounded-full bg-[#2563eb] px-3 py-1.5 text-xs font-semibold text-white dark:bg-blue-600">
+              <button
+                type="button"
+                className="rounded-full bg-[#2563eb] px-3 py-1.5 text-xs font-semibold text-white dark:bg-blue-600"
+              >
                 Crypto
               </button>
               <button
@@ -370,7 +389,10 @@ export function InvestDiscoveryPage() {
             <div className="mt-4 max-h-[560px] space-y-2 overflow-y-auto pr-1">
               {isLoadingSearch ? (
                 Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className="h-16 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-700" />
+                  <div
+                    key={index}
+                    className="h-16 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-700"
+                  />
                 ))
               ) : coins.length === 0 ? (
                 <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-4 text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-700/60 dark:text-slate-400">
@@ -394,12 +416,20 @@ export function InvestDiscoveryPage() {
                     >
                       <div className="h-9 w-9 overflow-hidden rounded-full border border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-700">
                         {coin.thumb ? (
-                          <img src={coin.thumb} alt={`${coin.name} logo`} className="h-full w-full object-cover" />
+                          <img
+                            src={coin.thumb}
+                            alt={`${coin.name} logo`}
+                            className="h-full w-full object-cover"
+                          />
                         ) : null}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{coin.name}</p>
-                        <p className="text-xs uppercase text-slate-500 dark:text-slate-400">{coin.symbol}</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          {coin.name}
+                        </p>
+                        <p className="text-xs uppercase text-slate-500 dark:text-slate-400">
+                          {coin.symbol}
+                        </p>
                       </div>
                     </button>
                   );
@@ -413,11 +443,15 @@ export function InvestDiscoveryPage() {
               <>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <p className="text-sm uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{selectedCoin.symbol}</p>
+                    <p className="text-sm uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                      {selectedCoin.symbol}
+                    </p>
                     <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
                       {selectedCoin.name}
                     </h2>
-                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">CoinGecko ID: {selectedCoin.coinId}</p>
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                      CoinGecko ID: {selectedCoin.coinId}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
@@ -462,15 +496,21 @@ export function InvestDiscoveryPage() {
 
                 <div className="mt-5 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-700/60 sm:grid-cols-2">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Your Balance</p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                      Your Balance
+                    </p>
                     <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
                       {formatMoney(totals.cashBalance, sourcePricingCurrency)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Holding Quantity</p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                      Holding Quantity
+                    </p>
                     <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
-                      {selectedHolding ? formatQty(selectedHolding.quantity, selectedHolding.symbol) : '0'}
+                      {selectedHolding
+                        ? formatQty(selectedHolding.quantity, selectedHolding.symbol)
+                        : '0'}
                     </p>
                   </div>
                 </div>
@@ -514,11 +554,9 @@ export function InvestDiscoveryPage() {
         coinId={selectedCoin?.coinId ?? ''}
         symbol={selectedCoin?.symbol ?? ''}
         coinName={selectedCoin?.name ?? ''}
-        currentPrice={
-          selectedQuote ? selectedQuote.price : null
-        }
+        currentPrice={selectedQuote ? selectedQuote.price : null}
         cashBalance={totals.cashBalance}
-        maxQuantity={orderSide === 'sell' ? selectedHolding?.quantity ?? 0 : null}
+        maxQuantity={orderSide === 'sell' ? (selectedHolding?.quantity ?? 0) : null}
         pricingCurrency={sourcePricingCurrency}
         isSubmitting={isSubmittingOrder}
         onClose={() => {

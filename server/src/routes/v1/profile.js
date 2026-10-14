@@ -29,7 +29,8 @@ profileRouter.patch(
   validateRequest({ body: updateProfileSchema }),
   async (req, res, next) => {
     try {
-      const { displayName, email, baseCurrency, locale, investCryptoMode, marketStocksMode } = req.body;
+      const { displayName, email, baseCurrency, locale, investCryptoMode, marketStocksMode } =
+        req.body;
 
       if (email !== undefined) {
         const existingUser = await User.findOne({

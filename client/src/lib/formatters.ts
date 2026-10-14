@@ -5,7 +5,9 @@ const FALLBACK_CURRENCY_SYMBOL: Record<string, string> = {
 };
 
 export const currencyIndicator = (currency: string | null | undefined): string => {
-  const normalized = String(currency ?? '').trim().toUpperCase();
+  const normalized = String(currency ?? '')
+    .trim()
+    .toUpperCase();
   return FALLBACK_CURRENCY_SYMBOL[normalized] ?? '$';
 };
 

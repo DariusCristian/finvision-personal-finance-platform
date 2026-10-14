@@ -130,12 +130,15 @@ export function NewsPage() {
       }
 
       try {
-        const payload = await fetchNewsArticles({
-          topic,
-          q: debouncedSearch || undefined,
-          page: pageToLoad,
-          limit: PAGE_SIZE,
-        }, { signal: controller.signal });
+        const payload = await fetchNewsArticles(
+          {
+            topic,
+            q: debouncedSearch || undefined,
+            page: pageToLoad,
+            limit: PAGE_SIZE,
+          },
+          { signal: controller.signal },
+        );
 
         if (requestCounterRef.current !== requestId) {
           return;
@@ -244,7 +247,9 @@ export function NewsPage() {
     <AppShell activeTab="news">
       <div className="fv-page space-y-6">
         <header className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-          <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">News</h1>
+          <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+            News
+          </h1>
           <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">
             Headlines from around the web. Click to read on the source site.
           </p>

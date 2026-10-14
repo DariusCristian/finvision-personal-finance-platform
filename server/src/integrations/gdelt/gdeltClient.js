@@ -218,7 +218,8 @@ export const fetchNews = async ({
         status: 502,
         context: {
           query,
-          reason: fallbackError instanceof Error ? fallbackError.message : 'Unknown provider failure',
+          reason:
+            fallbackError instanceof Error ? fallbackError.message : 'Unknown provider failure',
         },
       });
     }

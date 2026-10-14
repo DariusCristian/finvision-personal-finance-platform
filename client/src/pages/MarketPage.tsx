@@ -94,7 +94,9 @@ type SymbolAllocationSlice = {
 };
 
 const resolveDisplayCurrency = (currency: string | null | undefined): 'USD' | 'EUR' => {
-  const normalizedCurrency = String(currency || '').trim().toUpperCase();
+  const normalizedCurrency = String(currency || '')
+    .trim()
+    .toUpperCase();
 
   if (normalizedCurrency === 'EUR') {
     return 'EUR';
@@ -209,28 +211,28 @@ const buildQuoteFallbackSeries = ({
     hash = ((hash << 5) - hash + seedText.charCodeAt(index)) | 0;
   }
 
-  let state = (Math.abs(hash) % 2147483647) || 1;
+  let state = Math.abs(hash) % 2147483647 || 1;
   const nextRandom = () => {
     state = (state * 16807) % 2147483647;
     return (state - 1) / 2147483646;
   };
 
   const denominator = Math.max(pointsCount - 1, 1);
-  const volatilityPct = 0.004 + ((Math.abs(hash) % 6) * 0.0012);
+  const volatilityPct = 0.004 + (Math.abs(hash) % 6) * 0.0012;
   const driftPerStep = ((nextRandom() - 0.5) * 0.016) / denominator;
   const cycles = 2 + (Math.abs(hash) % 4);
   const phaseShift = ((Math.abs(hash) % 360) * Math.PI) / 180;
-  let runningPrice = price * (0.97 + (nextRandom() * 0.06));
+  let runningPrice = price * (0.97 + nextRandom() * 0.06);
 
   const rawSeries = Array.from({ length: pointsCount }, (_value, index) => {
     const progress = index / denominator;
-    const wave = Math.sin((progress * Math.PI * 2 * cycles) + phaseShift) * volatilityPct * 0.35;
+    const wave = Math.sin(progress * Math.PI * 2 * cycles + phaseShift) * volatilityPct * 0.35;
     const noise = (nextRandom() - 0.5) * 2 * volatilityPct;
     const stepReturn = driftPerStep + wave + noise;
     runningPrice = Math.max(0.01, runningPrice * (1 + stepReturn));
 
     return {
-      t: todayUtcMs - ((pointsCount - 1 - index) * 24 * 60 * 60 * 1000),
+      t: todayUtcMs - (pointsCount - 1 - index) * 24 * 60 * 60 * 1000,
       c: runningPrice,
     };
   });
@@ -275,7 +277,8 @@ function PortfolioPerformanceChart({
           sortedPoints.length === 1
             ? width / 2
             : padding + ((point.t - minT) / tRange) * (width - padding * 2);
-        const y = height - padding - ((point.value - minValue) / valueRange) * (height - padding * 2);
+        const y =
+          height - padding - ((point.value - minValue) / valueRange) * (height - padding * 2);
 
         return `${x.toFixed(2)},${y.toFixed(2)}`;
       })
@@ -289,7 +292,13 @@ function PortfolioPerformanceChart({
   return (
     <div className="h-64 rounded-2xl border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-800">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full">
-        <polyline points={polyline} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" />
+        <polyline
+          points={polyline}
+          fill="none"
+          stroke="#2563EB"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
       </svg>
     </div>
   );
@@ -343,14 +352,14 @@ function StockSparkline({
       height - padding - ((value - domainMin) / domainRange) * (height - padding * 2);
 
     const chartPoints = sortedPoints.map((point, index) => {
-        const x =
-          sortedPoints.length === 1
-            ? width / 2
-            : padding + (index / (sortedPoints.length - 1)) * (width - padding * 2);
-        const y = toY(Number(point.c));
+      const x =
+        sortedPoints.length === 1
+          ? width / 2
+          : padding + (index / (sortedPoints.length - 1)) * (width - padding * 2);
+      const y = toY(Number(point.c));
 
-        return { x, y };
-      });
+      return { x, y };
+    });
 
     const startPoint = chartPoints[0] ?? null;
     const endPoint = chartPoints[chartPoints.length - 1] ?? null;
@@ -359,9 +368,9 @@ function StockSparkline({
     return {
       polyline: chartPoints.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' '),
       areaPoints:
-        chartPoints.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ')
-        + ` ${(endPoint?.x ?? width - padding).toFixed(2)},${baseY.toFixed(2)}`
-        + ` ${(startPoint?.x ?? padding).toFixed(2)},${baseY.toFixed(2)}`,
+        chartPoints.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ') +
+        ` ${(endPoint?.x ?? width - padding).toFixed(2)},${baseY.toFixed(2)}` +
+        ` ${(startPoint?.x ?? padding).toFixed(2)},${baseY.toFixed(2)}`,
       startPoint,
       endPoint,
     };
@@ -408,7 +417,13 @@ function StockSparkline({
           strokeLinejoin="round"
         />
         {sparkline.startPoint ? (
-          <circle cx={sparkline.startPoint.x} cy={sparkline.startPoint.y} r="2.2" fill="#1d4ed8" opacity="0.65" />
+          <circle
+            cx={sparkline.startPoint.x}
+            cy={sparkline.startPoint.y}
+            r="2.2"
+            fill="#1d4ed8"
+            opacity="0.65"
+          />
         ) : null}
         {sparkline.endPoint ? (
           <circle cx={sparkline.endPoint.x} cy={sparkline.endPoint.y} r="2.6" fill="#1d4ed8" />
@@ -428,7 +443,8 @@ export function MarketPage() {
   const [selectedRange, setSelectedRange] = useState<StockChartRange>('1M');
   const [selectedProfile, setSelectedProfile] = useState<StockCompanyProfile | null>(null);
   const [selectedQuote, setSelectedQuote] = useState<StockQuote | null>(null);
-  const [selectedExecutionQuote, setSelectedExecutionQuote] = useState<InvestStockExecutionQuote | null>(null);
+  const [selectedExecutionQuote, setSelectedExecutionQuote] =
+    useState<InvestStockExecutionQuote | null>(null);
   const [selectedSeries, setSelectedSeries] = useState<StockCandlePoint[]>([]);
   const [isSelectedSeriesUnavailable, setIsSelectedSeriesUnavailable] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -440,7 +456,9 @@ export function MarketPage() {
   const [portfolioAccount, setPortfolioAccount] = useState<PortfolioAccount | null>(null);
   const [marketAccount, setMarketAccount] = useState<MarketAccountOverview | null>(null);
   const [marketPerformanceRange, setMarketPerformanceRange] = useState<'7d' | '30d'>('7d');
-  const [marketPerformanceSeries, setMarketPerformanceSeries] = useState<MarketPerformancePoint[]>([]);
+  const [marketPerformanceSeries, setMarketPerformanceSeries] = useState<MarketPerformancePoint[]>(
+    [],
+  );
   const [portfolioHoldings, setPortfolioHoldings] = useState<PortfolioHolding[]>([]);
   const [portfolioTrades, setPortfolioTrades] = useState<PortfolioTrade[]>([]);
   const [tradeSide, setTradeSide] = useState<'buy' | 'sell'>('buy');
@@ -494,12 +512,13 @@ export function MarketPage() {
         return;
       }
 
-      const [holdingsPayload, tradesPayload, accountPayload, performancePayload] = await Promise.all([
-        fetchMarketHoldings(accessToken),
-        fetchMarketTrades(accessToken, 10),
-        fetchMarketAccount(accessToken),
-        fetchMarketPerformance(accessToken, marketPerformanceRange),
-      ]);
+      const [holdingsPayload, tradesPayload, accountPayload, performancePayload] =
+        await Promise.all([
+          fetchMarketHoldings(accessToken),
+          fetchMarketTrades(accessToken, 10),
+          fetchMarketAccount(accessToken),
+          fetchMarketPerformance(accessToken, marketPerformanceRange),
+        ]);
 
       if (loadRequestIdRef.current !== requestId) {
         return;
@@ -846,7 +865,10 @@ export function MarketPage() {
   }, [displaySeries]);
 
   const allocation = useMemo(() => buildSymbolAllocation(portfolioHoldings), [portfolioHoldings]);
-  const allocationDonut = useMemo(() => buildDonutBackground(allocation.slices), [allocation.slices]);
+  const allocationDonut = useMemo(
+    () => buildDonutBackground(allocation.slices),
+    [allocation.slices],
+  );
 
   const sortedPerformancePoints = useMemo(
     () => [...marketPerformanceSeries].sort((left, right) => left.t - right.t),
@@ -859,7 +881,8 @@ export function MarketPage() {
   );
 
   const buyingPowerEUR = marketAccount?.cashBalanceEUR ?? portfolioAccount?.cashBalance ?? 0;
-  const portfolioValueEUR = marketAccount?.portfolioValueEUR ?? buyingPowerEUR + derivedHoldingsTotal;
+  const portfolioValueEUR =
+    marketAccount?.portfolioValueEUR ?? buyingPowerEUR + derivedHoldingsTotal;
   const dayPnLEUR = marketAccount?.dayPnL ?? 0;
   const dayPnLPct = marketAccount?.dayPnLPct ?? 0;
   const investedAmountEUR = derivedHoldingsTotal;
@@ -875,7 +898,11 @@ export function MarketPage() {
     () =>
       [...portfolioHoldings]
         .filter((holding) => holding.assetType === 'stock' && typeof holding.change24h === 'number')
-        .sort((left, right) => (right.change24h ?? Number.NEGATIVE_INFINITY) - (left.change24h ?? Number.NEGATIVE_INFINITY))[0] ?? null,
+        .sort(
+          (left, right) =>
+            (right.change24h ?? Number.NEGATIVE_INFINITY) -
+            (left.change24h ?? Number.NEGATIVE_INFINITY),
+        )[0] ?? null,
     [portfolioHoldings],
   );
   const latestTrade = portfolioTrades[0] ?? null;
@@ -891,7 +918,11 @@ export function MarketPage() {
     return numericAmount;
   }, [demoBudgetInput]);
   const selectedModeLabel =
-    selectedMode === 'demo' ? 'Demo Practice' : selectedMode === 'funded' ? 'Start Investing' : null;
+    selectedMode === 'demo'
+      ? 'Demo Practice'
+      : selectedMode === 'funded'
+        ? 'Start Investing'
+        : null;
 
   const handleOpenTopUpModal = () => {
     if (!accessToken || selectedMode !== 'funded') {
@@ -1034,7 +1065,9 @@ export function MarketPage() {
       setPortfolioTrades([]);
       setMarketPerformanceSeries([]);
       await refreshPortfolioContext();
-      setSuccessMessage(`Mode changed to ${mode === 'demo' ? 'Demo Practice' : 'Start Investing'}.`);
+      setSuccessMessage(
+        `Mode changed to ${mode === 'demo' ? 'Demo Practice' : 'Start Investing'}.`,
+      );
     } catch (caughtError) {
       setError(
         caughtError instanceof ApiRequestError
@@ -1089,10 +1122,15 @@ export function MarketPage() {
       <div className="fv-page space-y-6">
         <header className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb]">Market</p>
-            <h1 className="mt-2 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Stock Investing</h1>
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb]">
+              Market
+            </p>
+            <h1 className="mt-2 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+              Stock Investing
+            </h1>
             <p className="mt-2 max-w-2xl text-base text-slate-500 dark:text-slate-400">
-              Build your long-term wealth with precision and clarity. Choose Start Investing for wallet-funded cash or Demo Practice for simulated capital.
+              Build your long-term wealth with precision and clarity. Choose Start Investing for
+              wallet-funded cash or Demo Practice for simulated capital.
             </p>
             <div className="mt-3 inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-[0_2px_12px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-800">
               <button
@@ -1197,7 +1235,9 @@ export function MarketPage() {
         </header>
 
         {error ? (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
+          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {error}
+          </div>
         ) : null}
         {successMessage ? (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
@@ -1207,283 +1247,387 @@ export function MarketPage() {
 
         {selectedMode ? (
           <section className="grid grid-cols-12 gap-6">
-          <article className="relative col-span-12 overflow-hidden rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Total Balance</p>
-            <p className="mt-2 text-4xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
-              {isLoadingPortfolio ? '...' : formatMoney(portfolioValueEUR, 'EUR')}
-            </p>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-              <span className={['font-semibold', getChangeTextClassName(dayPnLEUR)].join(' ')}>
-                {isLoadingPortfolio ? '--' : `${dayPnLEUR >= 0 ? '+' : ''}${formatMoney(dayPnLEUR, 'EUR')} (${formatPct(dayPnLPct, 2)})`}
-              </span>
-              <span className="text-slate-500 dark:text-slate-400">Today</span>
-            </div>
-            <div className="mt-4">
-              <div className="mb-3 inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1 text-xs dark:border-slate-600 dark:bg-slate-700">
-                {PERFORMANCE_RANGES.map((range) => (
-                  <button
-                    key={range.id}
-                    type="button"
-                    onClick={() => setMarketPerformanceRange(range.id)}
-                    className={[
-                      'rounded-md px-2.5 py-1 font-semibold transition',
-                      marketPerformanceRange === range.id
-                        ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-600 dark:text-slate-100'
-                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
-                    ].join(' ')}
-                  >
-                    {range.label}
-                  </button>
-                ))}
+            <article className="relative col-span-12 overflow-hidden rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                Total Balance
+              </p>
+              <p className="mt-2 text-4xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
+                {isLoadingPortfolio ? '...' : formatMoney(portfolioValueEUR, 'EUR')}
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                <span className={['font-semibold', getChangeTextClassName(dayPnLEUR)].join(' ')}>
+                  {isLoadingPortfolio
+                    ? '--'
+                    : `${dayPnLEUR >= 0 ? '+' : ''}${formatMoney(dayPnLEUR, 'EUR')} (${formatPct(dayPnLPct, 2)})`}
+                </span>
+                <span className="text-slate-500 dark:text-slate-400">Today</span>
               </div>
-              <PortfolioPerformanceChart points={sortedPerformancePoints} isLoading={isLoadingPortfolio} />
-            </div>
-          </article>
-
-          <aside className="col-span-12 grid gap-4 sm:grid-cols-2 xl:col-span-4 xl:grid-cols-1">
-            <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">Buy Power</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">{isLoadingPortfolio ? '--' : formatMoney(buyingPowerEUR, 'EUR')}</p>
-            </article>
-            <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">Invested Amount</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">{isLoadingPortfolio ? '--' : formatMoney(investedAmountEUR, 'EUR')}</p>
-            </article>
-            <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">Total Return</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">—</p>
-            </article>
-            <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">Best Performer</p>
-              <div className="mt-1 flex items-end justify-between gap-2">
-                <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{bestPerformerHolding?.symbol ?? '—'}</p>
-                <p className={['text-sm font-semibold', getChangeTextClassName(bestPerformerHolding?.change24h)].join(' ')}>
-                  {bestPerformerHolding ? formatPct(bestPerformerHolding.change24h, 2) : '—'}
-                </p>
-              </div>
-            </article>
-          </aside>
-
-          <article className="col-span-12 rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Sector Allocation</h2>
-              <span className="text-xs text-slate-500 dark:text-slate-400">Fallback: symbols</span>
-            </div>
-            <div className="mt-5 flex items-center justify-center">
-              <div className="relative h-44 w-44 rounded-full" style={{ background: allocationDonut }}>
-                <div className="absolute inset-[22px] flex flex-col items-center justify-center rounded-full bg-white dark:bg-slate-800">
-                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Total</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
-                    {formatMoney(allocation.total, portfolioSourceCurrency)}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="mt-5 space-y-2">
-              {allocation.slices.length === 0 ? (
-                <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-400">
-                  No allocation yet.
-                </p>
-              ) : (
-                allocation.slices.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span className="text-slate-600 dark:text-slate-300">{item.label}</span>
-                    </div>
-                    <span className="font-semibold text-slate-900 dark:text-slate-100">{formatPct(item.pct, 1)}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </article>
-
-          <article className="col-span-12 rounded-2xl border border-slate-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-8">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-700">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Top Holdings</h2>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] text-left">
-                <thead className="bg-slate-50 text-xs uppercase tracking-[0.14em] text-slate-500 dark:bg-slate-700 dark:text-slate-400">
-                  <tr>
-                    <th className="px-6 py-3">Asset</th>
-                    <th className="px-6 py-3">Quantity</th>
-                    <th className="px-6 py-3">Price</th>
-                    <th className="px-6 py-3">Change (24h)</th>
-                    <th className="px-6 py-3">Market Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topHoldings.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
-                        No stock holdings yet. Place a buy order to start.
-                      </td>
-                    </tr>
-                  ) : (
-                    topHoldings.map((holding) => (
-                      <tr key={holding.id} className="border-t border-slate-100 text-sm dark:border-slate-700">
-                        <td className="px-6 py-4">
-                          <p className="font-semibold text-slate-900 dark:text-slate-100">{holding.symbol}</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">{holding.symbol}</p>
-                        </td>
-                        <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{formatQty(holding.quantity, holding.symbol)}</td>
-                        <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{formatMoney(holding.currentPrice, portfolioSourceCurrency)}</td>
-                        <td className={['px-6 py-4 font-semibold', getChangeTextClassName(holding.change24h)].join(' ')}>
-                          {formatPct(holding.change24h, 2)}
-                        </td>
-                        <td className="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100">
-                          {formatMoney(holding.marketValue, portfolioSourceCurrency)}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          <article id="market-discovery" className="col-span-12 rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Discover Opportunities</h2>
-              <label className="w-full max-w-xs">
-                <input
-                  type="search"
-                  value={searchInput}
-                  onChange={(event) => setSearchInput(event.target.value)}
-                  placeholder="Search Apple, Tesla, NVDA..."
-                  className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-blue-900/40"
-                />
-              </label>
-            </div>
-
-            <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-700">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Selected Opportunity</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedStockName}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{selectedSymbol}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                    {typeof selectedQuote?.price === 'number' ? formatPrice(selectedQuote.price, detailSourceCurrency) : '--'}
-                  </p>
-                  <p className={['text-xs font-semibold', getChangeTextClassName(selectedQuote?.changePct)].join(' ')}>
-                    {formatPct(selectedQuote?.changePct, 2)}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-3">
-                <StockSparkline
-                  points={displaySeries}
-                  isLoading={isLoadingDetail}
-                  isUnavailable={isSparklineUnavailable}
-                />
-                {selectedSeriesStats ? (
-                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
-                    <span>
-                      {selectedRange}:{' '}
-                      <span className={['font-semibold', getChangeTextClassName(selectedSeriesStats.changePct)].join(' ')}>
-                        {formatPct(selectedSeriesStats.changePct, 2)}
-                      </span>
-                    </span>
-                    <span>
-                      Low {formatPrice(selectedSeriesStats.low, detailSourceCurrency)} | High {formatPrice(selectedSeriesStats.high, detailSourceCurrency)}
-                    </span>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1">
-              {isSearching || isLoadingListQuotes ? (
-                Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className="h-36 w-[180px] flex-shrink-0 animate-pulse rounded-xl bg-slate-100" />
-                ))
-              ) : opportunities.length === 0 ? (
-                <p className="text-sm text-slate-500">No stocks found for this search.</p>
-              ) : (
-                opportunities.map((stock) => {
-                  const quote = quotesBySymbol[stock.symbol];
-                  const isActive = stock.symbol === selectedSymbol;
-
-                  return (
+              <div className="mt-4">
+                <div className="mb-3 inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1 text-xs dark:border-slate-600 dark:bg-slate-700">
+                  {PERFORMANCE_RANGES.map((range) => (
                     <button
-                      key={stock.symbol}
+                      key={range.id}
                       type="button"
-                      onClick={() => setSelectedSymbol(stock.symbol)}
+                      onClick={() => setMarketPerformanceRange(range.id)}
                       className={[
-                        'w-[200px] flex-shrink-0 snap-start rounded-xl border p-3 text-left transition',
-                        isActive
-                          ? 'border-[#2563eb] bg-blue-50 dark:bg-blue-900/30'
-                          : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:hover:border-slate-500 dark:hover:bg-slate-600',
+                        'rounded-md px-2.5 py-1 font-semibold transition',
+                        marketPerformanceRange === range.id
+                          ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-600 dark:text-slate-100'
+                          : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
                       ].join(' ')}
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{stock.symbol}</p>
-                        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-500 dark:bg-slate-600 dark:text-slate-300">
-                          {getOpportunityTag(stock.symbol)}
-                        </span>
-                      </div>
-                      <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">{stock.name}</p>
-                      <p className="mt-3 text-base font-semibold text-slate-900 dark:text-slate-100">
-                        {typeof quote?.price === 'number' ? formatPrice(quote.price, 'USD') : '--'}
-                      </p>
-                      <p className={['text-xs font-semibold', getChangeTextClassName(quote?.changePct)].join(' ')}>
-                        {formatPct(quote?.changePct, 2)}
-                      </p>
-                      <div className="mt-3 h-9 rounded-lg bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200" />
+                      {range.label}
                     </button>
-                  );
-                })
-              )}
-            </div>
-          </article>
-
-          <section className="col-span-12 grid grid-cols-12 gap-6">
-            <article className="col-span-12 rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Execution Suite</p>
-              <div className="mt-4 grid gap-2">
-                <button
-                  type="button"
-                  disabled={!selectedStock}
-                  onClick={() => {
-                    setTradeSide('buy');
-                    setIsTradeModalOpen(true);
-                  }}
-                  className="inline-flex h-11 items-center justify-center rounded-lg bg-[#2563eb] px-4 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-blue-300"
-                >
-                  Buy Stocks
-                </button>
-                <button
-                  type="button"
-                  disabled={!selectedStock}
-                  onClick={() => {
-                    setTradeSide('sell');
-                    setIsTradeModalOpen(true);
-                  }}
-                  className="inline-flex h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-4 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-700 dark:bg-slate-700 dark:text-rose-400 dark:hover:bg-rose-900/30"
-                >
-                  Sell Assets
-                </button>
+                  ))}
+                </div>
+                <PortfolioPerformanceChart
+                  points={sortedPerformancePoints}
+                  isLoading={isLoadingPortfolio}
+                />
               </div>
             </article>
 
-            <article className="col-span-12 rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-8">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Recent Activity</p>
-              <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
-                {latestTrade
-                  ? `Last trade: ${latestTrade.side.toUpperCase()} ${latestTrade.symbol} (${new Date(latestTrade.createdAt || Date.now()).toLocaleDateString()})`
-                  : 'No recent trades yet.'}
-              </p>
+            <aside className="col-span-12 grid gap-4 sm:grid-cols-2 xl:col-span-4 xl:grid-cols-1">
+              <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">
+                  Buy Power
+                </p>
+                <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  {isLoadingPortfolio ? '--' : formatMoney(buyingPowerEUR, 'EUR')}
+                </p>
+              </article>
+              <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">
+                  Invested Amount
+                </p>
+                <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  {isLoadingPortfolio ? '--' : formatMoney(investedAmountEUR, 'EUR')}
+                </p>
+              </article>
+              <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">
+                  Total Return
+                </p>
+                <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">—</p>
+              </article>
+              <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">
+                  Best Performer
+                </p>
+                <div className="mt-1 flex items-end justify-between gap-2">
+                  <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                    {bestPerformerHolding?.symbol ?? '—'}
+                  </p>
+                  <p
+                    className={[
+                      'text-sm font-semibold',
+                      getChangeTextClassName(bestPerformerHolding?.change24h),
+                    ].join(' ')}
+                  >
+                    {bestPerformerHolding ? formatPct(bestPerformerHolding.change24h, 2) : '—'}
+                  </p>
+                </div>
+              </article>
+            </aside>
+
+            <article className="col-span-12 rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  Sector Allocation
+                </h2>
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  Fallback: symbols
+                </span>
+              </div>
+              <div className="mt-5 flex items-center justify-center">
+                <div
+                  className="relative h-44 w-44 rounded-full"
+                  style={{ background: allocationDonut }}
+                >
+                  <div className="absolute inset-[22px] flex flex-col items-center justify-center rounded-full bg-white dark:bg-slate-800">
+                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                      Total
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
+                      {formatMoney(allocation.total, portfolioSourceCurrency)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 space-y-2">
+                {allocation.slices.length === 0 ? (
+                  <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-400">
+                    No allocation yet.
+                  </p>
+                ) : (
+                  allocation.slices.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span className="text-slate-600 dark:text-slate-300">{item.label}</span>
+                      </div>
+                      <span className="font-semibold text-slate-900 dark:text-slate-100">
+                        {formatPct(item.pct, 1)}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
             </article>
-          </section>
+
+            <article className="col-span-12 rounded-2xl border border-slate-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-8">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-700">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  Top Holdings
+                </h2>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[760px] text-left">
+                  <thead className="bg-slate-50 text-xs uppercase tracking-[0.14em] text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+                    <tr>
+                      <th className="px-6 py-3">Asset</th>
+                      <th className="px-6 py-3">Quantity</th>
+                      <th className="px-6 py-3">Price</th>
+                      <th className="px-6 py-3">Change (24h)</th>
+                      <th className="px-6 py-3">Market Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topHoldings.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400"
+                        >
+                          No stock holdings yet. Place a buy order to start.
+                        </td>
+                      </tr>
+                    ) : (
+                      topHoldings.map((holding) => (
+                        <tr
+                          key={holding.id}
+                          className="border-t border-slate-100 text-sm dark:border-slate-700"
+                        >
+                          <td className="px-6 py-4">
+                            <p className="font-semibold text-slate-900 dark:text-slate-100">
+                              {holding.symbol}
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              {holding.symbol}
+                            </p>
+                          </td>
+                          <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
+                            {formatQty(holding.quantity, holding.symbol)}
+                          </td>
+                          <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
+                            {formatMoney(holding.currentPrice, portfolioSourceCurrency)}
+                          </td>
+                          <td
+                            className={[
+                              'px-6 py-4 font-semibold',
+                              getChangeTextClassName(holding.change24h),
+                            ].join(' ')}
+                          >
+                            {formatPct(holding.change24h, 2)}
+                          </td>
+                          <td className="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100">
+                            {formatMoney(holding.marketValue, portfolioSourceCurrency)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </article>
+
+            <article
+              id="market-discovery"
+              className="col-span-12 rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800"
+            >
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  Discover Opportunities
+                </h2>
+                <label className="w-full max-w-xs">
+                  <input
+                    type="search"
+                    value={searchInput}
+                    onChange={(event) => setSearchInput(event.target.value)}
+                    placeholder="Search Apple, Tesla, NVDA..."
+                    className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-700 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-blue-900/40"
+                  />
+                </label>
+              </div>
+
+              <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-700">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                      Selected Opportunity
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
+                      {selectedStockName}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{selectedSymbol}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                      {typeof selectedQuote?.price === 'number'
+                        ? formatPrice(selectedQuote.price, detailSourceCurrency)
+                        : '--'}
+                    </p>
+                    <p
+                      className={[
+                        'text-xs font-semibold',
+                        getChangeTextClassName(selectedQuote?.changePct),
+                      ].join(' ')}
+                    >
+                      {formatPct(selectedQuote?.changePct, 2)}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <StockSparkline
+                    points={displaySeries}
+                    isLoading={isLoadingDetail}
+                    isUnavailable={isSparklineUnavailable}
+                  />
+                  {selectedSeriesStats ? (
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
+                      <span>
+                        {selectedRange}:{' '}
+                        <span
+                          className={[
+                            'font-semibold',
+                            getChangeTextClassName(selectedSeriesStats.changePct),
+                          ].join(' ')}
+                        >
+                          {formatPct(selectedSeriesStats.changePct, 2)}
+                        </span>
+                      </span>
+                      <span>
+                        Low {formatPrice(selectedSeriesStats.low, detailSourceCurrency)} | High{' '}
+                        {formatPrice(selectedSeriesStats.high, detailSourceCurrency)}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1">
+                {isSearching || isLoadingListQuotes ? (
+                  Array.from({ length: 6 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="h-36 w-[180px] flex-shrink-0 animate-pulse rounded-xl bg-slate-100"
+                    />
+                  ))
+                ) : opportunities.length === 0 ? (
+                  <p className="text-sm text-slate-500">No stocks found for this search.</p>
+                ) : (
+                  opportunities.map((stock) => {
+                    const quote = quotesBySymbol[stock.symbol];
+                    const isActive = stock.symbol === selectedSymbol;
+
+                    return (
+                      <button
+                        key={stock.symbol}
+                        type="button"
+                        onClick={() => setSelectedSymbol(stock.symbol)}
+                        className={[
+                          'w-[200px] flex-shrink-0 snap-start rounded-xl border p-3 text-left transition',
+                          isActive
+                            ? 'border-[#2563eb] bg-blue-50 dark:bg-blue-900/30'
+                            : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white dark:border-slate-600 dark:bg-slate-700 dark:hover:border-slate-500 dark:hover:bg-slate-600',
+                        ].join(' ')}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                            {stock.symbol}
+                          </p>
+                          <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-500 dark:bg-slate-600 dark:text-slate-300">
+                            {getOpportunityTag(stock.symbol)}
+                          </span>
+                        </div>
+                        <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
+                          {stock.name}
+                        </p>
+                        <p className="mt-3 text-base font-semibold text-slate-900 dark:text-slate-100">
+                          {typeof quote?.price === 'number'
+                            ? formatPrice(quote.price, 'USD')
+                            : '--'}
+                        </p>
+                        <p
+                          className={[
+                            'text-xs font-semibold',
+                            getChangeTextClassName(quote?.changePct),
+                          ].join(' ')}
+                        >
+                          {formatPct(quote?.changePct, 2)}
+                        </p>
+                        <div className="mt-3 h-9 rounded-lg bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200" />
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </article>
+
+            <section className="col-span-12 grid grid-cols-12 gap-6">
+              <article className="col-span-12 rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                  Execution Suite
+                </p>
+                <div className="mt-4 grid gap-2">
+                  <button
+                    type="button"
+                    disabled={!selectedStock}
+                    onClick={() => {
+                      setTradeSide('buy');
+                      setIsTradeModalOpen(true);
+                    }}
+                    className="inline-flex h-11 items-center justify-center rounded-lg bg-[#2563eb] px-4 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-blue-300"
+                  >
+                    Buy Stocks
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!selectedStock}
+                    onClick={() => {
+                      setTradeSide('sell');
+                      setIsTradeModalOpen(true);
+                    }}
+                    className="inline-flex h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-4 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-700 dark:bg-slate-700 dark:text-rose-400 dark:hover:bg-rose-900/30"
+                  >
+                    Sell Assets
+                  </button>
+                </div>
+              </article>
+
+              <article className="col-span-12 rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800 xl:col-span-8">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                  Recent Activity
+                </p>
+                <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
+                  {latestTrade
+                    ? `Last trade: ${latestTrade.side.toUpperCase()} ${latestTrade.symbol} (${new Date(latestTrade.createdAt || Date.now()).toLocaleDateString()})`
+                    : 'No recent trades yet.'}
+                </p>
+              </article>
+            </section>
           </section>
         ) : (
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-700 dark:bg-slate-800">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Choose a mode to begin</h2>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              Choose a mode to begin
+            </h2>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              Start Investing begins at €0 and is funded by Budget wallet conversion. Demo Practice starts with €5,000.
+              Start Investing begins at €0 and is funded by Budget wallet conversion. Demo Practice
+              starts with €5,000.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <button
@@ -1536,7 +1680,9 @@ export function MarketPage() {
       {isTopUpModalOpen ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-800">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Top up from Budget</h3>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              Top up from Budget
+            </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Convert RON from Investing Wallet into EUR buying power for Stocks account.
             </p>
@@ -1587,7 +1733,9 @@ export function MarketPage() {
       {isDemoBudgetModalOpen ? (
         <div className="fixed inset-0 z-[96] flex items-center justify-center bg-slate-900/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-800">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Set demo budget</h3>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              Set demo budget
+            </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               This resets Demo Practice holdings/trades and applies a new starting EUR cash balance.
             </p>

@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { classifyIntent, inspectTopicScope, isInScope } from '../../src/modules/finny/topicGuard.js';
+import {
+  classifyIntent,
+  inspectTopicScope,
+  isInScope,
+} from '../../src/modules/finny/topicGuard.js';
 
 test('topic guard blocks out-of-scope sports question', () => {
   const message = 'Who is the striker at FC Barcelona?';

@@ -130,7 +130,13 @@ const resolveQuickQuestionPrompt = (question: QuickQuestion) => {
 
 function PaperclipIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="h-5 w-5"
+    >
       <path d="M9.5 12.5 16 6a3.2 3.2 0 1 1 4.5 4.5l-8.4 8.4a5 5 0 0 1-7.1-7.1l8.6-8.6" />
     </svg>
   );
@@ -138,7 +144,13 @@ function PaperclipIcon() {
 
 function MicIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="h-5 w-5"
+    >
       <rect x="9" y="3.5" width="6" height="11" rx="3" />
       <path d="M6.5 11.5a5.5 5.5 0 1 0 11 0" />
       <path d="M12 17v3.5" />
@@ -148,7 +160,13 @@ function MicIcon() {
 
 function ArrowIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" className="h-5 w-5">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.1"
+      className="h-5 w-5"
+    >
       <path d="M5 12h13" />
       <path d="m13 6 6 6-6 6" />
     </svg>
@@ -186,10 +204,7 @@ export function FinnyPage() {
     setDraft((current) => (current.trim().length > 0 ? current : trimmedQuery.slice(0, 2000)));
   }, [location.search]);
 
-  const handleSend = async (params?: {
-    message?: string;
-    contextType?: FinnyContextType;
-  }) => {
+  const handleSend = async (params?: { message?: string; contextType?: FinnyContextType }) => {
     const message = (params?.message ?? draft).trim();
 
     if (!message) {
@@ -336,9 +351,11 @@ export function FinnyPage() {
                             <InsightCard card={message.data.card} />
                           ) : message.data.format === 'card' ? (
                             <FinnyCard card={message.data.card} />
-                          ) : (() => {
+                          ) : (
+                            (() => {
                               const text =
-                                typeof message.data.text === 'string' && message.data.text.trim().length > 0
+                                typeof message.data.text === 'string' &&
+                                message.data.text.trim().length > 0
                                   ? message.data.text
                                   : 'Finny could not generate a response.';
                               const isLong = text.length > MAX_COLLAPSED_ASSISTANT_TEXT_LENGTH;
@@ -367,7 +384,8 @@ export function FinnyPage() {
                                   ) : null}
                                 </div>
                               );
-                            })()}
+                            })()
+                          )}
                         </div>
                       </article>
                     ),
@@ -434,8 +452,14 @@ export function FinnyPage() {
             </div>
           </section>
 
-          <p className="mt-2 text-center text-xs text-slate-500 dark:text-slate-400">Press Cmd/Ctrl + Enter to send</p>
-          {errorMessage ? <p className="mt-3 text-center text-sm text-red-600 dark:text-rose-300">{errorMessage}</p> : null}
+          <p className="mt-2 text-center text-xs text-slate-500 dark:text-slate-400">
+            Press Cmd/Ctrl + Enter to send
+          </p>
+          {errorMessage ? (
+            <p className="mt-3 text-center text-sm text-red-600 dark:text-rose-300">
+              {errorMessage}
+            </p>
+          ) : null}
         </section>
       </div>
     </AppShell>

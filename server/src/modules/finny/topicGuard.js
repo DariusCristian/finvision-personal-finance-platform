@@ -122,11 +122,13 @@ const BLOCKLIST_KEYWORDS = [
   'general trivia',
 ];
 
-const normalize = (message) => String(message ?? '').trim().toLowerCase();
+const normalize = (message) =>
+  String(message ?? '')
+    .trim()
+    .toLowerCase();
 
 // Substring match: the allowlist relies on stems such as 'economi' and 'cheltui'.
-const getMatchedKeywords = (text, keywords) =>
-  keywords.filter((keyword) => text.includes(keyword));
+const getMatchedKeywords = (text, keywords) => keywords.filter((keyword) => text.includes(keyword));
 
 const BLOCKLIST_PATTERNS = BLOCKLIST_KEYWORDS.map((keyword) => ({
   keyword,
@@ -214,7 +216,16 @@ const INTENT_KEYWORDS = {
     'obicei',
     'ultimele 30',
   ],
-  APP_USAGE: ['finvision', 'app', 'feature', 'navigate', 'where is', 'how do i', 'settings', 'dashboard'],
+  APP_USAGE: [
+    'finvision',
+    'app',
+    'feature',
+    'navigate',
+    'where is',
+    'how do i',
+    'settings',
+    'dashboard',
+  ],
   FINANCE_EDUCATION: [
     'finance',
     'personal finance',

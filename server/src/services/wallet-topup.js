@@ -6,7 +6,15 @@ import { creditAccountCash, debitWallet, runInTransaction } from './balance-ops.
 // Moves money from the investing wallet into a portfolio account's cash in one transaction (AUDIT.md finding 1).
 // The FX conversion must happen before calling this: nothing external may run inside the transaction.
 // The portfolio account must already exist.
-export const topUpAccountFromWallet = ({ userId, accountType, mode, amountRON, amountEUR, ledgerMeta, funding }) =>
+export const topUpAccountFromWallet = ({
+  userId,
+  accountType,
+  mode,
+  amountRON,
+  amountEUR,
+  ledgerMeta,
+  funding,
+}) =>
   runInTransaction(async (session) => {
     const wallet = await debitWallet(userId, amountRON, { session });
 
@@ -21,7 +29,9 @@ export const topUpAccountFromWallet = ({ userId, accountType, mode, amountRON, a
     const account = await creditAccountCash({ userId, accountType, mode }, amountEUR, { session });
 
     if (!account) {
-      throw new Error(`Portfolio account ${accountType}/${mode} does not exist for user ${userId}.`);
+      throw new Error(
+        `Portfolio account ${accountType}/${mode} does not exist for user ${userId}.`,
+      );
     }
 
     await InvestingWalletLedger.create(

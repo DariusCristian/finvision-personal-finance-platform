@@ -24,7 +24,10 @@ const nextSessions = (session, replacedJti = null) => ({
             input: { $ifNull: ['$refreshSessions', []] },
             as: 'existing',
             cond: {
-              $and: [{ $gt: ['$$existing.expiresAt', '$$NOW'] }, { $ne: ['$$existing.jti', replacedJti] }],
+              $and: [
+                { $gt: ['$$existing.expiresAt', '$$NOW'] },
+                { $ne: ['$$existing.jti', replacedJti] },
+              ],
             },
           },
         },

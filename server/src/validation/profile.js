@@ -42,12 +42,7 @@ export const updateProfileSchema = z
       .min(2, 'Display name must contain at least 2 characters.')
       .max(50, 'Display name cannot exceed 50 characters.')
       .optional(),
-    email: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .email('Enter a valid email address.')
-      .optional(),
+    email: z.string().trim().toLowerCase().email('Enter a valid email address.').optional(),
     avatarUrl: avatarUrlSchema,
     baseCurrency: z.enum(['RON', 'EUR', 'USD']).optional(),
     locale: z.enum(['en-US', 'ro-RO']).optional(),

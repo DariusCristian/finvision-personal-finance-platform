@@ -2,11 +2,17 @@ import { PortfolioAccount } from '../../models/portfolio-account.js';
 import { PortfolioHolding } from '../../models/portfolio-holding.js';
 import { Transaction } from '../../models/transaction.js';
 import { amountInCurrency } from '../../services/currency-amounts.js';
-import { getSimplePrices, isCoinGeckoConfigured } from '../../integrations/coingecko/coingeckoClient.js';
+import {
+  getSimplePrices,
+  isCoinGeckoConfigured,
+} from '../../integrations/coingecko/coingeckoClient.js';
 
 const toMoney = (value) => Number(Number(value).toFixed(2));
 const toQuantity = (value) => Number(Number(value).toFixed(8));
-const normalizeCoinId = (value) => String(value || '').trim().toLowerCase();
+const normalizeCoinId = (value) =>
+  String(value || '')
+    .trim()
+    .toLowerCase();
 
 const serializeTransaction = (transaction) => ({
   id: transaction._id.toString(),
@@ -42,16 +48,22 @@ const getMonthBoundsUtc = (monthKey) => {
 const getMonthPaceData = ({ monthStart, monthEnd }) => {
   const now = new Date();
   const isCurrentMonth =
-    monthStart.getUTCFullYear() === now.getUTCFullYear()
-    && monthStart.getUTCMonth() === now.getUTCMonth();
+    monthStart.getUTCFullYear() === now.getUTCFullYear() &&
+    monthStart.getUTCMonth() === now.getUTCMonth();
 
   const lastDayInMonth = new Date(monthEnd.getTime() - 1);
   const effectiveDate = isCurrentMonth && now < monthEnd ? now : lastDayInMonth;
 
-  const daysInMonth = Math.max(1, Math.round((monthEnd.getTime() - monthStart.getTime()) / (24 * 60 * 60 * 1000)));
+  const daysInMonth = Math.max(
+    1,
+    Math.round((monthEnd.getTime() - monthStart.getTime()) / (24 * 60 * 60 * 1000)),
+  );
   const daysPassed = Math.min(
     daysInMonth,
-    Math.max(1, Math.floor((effectiveDate.getTime() - monthStart.getTime()) / (24 * 60 * 60 * 1000)) + 1),
+    Math.max(
+      1,
+      Math.floor((effectiveDate.getTime() - monthStart.getTime()) / (24 * 60 * 60 * 1000)) + 1,
+    ),
   );
 
   return {
@@ -62,11 +74,13 @@ const getMonthPaceData = ({ monthStart, monthEnd }) => {
 };
 
 const fetchCryptoPricesMap = async (coinIds) => {
-  const uniqueCoinIds = [...new Set(
-    (Array.isArray(coinIds) ? coinIds : [])
-      .map((coinId) => normalizeCoinId(coinId))
-      .filter(Boolean),
-  )];
+  const uniqueCoinIds = [
+    ...new Set(
+      (Array.isArray(coinIds) ? coinIds : [])
+        .map((coinId) => normalizeCoinId(coinId))
+        .filter(Boolean),
+    ),
+  ];
 
   if (uniqueCoinIds.length === 0 || !isCoinGeckoConfigured()) {
     return {};
@@ -90,7 +104,7 @@ const buildHoldingsAllocations = (holdings, accountType, cryptoPricesMap = {}) =
     const quantity = Number(holding.quantity || 0);
     const avgCost = Number(holding.avgCost || 0);
     const coinId = accountType === 'crypto' ? normalizeCoinId(holding.coinId) : '';
-    const quote = coinId ? cryptoPricesMap[coinId] ?? null : null;
+    const quote = coinId ? (cryptoPricesMap[coinId] ?? null) : null;
     const livePrice = Number(quote?.price);
     const price = Number.isFinite(livePrice) && livePrice > 0 ? livePrice : avgCost;
     const marketValue = quantity * (Number.isFinite(price) ? price : 0);
@@ -105,7 +119,9 @@ const buildHoldingsAllocations = (holdings, accountType, cryptoPricesMap = {}) =
       referencePrice: toMoney(price),
       priceSource:
         accountType === 'crypto'
-          ? (Number.isFinite(livePrice) && livePrice > 0 ? 'live_quote' : 'avg_cost_estimate')
+          ? Number.isFinite(livePrice) && livePrice > 0
+            ? 'live_quote'
+            : 'avg_cost_estimate'
           : 'avg_cost_estimate',
       change24h:
         accountType === 'crypto' && Number.isFinite(Number(quote?.change24h))
@@ -120,7 +136,8 @@ const buildHoldingsAllocations = (holdings, accountType, cryptoPricesMap = {}) =
 
   return enriched.map((holding) => ({
     ...holding,
-    allocationPct: totalValue > 0 ? Number(((holding.marketValue / totalValue) * 100).toFixed(2)) : 0,
+    allocationPct:
+      totalValue > 0 ? Number(((holding.marketValue / totalValue) * 100).toFixed(2)) : 0,
   }));
 };
 
@@ -129,43 +146,46 @@ export const buildInsightContext = async ({ authUser, selectedMonth }) => {
   const stocksMode = resolveMode(authUser.marketStocksMode);
   const { monthKey, monthStart, monthEnd } = getMonthBoundsUtc(selectedMonth);
 
-  const [monthTransactions, recurringTransactions, recentTransactions, accounts, holdings] = await Promise.all([
-    Transaction.find({
-      userId: authUser._id,
-      date: {
-        $gte: monthStart,
-        $lt: monthEnd,
-      },
-    }).select('type amount currency convertedAmounts date description isRecurring recurrence recurrenceEndDate'),
-    Transaction.find({
-      userId: authUser._id,
-      type: 'expense',
-      isRecurring: true,
-    })
-      .sort({ date: -1 })
-      .limit(50)
-      .select('type amount currency date description isRecurring recurrence recurrenceEndDate'),
-    Transaction.find({
-      userId: authUser._id,
-    })
-      .sort({ date: -1 })
-      .limit(10)
-      .select('type amount currency date description isRecurring recurrence recurrenceEndDate'),
-    PortfolioAccount.find({
-      userId: authUser._id,
-      $or: [
-        { accountType: 'crypto', mode: cryptoMode },
-        { accountType: 'stocks', mode: stocksMode },
-      ],
-    }).select('accountType mode cashBalance baseCurrency'),
-    PortfolioHolding.find({
-      userId: authUser._id,
-      $or: [
-        { accountType: 'crypto', mode: cryptoMode },
-        { accountType: 'stocks', mode: stocksMode },
-      ],
-    }).select('coinId symbol quantity avgCost accountType mode assetType'),
-  ]);
+  const [monthTransactions, recurringTransactions, recentTransactions, accounts, holdings] =
+    await Promise.all([
+      Transaction.find({
+        userId: authUser._id,
+        date: {
+          $gte: monthStart,
+          $lt: monthEnd,
+        },
+      }).select(
+        'type amount currency convertedAmounts date description isRecurring recurrence recurrenceEndDate',
+      ),
+      Transaction.find({
+        userId: authUser._id,
+        type: 'expense',
+        isRecurring: true,
+      })
+        .sort({ date: -1 })
+        .limit(50)
+        .select('type amount currency date description isRecurring recurrence recurrenceEndDate'),
+      Transaction.find({
+        userId: authUser._id,
+      })
+        .sort({ date: -1 })
+        .limit(10)
+        .select('type amount currency date description isRecurring recurrence recurrenceEndDate'),
+      PortfolioAccount.find({
+        userId: authUser._id,
+        $or: [
+          { accountType: 'crypto', mode: cryptoMode },
+          { accountType: 'stocks', mode: stocksMode },
+        ],
+      }).select('accountType mode cashBalance baseCurrency'),
+      PortfolioHolding.find({
+        userId: authUser._id,
+        $or: [
+          { accountType: 'crypto', mode: cryptoMode },
+          { accountType: 'stocks', mode: stocksMode },
+        ],
+      }).select('coinId symbol quantity avgCost accountType mode assetType'),
+    ]);
 
   const { effectiveDate, daysInMonth, daysPassed } = getMonthPaceData({ monthStart, monthEnd });
   const cryptoCoinIds = holdings
@@ -182,7 +202,8 @@ export const buildInsightContext = async ({ authUser, selectedMonth }) => {
         return accumulator;
       }
 
-      const transactionDate = transaction.date instanceof Date ? transaction.date : new Date(transaction.date);
+      const transactionDate =
+        transaction.date instanceof Date ? transaction.date : new Date(transaction.date);
       const isToDate = transactionDate <= effectiveDate;
 
       if (transaction.type === 'income') {
@@ -251,7 +272,9 @@ export const buildInsightContext = async ({ authUser, selectedMonth }) => {
       remainingBudget: toMoney(Math.max(0, budgetGoal - totals.expenseTotal)),
     },
     recentTransactions: recentTransactions.map((transaction) => serializeTransaction(transaction)),
-    recurringTransactions: recurringTransactions.map((transaction) => serializeTransaction(transaction)),
+    recurringTransactions: recurringTransactions.map((transaction) =>
+      serializeTransaction(transaction),
+    ),
     investing: {
       crypto: {
         selectedMode: cryptoMode,

@@ -13,7 +13,9 @@ export const frankfurterStubResponse = (input) => {
   }
 
   const base = url.searchParams.get('base') ?? url.searchParams.get('from');
-  const symbols = (url.searchParams.get('symbols') ?? url.searchParams.get('to') ?? '').split(',').filter(Boolean);
+  const symbols = (url.searchParams.get('symbols') ?? url.searchParams.get('to') ?? '')
+    .split(',')
+    .filter(Boolean);
   const date = /\d{4}-\d{2}-\d{2}/.exec(url.pathname)?.[0] ?? new Date().toISOString().slice(0, 10);
   const rates = Object.fromEntries(symbols.map((symbol) => [symbol, testRate(base, symbol)]));
 

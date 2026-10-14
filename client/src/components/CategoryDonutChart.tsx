@@ -30,14 +30,16 @@ type LegendSlice = ChartSlice & {
   percentage: number;
 };
 
-function CategoryDonutChartComponent({ slices, total, isLoading, currency }: CategoryDonutChartProps) {
+function CategoryDonutChartComponent({
+  slices,
+  total,
+  isLoading,
+  currency,
+}: CategoryDonutChartProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const chartRef = useRef<Chart | null>(null);
 
-  const formatCurrency = useCallback(
-    (value: number) => formatMoney(value, currency),
-    [currency],
-  );
+  const formatCurrency = useCallback((value: number) => formatMoney(value, currency), [currency]);
 
   const totalExpense = useMemo(() => {
     const computedTotal = slices.reduce((sum, slice) => sum + slice.value, 0);
@@ -57,15 +59,13 @@ function CategoryDonutChartComponent({ slices, total, isLoading, currency }: Cat
       sortedSlices.length <= 5
         ? sortedSlices
         : [
-          ...sortedSlices.slice(0, 4),
-          {
-            label: 'Other',
-            value: sortedSlices
-              .slice(4)
-              .reduce((sum, slice) => sum + slice.value, 0),
-            color: '#CBD5E1',
-          },
-        ];
+            ...sortedSlices.slice(0, 4),
+            {
+              label: 'Other',
+              value: sortedSlices.slice(4).reduce((sum, slice) => sum + slice.value, 0),
+              color: '#CBD5E1',
+            },
+          ];
 
     let roundedTotal = 0;
 
@@ -100,8 +100,7 @@ function CategoryDonutChartComponent({ slices, total, isLoading, currency }: Cat
     }
 
     const isDarkMode =
-      typeof document !== 'undefined'
-      && document.documentElement.classList.contains('dark');
+      typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
     const tooltipBackground = isDarkMode ? '#0f172a' : '#ffffff';
     const tooltipTitle = isDarkMode ? '#f1f5f9' : '#0f172a';
     const tooltipBody = isDarkMode ? '#e2e8f0' : '#334155';
@@ -166,8 +165,13 @@ function CategoryDonutChartComponent({ slices, total, isLoading, currency }: Cat
   return (
     <section className="fv-card rounded-[1.5rem] p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] lg:col-span-4">
       <div className="flex items-start justify-between gap-3">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Spending by Category</h2>
-        <button type="button" className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+          Spending by Category
+        </h2>
+        <button
+          type="button"
+          className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+        >
           <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
             <circle cx="12" cy="5" r="1.5" />
             <circle cx="12" cy="12" r="1.5" />
@@ -206,7 +210,9 @@ function CategoryDonutChartComponent({ slices, total, isLoading, currency }: Cat
                 <span className="h-4 w-4 rounded-full" style={{ backgroundColor: slice.color }} />
                 <span>{slice.label}</span>
               </div>
-              <span className="font-semibold text-slate-900 dark:text-slate-100">{slice.percentage}%</span>
+              <span className="font-semibold text-slate-900 dark:text-slate-100">
+                {slice.percentage}%
+              </span>
             </div>
           ))
         )}

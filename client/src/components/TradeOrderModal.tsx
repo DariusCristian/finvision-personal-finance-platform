@@ -78,7 +78,11 @@ export function TradeOrderModal({
   }, [marketPrice, parsedQuantity]);
 
   const postTradeCash = useMemo(() => {
-    if (typeof cashBalance !== 'number' || !Number.isFinite(cashBalance) || estimatedTotal === null) {
+    if (
+      typeof cashBalance !== 'number' ||
+      !Number.isFinite(cashBalance) ||
+      estimatedTotal === null
+    ) {
       return null;
     }
 
@@ -94,7 +98,12 @@ export function TradeOrderModal({
       return 'Enter a quantity greater than zero.';
     }
 
-    if (side === 'buy' && typeof cashBalance === 'number' && estimatedTotal !== null && estimatedTotal > cashBalance) {
+    if (
+      side === 'buy' &&
+      typeof cashBalance === 'number' &&
+      estimatedTotal !== null &&
+      estimatedTotal > cashBalance
+    ) {
       return 'Insufficient buying power for this order.';
     }
 
@@ -138,7 +147,9 @@ export function TradeOrderModal({
       <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-700">
           <div>
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Trade {symbol}</h3>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              Trade {symbol}
+            </h3>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{coinName || coinId}</p>
           </div>
           <button
@@ -147,7 +158,13 @@ export function TradeOrderModal({
             className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             aria-label="Close order modal"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="h-5 w-5"
+            >
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
@@ -203,12 +220,16 @@ export function TradeOrderModal({
             marketPriceCurrency !== pricingCurrency ? (
               <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                 <span>Settlement price ({pricingCurrency})</span>
-                <span className="font-medium text-slate-900 dark:text-slate-100">{formatPrice(currentPrice, pricingCurrency)}</span>
+                <span className="font-medium text-slate-900 dark:text-slate-100">
+                  {formatPrice(currentPrice, pricingCurrency)}
+                </span>
               </div>
             ) : null}
             <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
               <span>Est. total</span>
-              <span className="font-medium text-slate-900 dark:text-slate-100">{formatMoney(estimatedTotal, pricingCurrency)}</span>
+              <span className="font-medium text-slate-900 dark:text-slate-100">
+                {formatMoney(estimatedTotal, pricingCurrency)}
+              </span>
             </div>
             {typeof estimatedTotalMarket === 'number' &&
             Number.isFinite(estimatedTotalMarket) &&
@@ -222,11 +243,15 @@ export function TradeOrderModal({
             ) : null}
             <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
               <span>Available cash</span>
-              <span className="font-medium text-slate-900 dark:text-slate-100">{formatMoney(cashBalance, pricingCurrency)}</span>
+              <span className="font-medium text-slate-900 dark:text-slate-100">
+                {formatMoney(cashBalance, pricingCurrency)}
+              </span>
             </div>
             <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
               <span>Post-trade cash</span>
-              <span className="font-semibold text-slate-900 dark:text-slate-100">{formatMoney(postTradeCash, pricingCurrency)}</span>
+              <span className="font-semibold text-slate-900 dark:text-slate-100">
+                {formatMoney(postTradeCash, pricingCurrency)}
+              </span>
             </div>
             {side === 'sell' ? (
               <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">

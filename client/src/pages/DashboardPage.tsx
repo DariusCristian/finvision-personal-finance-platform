@@ -122,13 +122,7 @@ const getInitialOnboardingDismissed = () => {
   return window.localStorage.getItem(ONBOARDING_DISMISSED_KEY) === 'true';
 };
 
-function RetryButton({
-  onRetry,
-  label = 'Retry',
-}: {
-  onRetry: () => void;
-  label?: string;
-}) {
+function RetryButton({ onRetry, label = 'Retry' }: { onRetry: () => void; label?: string }) {
   return (
     <button
       type="button"
@@ -152,14 +146,18 @@ export function DashboardPage() {
   const [categories, setCategories] = useState<BudgetCategory[]>([]);
   const [transactions, setTransactions] = useState<BudgetTransaction[]>([]);
   const [allTimeTransactionsCount, setAllTimeTransactionsCount] = useState(0);
-  const [cryptoPortfolioTotals, setCryptoPortfolioTotals] = useState<PortfolioTotals>(EMPTY_PORTFOLIO_TOTALS);
-  const [stockPortfolioTotals, setStockPortfolioTotals] = useState<PortfolioTotals>(EMPTY_PORTFOLIO_TOTALS);
+  const [cryptoPortfolioTotals, setCryptoPortfolioTotals] =
+    useState<PortfolioTotals>(EMPTY_PORTFOLIO_TOTALS);
+  const [stockPortfolioTotals, setStockPortfolioTotals] =
+    useState<PortfolioTotals>(EMPTY_PORTFOLIO_TOTALS);
   const [portfolioHoldings, setPortfolioHoldings] = useState<PortfolioHolding[]>([]);
   const [marketQuotes, setMarketQuotes] = useState<StockQuote[]>([]);
   const [learningProgress, setLearningProgress] = useState<EducationProgress | null>(null);
   const [newsItems, setNewsItems] = useState<NewsArticle[]>([]);
   const [investingWallet, setInvestingWallet] = useState<InvestingWallet | null>(null);
-  const [investingWalletLedger, setInvestingWalletLedger] = useState<InvestingWalletLedgerEntry[]>([]);
+  const [investingWalletLedger, setInvestingWalletLedger] = useState<InvestingWalletLedgerEntry[]>(
+    [],
+  );
   const [insights, setInsights] = useState<Insight[]>([]);
   const [dismissingInsightId, setDismissingInsightId] = useState<string | null>(null);
   const [cryptoTradesCount, setCryptoTradesCount] = useState(0);
@@ -350,25 +348,28 @@ export function DashboardPage() {
     window.localStorage.setItem(ONBOARDING_DISMISSED_KEY, onboardingDismissed ? 'true' : 'false');
   }, [onboardingDismissed]);
 
-  const handleDismissInsight = useCallback(async (insightId: string) => {
-    if (!accessToken || dismissingInsightId) {
-      return;
-    }
+  const handleDismissInsight = useCallback(
+    async (insightId: string) => {
+      if (!accessToken || dismissingInsightId) {
+        return;
+      }
 
-    setDismissingInsightId(insightId);
+      setDismissingInsightId(insightId);
 
-    try {
-      await dismissInsight(insightId, accessToken);
-      setInsights((current) => current.filter((insight) => insight.id !== insightId));
-    } catch (error) {
-      setWidgetErrors((current) => ({
-        ...current,
-        insights: getErrorMessage(error, 'Unable to dismiss insight right now.'),
-      }));
-    } finally {
-      setDismissingInsightId(null);
-    }
-  }, [accessToken, dismissingInsightId]);
+      try {
+        await dismissInsight(insightId, accessToken);
+        setInsights((current) => current.filter((insight) => insight.id !== insightId));
+      } catch (error) {
+        setWidgetErrors((current) => ({
+          ...current,
+          insights: getErrorMessage(error, 'Unable to dismiss insight right now.'),
+        }));
+      } finally {
+        setDismissingInsightId(null);
+      }
+    },
+    [accessToken, dismissingInsightId],
+  );
 
   const activeProfile = profile ?? user;
   const budgetDisplayCurrency = activeProfile?.baseCurrency ?? 'USD';
@@ -412,7 +413,9 @@ export function DashboardPage() {
       });
     });
 
-    const sortedCategories = [...categoryTotals.values()].sort((left, right) => right.value - left.value);
+    const sortedCategories = [...categoryTotals.values()].sort(
+      (left, right) => right.value - left.value,
+    );
     const topFour = sortedCategories.slice(0, 4);
     const otherTotal = sortedCategories.slice(4).reduce((sum, item) => sum + item.value, 0);
     const donutSlices = [
@@ -469,9 +472,7 @@ export function DashboardPage() {
 
   const hasDepositOrAutoFund = useMemo(
     () =>
-      investingWalletLedger.some(
-        (entry) => entry.type === 'deposit' || entry.type === 'autofund',
-      ),
+      investingWalletLedger.some((entry) => entry.type === 'deposit' || entry.type === 'autofund'),
     [investingWalletLedger],
   );
 
@@ -486,7 +487,9 @@ export function DashboardPage() {
         id: 'set-budget',
         title: 'Set your monthly budget',
         description: 'Define your budget goal in Budget & Expenses.',
-        completed: typeof activeProfile?.monthlyBudgetGoal === 'number' && activeProfile.monthlyBudgetGoal > 0,
+        completed:
+          typeof activeProfile?.monthlyBudgetGoal === 'number' &&
+          activeProfile.monthlyBudgetGoal > 0,
         href: '/budget',
       },
       {
@@ -544,7 +547,8 @@ export function DashboardPage() {
   );
 
   const onboardingCompletedCount = onboardingItems.filter((item) => item.completed).length;
-  const shouldShowOnboarding = !onboardingDismissed && onboardingCompletedCount < onboardingItems.length;
+  const shouldShowOnboarding =
+    !onboardingDismissed && onboardingCompletedCount < onboardingItems.length;
 
   const handleCreateTransaction = async (payload: {
     type: 'income' | 'expense';
@@ -581,8 +585,12 @@ export function DashboardPage() {
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#2563eb]">Home</p>
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Home</h1>
-            <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">Your financial overview in one place.</p>
+            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+              Home
+            </h1>
+            <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">
+              Your financial overview in one place.
+            </p>
           </div>
           <div className="grid w-full grid-cols-1 gap-3 sm:w-auto sm:grid-cols-2">
             <button
@@ -614,7 +622,9 @@ export function DashboardPage() {
                 </p>
                 <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Total received</p>
                 {budgetSummary.income <= 0 ? (
-                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Add your first transaction.</p>
+                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                    Add your first transaction.
+                  </p>
                 ) : null}
               </article>
 
@@ -625,7 +635,9 @@ export function DashboardPage() {
                 </p>
                 <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Total spent</p>
                 {budgetSummary.expenses <= 0 ? (
-                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Add your first transaction.</p>
+                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                    Add your first transaction.
+                  </p>
                 ) : null}
               </article>
 
@@ -633,8 +645,13 @@ export function DashboardPage() {
                 <p className="text-sm text-slate-500 dark:text-slate-400">Remaining Budget</p>
                 {budgetSummary.budgetGoal === null ? (
                   <div className="mt-2 space-y-2">
-                    <p className="text-base font-semibold text-slate-700 dark:text-slate-300">Set budget to see remaining.</p>
-                    <Link to="/budget" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+                    <p className="text-base font-semibold text-slate-700 dark:text-slate-300">
+                      Set budget to see remaining.
+                    </p>
+                    <Link
+                      to="/budget"
+                      className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]"
+                    >
                       Set budget
                     </Link>
                   </div>
@@ -649,7 +666,9 @@ export function DashboardPage() {
                     <div className="mt-3 h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800">
                       <div
                         className="h-2 rounded-full bg-[#f97316]"
-                        style={{ width: `${Math.max(0, Math.min(100, budgetSummary.percentSpent ?? 0))}%` }}
+                        style={{
+                          width: `${Math.max(0, Math.min(100, budgetSummary.percentSpent ?? 0))}%`,
+                        }}
                       />
                     </div>
                     <p className="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
@@ -664,9 +683,13 @@ export function DashboardPage() {
                 <p className="mt-2 text-3xl font-bold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
                   {formatMoney(portfolioSummary.totalValue, portfolioDisplayCurrency)}
                 </p>
-                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Crypto + Stocks (EUR)</p>
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  Crypto + Stocks (EUR)
+                </p>
                 {portfolioSummary.totalValue <= 0 ? (
-                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Make your first trade.</p>
+                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                    Make your first trade.
+                  </p>
                 ) : null}
               </article>
             </>
@@ -683,8 +706,13 @@ export function DashboardPage() {
         <section className="grid gap-6 xl:grid-cols-2">
           <article className="rounded-[1.5rem] fv-card p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Spending by Category</h2>
-              <Link to="/budget" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Spending by Category
+              </h2>
+              <Link
+                to="/budget"
+                className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]"
+              >
                 Open Budget
               </Link>
             </div>
@@ -701,7 +729,10 @@ export function DashboardPage() {
               </p>
             ) : (
               <div className="mt-6 grid gap-5 sm:grid-cols-[13rem_1fr] sm:items-center">
-                <div className="relative mx-auto h-44 w-44 rounded-full" style={{ background: buildDonutBackground(budgetSummary.donutSlices) }}>
+                <div
+                  className="relative mx-auto h-44 w-44 rounded-full"
+                  style={{ background: buildDonutBackground(budgetSummary.donutSlices) }}
+                >
                   <div className="absolute inset-6 flex flex-col items-center justify-center rounded-full bg-white dark:bg-slate-900 text-center">
                     <span className="text-xs text-slate-500 dark:text-slate-400">Total</span>
                     <span className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">
@@ -715,12 +746,20 @@ export function DashboardPage() {
                       budgetSummary.expenses > 0 ? (slice.value / budgetSummary.expenses) * 100 : 0;
 
                     return (
-                      <div key={slice.label} className="flex items-center justify-between gap-3 text-sm">
+                      <div
+                        key={slice.label}
+                        className="flex items-center justify-between gap-3 text-sm"
+                      >
                         <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: slice.color }} />
+                          <span
+                            className="h-2.5 w-2.5 rounded-full"
+                            style={{ backgroundColor: slice.color }}
+                          />
                           <span>{slice.label}</span>
                         </div>
-                        <span className="font-semibold text-slate-900 dark:text-slate-100">{Math.round(percentage)}%</span>
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">
+                          {Math.round(percentage)}%
+                        </span>
                       </div>
                     );
                   })}
@@ -731,15 +770,23 @@ export function DashboardPage() {
 
           <article className="rounded-[1.5rem] fv-card p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Portfolio Snapshot</h2>
-              <Link to="/invest" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Portfolio Snapshot
+              </h2>
+              <Link
+                to="/invest"
+                className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]"
+              >
                 Open Invest
               </Link>
             </div>
             {isLoading ? (
               <div className="mt-4 space-y-3">
                 {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="h-10 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+                  <div
+                    key={index}
+                    className="h-10 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800"
+                  />
                 ))}
               </div>
             ) : widgetErrors.invest ? (
@@ -768,7 +815,9 @@ export function DashboardPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500 dark:text-slate-400">Top holding</span>
                   <span className="font-semibold text-slate-900 dark:text-slate-100">
-                    {topHolding ? `${topHolding.symbol} (${formatPct(topHolding.allocationPct, 1)})` : 'No holdings yet'}
+                    {topHolding
+                      ? `${topHolding.symbol} (${formatPct(topHolding.allocationPct, 1)})`
+                      : 'No holdings yet'}
                   </span>
                 </div>
               </div>
@@ -776,15 +825,23 @@ export function DashboardPage() {
 
             <div className="mt-6 border-t border-slate-200 dark:border-slate-800 pt-4">
               <div className="mb-2 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Market Snapshot</h3>
-                <Link to="/market" className="text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  Market Snapshot
+                </h3>
+                <Link
+                  to="/market"
+                  className="text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8]"
+                >
                   Open Market
                 </Link>
               </div>
               {isLoading ? (
                 <div className="space-y-2">
                   {Array.from({ length: 3 }).map((_, index) => (
-                    <div key={index} className="h-8 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />
+                    <div
+                      key={index}
+                      className="h-8 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800"
+                    />
                   ))}
                 </div>
               ) : widgetErrors.market ? (
@@ -793,12 +850,19 @@ export function DashboardPage() {
                   <RetryButton onRetry={retryAllWidgets} />
                 </div>
               ) : marketQuotes.length === 0 ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400">No market snapshot yet.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  No market snapshot yet.
+                </p>
               ) : (
                 <div className="space-y-2">
                   {marketQuotes.slice(0, 5).map((quote) => (
-                    <div key={quote.symbol} className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-800/60 px-3 py-2 text-sm">
-                      <span className="font-medium text-slate-800 dark:text-slate-200">{quote.symbol}</span>
+                    <div
+                      key={quote.symbol}
+                      className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-800/60 px-3 py-2 text-sm"
+                    >
+                      <span className="font-medium text-slate-800 dark:text-slate-200">
+                        {quote.symbol}
+                      </span>
                       <span
                         className={[
                           'font-semibold',
@@ -820,15 +884,23 @@ export function DashboardPage() {
         <section className="grid gap-6 xl:grid-cols-4">
           <article className="rounded-[1.5rem] fv-card p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Finny Insights</h2>
-              <Link to="/finny" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Finny Insights
+              </h2>
+              <Link
+                to="/finny"
+                className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]"
+              >
                 Ask Finny
               </Link>
             </div>
             {isLoading ? (
               <div className="mt-4 space-y-3">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="h-14 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+                  <div
+                    key={index}
+                    className="h-14 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800"
+                  />
                 ))}
               </div>
             ) : widgetErrors.insights ? (
@@ -843,8 +915,13 @@ export function DashboardPage() {
             ) : (
               <div className="mt-4 space-y-3">
                 {insights.slice(0, 3).map((insight) => (
-                  <article key={insight.id} className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 dark:border-amber-900/70 dark:bg-amber-950/30">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{insight.title}</p>
+                  <article
+                    key={insight.id}
+                    className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 dark:border-amber-900/70 dark:bg-amber-950/30"
+                  >
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      {insight.title}
+                    </p>
                     <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
                       {insight.whatNoticed || insight.message || insight.whyMatters}
                     </p>
@@ -876,15 +953,23 @@ export function DashboardPage() {
 
           <article className="rounded-[1.5rem] fv-card p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Recent Transactions</h2>
-              <Link to="/budget" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Recent Transactions
+              </h2>
+              <Link
+                to="/budget"
+                className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]"
+              >
                 Open Budget
               </Link>
             </div>
             {isLoading ? (
               <div className="mt-4 space-y-3">
                 {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="h-12 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+                  <div
+                    key={index}
+                    className="h-12 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800"
+                  />
                 ))}
               </div>
             ) : widgetErrors.budget ? (
@@ -895,7 +980,10 @@ export function DashboardPage() {
             ) : budgetSummary.recentTransactions.length === 0 ? (
               <div className="mt-4 space-y-3">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="h-12 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60" />
+                  <div
+                    key={index}
+                    className="h-12 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60"
+                  />
                 ))}
                 <button
                   type="button"
@@ -908,12 +996,17 @@ export function DashboardPage() {
             ) : (
               <div className="mt-4 space-y-3">
                 {budgetSummary.recentTransactions.map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/60 px-3 py-2.5">
+                  <div
+                    key={transaction.id}
+                    className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/60 px-3 py-2.5"
+                  >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                         {transaction.description || transaction.category?.name || 'Transaction'}
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{formatTransactionDate(transaction.date)}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {formatTransactionDate(transaction.date)}
+                      </p>
                     </div>
                     <span
                       className={[
@@ -932,15 +1025,23 @@ export function DashboardPage() {
 
           <article className="rounded-[1.5rem] fv-card p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Latest News</h2>
-              <Link to="/news" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Latest News
+              </h2>
+              <Link
+                to="/news"
+                className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]"
+              >
                 Open News
               </Link>
             </div>
             {isLoading ? (
               <div className="mt-4 space-y-3">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="h-16 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+                  <div
+                    key={index}
+                    className="h-16 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800"
+                  />
                 ))}
               </div>
             ) : widgetErrors.news ? (
@@ -950,7 +1051,9 @@ export function DashboardPage() {
               </div>
             ) : newsItems.length === 0 ? (
               <div className="mt-4">
-                <p className="text-sm text-slate-500 dark:text-slate-400">No news loaded. Try again.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  No news loaded. Try again.
+                </p>
                 <RetryButton onRetry={retryAllWidgets} />
               </div>
             ) : (
@@ -962,9 +1065,12 @@ export function DashboardPage() {
                     onClick={() => window.open(article.url, '_blank', 'noopener,noreferrer')}
                     className="w-full rounded-xl bg-slate-50 px-3 py-2.5 text-left transition hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800"
                   >
-                    <p className="line-clamp-2 text-sm font-medium text-slate-900 dark:text-slate-100">{article.title}</p>
+                    <p className="line-clamp-2 text-sm font-medium text-slate-900 dark:text-slate-100">
+                      {article.title}
+                    </p>
                     <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      {article.source} • {new Date(article.publishedAt || Date.now()).toLocaleDateString()}
+                      {article.source} •{' '}
+                      {new Date(article.publishedAt || Date.now()).toLocaleDateString()}
                     </p>
                   </button>
                 ))}
@@ -974,15 +1080,23 @@ export function DashboardPage() {
 
           <article className="rounded-[1.5rem] fv-card p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Learning Progress</h2>
-              <Link to="/learn" className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Learning Progress
+              </h2>
+              <Link
+                to="/learn"
+                className="text-sm font-semibold text-[#2563eb] hover:text-[#1d4ed8]"
+              >
                 Open Learning
               </Link>
             </div>
             {isLoading ? (
               <div className="mt-4 space-y-3">
                 {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="h-10 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+                  <div
+                    key={index}
+                    className="h-10 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800"
+                  />
                 ))}
               </div>
             ) : widgetErrors.learn ? (
@@ -991,16 +1105,22 @@ export function DashboardPage() {
                 <RetryButton onRetry={retryAllWidgets} />
               </div>
             ) : !lastQuizAttempt ? (
-              <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Start your first quiz to track progress.</p>
+              <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+                Start your first quiz to track progress.
+              </p>
             ) : (
               <div className="mt-4 space-y-3">
                 <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/60 px-3 py-2.5">
                   <span className="text-sm text-slate-500 dark:text-slate-400">XP</span>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{learningProgress?.xp ?? 0}</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    {learningProgress?.xp ?? 0}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/60 px-3 py-2.5">
                   <span className="text-sm text-slate-500 dark:text-slate-400">Level</span>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{learningProgress?.level ?? 1}</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    {learningProgress?.level ?? 1}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/60 px-3 py-2.5">
                   <span className="text-sm text-slate-500 dark:text-slate-400">Streak</span>

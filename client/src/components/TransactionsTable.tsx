@@ -45,7 +45,8 @@ type VirtualizedRowData = RowActionHandlers & {
   currency: 'RON' | 'EUR' | 'USD';
 };
 
-const HEADER_CELL_CLASS = 'sticky top-0 z-10 border-b border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800';
+const HEADER_CELL_CLASS =
+  'sticky top-0 z-10 border-b border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800';
 const GRID_TEMPLATE = 'minmax(0,2.4fr) minmax(0,1.25fr) minmax(0,1.1fr) minmax(0,1fr) 4.5rem';
 const VIRTUAL_ROW_HEIGHT = 104;
 
@@ -60,7 +61,13 @@ const formatAmount = (transaction: BudgetTransaction, currency: 'RON' | 'EUR' | 
 
 function SearchIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="h-5 w-5"
+    >
       <circle cx="11" cy="11" r="6" />
       <path d="m20 20-4.2-4.2" />
     </svg>
@@ -132,15 +139,16 @@ function TransactionDetailContent({ transaction }: { transaction: BudgetTransact
       <div
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
         style={{
-          backgroundColor:
-            transaction.type === 'income' ? 'rgba(16, 185, 129, 0.14)' : '#f1f5f9',
+          backgroundColor: transaction.type === 'income' ? 'rgba(16, 185, 129, 0.14)' : '#f1f5f9',
           color: transaction.type === 'income' ? '#059669' : '#475569',
         }}
       >
         {getAvatarLabel(transaction)}
       </div>
       <div className="min-w-0">
-        <p className="max-w-[18rem] truncate font-medium text-slate-900 dark:text-slate-100">{getRowLabel(transaction)}</p>
+        <p className="max-w-[18rem] truncate font-medium text-slate-900 dark:text-slate-100">
+          {getRowLabel(transaction)}
+        </p>
         <div className="mt-1 flex flex-wrap items-center gap-2">
           <p className="text-xs text-slate-500 dark:text-slate-400">{getMetaLabel(transaction)}</p>
           {transaction.isRecurring ? (
@@ -257,7 +265,9 @@ const TransactionTableRow = memo(function TransactionTableRow({
       <td className="px-6 py-5">
         <TransactionCategoryChip transaction={transaction} />
       </td>
-      <td className="px-6 py-5 text-slate-500 dark:text-slate-400">{formatDate(transaction.date)}</td>
+      <td className="px-6 py-5 text-slate-500 dark:text-slate-400">
+        {formatDate(transaction.date)}
+      </td>
       <td className="px-6 py-5 text-right">
         <TransactionAmountText transaction={transaction} currency={currency} />
       </td>
@@ -305,7 +315,9 @@ function VirtualizedTransactionRow({
       >
         <TransactionDetailContent transaction={transaction} />
         <TransactionCategoryChip transaction={transaction} />
-        <span className="text-sm text-slate-500 dark:text-slate-400">{formatDate(transaction.date)}</span>
+        <span className="text-sm text-slate-500 dark:text-slate-400">
+          {formatDate(transaction.date)}
+        </span>
         <div className="text-right">
           <TransactionAmountText transaction={transaction} currency={currency} />
         </div>

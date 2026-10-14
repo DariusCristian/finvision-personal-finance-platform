@@ -35,7 +35,9 @@ test('parseEnv rejects a missing JWT secret', () => {
 test('parseEnv rejects long placeholder secrets in production only', () => {
   const placeholder = 'change_me_change_me_change_me_change_me';
 
-  assert.doesNotThrow(() => parseEnv(baseEnv({ NODE_ENV: 'development', JWT_ACCESS_SECRET: placeholder })));
+  assert.doesNotThrow(() =>
+    parseEnv(baseEnv({ NODE_ENV: 'development', JWT_ACCESS_SECRET: placeholder })),
+  );
   assert.throws(
     () => parseEnv(baseEnv({ NODE_ENV: 'production', JWT_ACCESS_SECRET: placeholder })),
     /JWT_ACCESS_SECRET looks like a placeholder/,

@@ -463,230 +463,227 @@ export function RegisterPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-              <div>
-                <label
-                  htmlFor="full-name"
-                  className="mb-2 block text-sm font-semibold text-[var(--color-text-heading)] sm:text-base"
-                >
-                  Full Name
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 dark:text-slate-400">
-                    <UserIcon className="h-5 w-5" />
-                  </span>
-                  <input
-                    id="full-name"
-                    type="text"
-                    value={fullName}
-                    onChange={(event) => {
-                      setFullName(event.target.value);
-                      if (formError) {
-                        setFormError(null);
-                      }
-                    }}
-                    placeholder="Enter Your Full Name"
-                    className="h-14 w-full rounded-2xl border border-[var(--color-input-border)] bg-slate-50/70 pl-12 pr-4 text-base text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:bg-slate-900/60 dark:text-slate-200 dark:focus:ring-blue-900/40"
-                  />
-                </div>
-              </div>
+        <div>
+          <label
+            htmlFor="full-name"
+            className="mb-2 block text-sm font-semibold text-[var(--color-text-heading)] sm:text-base"
+          >
+            Full Name
+          </label>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 dark:text-slate-400">
+              <UserIcon className="h-5 w-5" />
+            </span>
+            <input
+              id="full-name"
+              type="text"
+              value={fullName}
+              onChange={(event) => {
+                setFullName(event.target.value);
+                if (formError) {
+                  setFormError(null);
+                }
+              }}
+              placeholder="Enter Your Full Name"
+              className="h-14 w-full rounded-2xl border border-[var(--color-input-border)] bg-slate-50/70 pl-12 pr-4 text-base text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:bg-slate-900/60 dark:text-slate-200 dark:focus:ring-blue-900/40"
+            />
+          </div>
+        </div>
 
-              <div>
-                <label
-                  htmlFor="email"
-                  className="mb-2 block text-sm font-semibold text-[var(--color-text-heading)] sm:text-base"
-                >
-                  Email Address
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 dark:text-slate-400">
-                    <MailIcon className="h-5 w-5" />
-                  </span>
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(event) => {
-                      const nextEmail = event.target.value;
-                      setEmail(nextEmail);
-                      if (formError) {
-                        setFormError(null);
-                      }
+        <div>
+          <label
+            htmlFor="email"
+            className="mb-2 block text-sm font-semibold text-[var(--color-text-heading)] sm:text-base"
+          >
+            Email Address
+          </label>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 dark:text-slate-400">
+              <MailIcon className="h-5 w-5" />
+            </span>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(event) => {
+                const nextEmail = event.target.value;
+                setEmail(nextEmail);
+                if (formError) {
+                  setFormError(null);
+                }
 
-                      if (touched.email) {
-                        updateFieldError('email', {
-                          ...formValues,
-                          email: nextEmail,
-                        });
-                      }
-                    }}
-                    onBlur={() => handleBlur('email')}
-                    placeholder="Enter Your Email"
-                    className={getInputClassName(errors.email)}
-                  />
-                </div>
-                {errors.email && touched.email ? (
-                  <p className="mt-2 text-sm font-medium text-rose-500">{errors.email}</p>
-                ) : null}
-              </div>
+                if (touched.email) {
+                  updateFieldError('email', {
+                    ...formValues,
+                    email: nextEmail,
+                  });
+                }
+              }}
+              onBlur={() => handleBlur('email')}
+              placeholder="Enter Your Email"
+              className={getInputClassName(errors.email)}
+            />
+          </div>
+          {errors.email && touched.email ? (
+            <p className="mt-2 text-sm font-medium text-rose-500">{errors.email}</p>
+          ) : null}
+        </div>
 
-              <div>
-                <div className="mb-2 flex items-center justify-between gap-4">
-                  <label
-                    htmlFor="password"
-                    className="text-sm font-semibold text-[var(--color-text-heading)] sm:text-base"
-                  >
-                    Password
-                  </label>
-                  <span className="text-sm font-medium text-slate-400 dark:text-slate-500">
-                    Use at least 8 characters
-                  </span>
-                </div>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 dark:text-slate-400">
-                    <LockIcon className="h-5 w-5" />
-                  </span>
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(event) => {
-                      const nextPassword = event.target.value;
-                      const nextValues = {
-                        ...formValues,
-                        password: nextPassword,
-                      };
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-4">
+            <label
+              htmlFor="password"
+              className="text-sm font-semibold text-[var(--color-text-heading)] sm:text-base"
+            >
+              Password
+            </label>
+            <span className="text-sm font-medium text-slate-400 dark:text-slate-500">
+              Use at least 8 characters
+            </span>
+          </div>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 dark:text-slate-400">
+              <LockIcon className="h-5 w-5" />
+            </span>
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(event) => {
+                const nextPassword = event.target.value;
+                const nextValues = {
+                  ...formValues,
+                  password: nextPassword,
+                };
 
-                      setPassword(nextPassword);
-                      if (formError) {
-                        setFormError(null);
-                      }
+                setPassword(nextPassword);
+                if (formError) {
+                  setFormError(null);
+                }
 
-                      if (touched.password) {
-                        updateFieldError('password', nextValues);
-                      }
+                if (touched.password) {
+                  updateFieldError('password', nextValues);
+                }
 
-                      if (touched.confirmPassword) {
-                        updateFieldError('confirmPassword', nextValues);
-                      }
-                    }}
-                    onBlur={() => handleBlur('password')}
-                    placeholder="Create a password"
-                    className={getInputClassName(errors.password)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((current) => !current)}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                  >
-                    <EyeIcon open={showPassword} className="h-5 w-5" />
-                  </button>
-                </div>
-                {errors.password && touched.password ? (
-                  <p className="mt-2 text-sm font-medium text-rose-500">{errors.password}</p>
-                ) : null}
-              </div>
+                if (touched.confirmPassword) {
+                  updateFieldError('confirmPassword', nextValues);
+                }
+              }}
+              onBlur={() => handleBlur('password')}
+              placeholder="Create a password"
+              className={getInputClassName(errors.password)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((current) => !current)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            >
+              <EyeIcon open={showPassword} className="h-5 w-5" />
+            </button>
+          </div>
+          {errors.password && touched.password ? (
+            <p className="mt-2 text-sm font-medium text-rose-500">{errors.password}</p>
+          ) : null}
+        </div>
 
-              <div>
-                <label
-                  htmlFor="confirm-password"
-                  className="mb-2 block text-sm font-semibold text-[var(--color-text-heading)] sm:text-base"
-                >
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 dark:text-slate-400">
-                    <LockIcon className="h-5 w-5" />
-                  </span>
-                  <input
-                    id="confirm-password"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(event) => {
-                      const nextConfirmPassword = event.target.value;
-                      setConfirmPassword(nextConfirmPassword);
-                      if (formError) {
-                        setFormError(null);
-                      }
+        <div>
+          <label
+            htmlFor="confirm-password"
+            className="mb-2 block text-sm font-semibold text-[var(--color-text-heading)] sm:text-base"
+          >
+            Confirm Password
+          </label>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 dark:text-slate-400">
+              <LockIcon className="h-5 w-5" />
+            </span>
+            <input
+              id="confirm-password"
+              type={showConfirmPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(event) => {
+                const nextConfirmPassword = event.target.value;
+                setConfirmPassword(nextConfirmPassword);
+                if (formError) {
+                  setFormError(null);
+                }
 
-                      if (touched.confirmPassword) {
-                        updateFieldError('confirmPassword', {
-                          ...formValues,
-                          confirmPassword: nextConfirmPassword,
-                        });
-                      }
-                    }}
-                    onBlur={() => handleBlur('confirmPassword')}
-                    placeholder="Repeat your password"
-                    className={getInputClassName(errors.confirmPassword)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword((current) => !current)}
-                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                  >
-                    <EyeIcon open={showConfirmPassword} className="h-5 w-5" />
-                  </button>
-                </div>
-                {errors.confirmPassword && touched.confirmPassword ? (
-                  <p className="mt-2 text-sm font-medium text-rose-500">{errors.confirmPassword}</p>
-                ) : null}
-              </div>
+                if (touched.confirmPassword) {
+                  updateFieldError('confirmPassword', {
+                    ...formValues,
+                    confirmPassword: nextConfirmPassword,
+                  });
+                }
+              }}
+              onBlur={() => handleBlur('confirmPassword')}
+              placeholder="Repeat your password"
+              className={getInputClassName(errors.confirmPassword)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((current) => !current)}
+              aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+              className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            >
+              <EyeIcon open={showConfirmPassword} className="h-5 w-5" />
+            </button>
+          </div>
+          {errors.confirmPassword && touched.confirmPassword ? (
+            <p className="mt-2 text-sm font-medium text-rose-500">{errors.confirmPassword}</p>
+          ) : null}
+        </div>
 
-              <label className="flex cursor-pointer items-start gap-3 text-base text-[var(--color-text-muted)]">
-                <span className="relative mt-0.5 flex h-5 w-5 items-center justify-center">
-                  <input
-                    type="checkbox"
-                    checked={agreeToTerms}
-                    onChange={(event) => setAgreeToTerms(event.target.checked)}
-                    className="peer h-5 w-5 appearance-none rounded-md border border-slate-300 bg-white checked:border-blue-600 checked:bg-blue-600 dark:border-slate-600 dark:bg-slate-900"
-                  />
-                  <span className="pointer-events-none absolute text-white opacity-0 transition peer-checked:opacity-100">
-                    <CheckBadgeIcon className="h-3.5 w-3.5" />
-                  </span>
-                </span>
-                <span>
-                  I agree to the{' '}
-                  <button
-                    type="button"
-                    className="font-semibold text-[var(--color-link)] hover:text-[#1D4ED8]"
-                  >
-                    Terms of Service
-                  </button>{' '}
-                  and{' '}
-                  <button
-                    type="button"
-                    className="font-semibold text-[var(--color-link)] hover:text-[#1D4ED8]"
-                  >
-                    Privacy Policy
-                  </button>
-                  .
-                </span>
-              </label>
+        <label className="flex cursor-pointer items-start gap-3 text-base text-[var(--color-text-muted)]">
+          <span className="relative mt-0.5 flex h-5 w-5 items-center justify-center">
+            <input
+              type="checkbox"
+              checked={agreeToTerms}
+              onChange={(event) => setAgreeToTerms(event.target.checked)}
+              className="peer h-5 w-5 appearance-none rounded-md border border-slate-300 bg-white checked:border-blue-600 checked:bg-blue-600 dark:border-slate-600 dark:bg-slate-900"
+            />
+            <span className="pointer-events-none absolute text-white opacity-0 transition peer-checked:opacity-100">
+              <CheckBadgeIcon className="h-3.5 w-3.5" />
+            </span>
+          </span>
+          <span>
+            I agree to the{' '}
+            <button
+              type="button"
+              className="font-semibold text-[var(--color-link)] hover:text-[#1D4ED8]"
+            >
+              Terms of Service
+            </button>{' '}
+            and{' '}
+            <button
+              type="button"
+              className="font-semibold text-[var(--color-link)] hover:text-[#1D4ED8]"
+            >
+              Privacy Policy
+            </button>
+            .
+          </span>
+        </label>
 
-              {formError ? <p className="text-sm font-medium text-rose-500">{formError}</p> : null}
+        {formError ? <p className="text-sm font-medium text-rose-500">{formError}</p> : null}
 
-              <button
-                type="submit"
-                disabled={!isFormValid || isSubmitting || !fullName.trim()}
-                className={[
-                  'h-14 w-full rounded-2xl text-lg font-semibold text-white shadow-[0_16px_32px_rgba(37,99,235,0.24)] transition',
-                  !isFormValid || isSubmitting || !fullName.trim()
-                    ? 'cursor-not-allowed bg-blue-300 shadow-none'
-                    : 'bg-[var(--color-button-primary)] hover:bg-[var(--color-button-primary-hover)]',
-                ].join(' ')}
-              >
-                {isSubmitting ? 'Creating Account...' : 'Create Account'}
-              </button>
+        <button
+          type="submit"
+          disabled={!isFormValid || isSubmitting || !fullName.trim()}
+          className={[
+            'h-14 w-full rounded-2xl text-lg font-semibold text-white shadow-[0_16px_32px_rgba(37,99,235,0.24)] transition',
+            !isFormValid || isSubmitting || !fullName.trim()
+              ? 'cursor-not-allowed bg-blue-300 shadow-none'
+              : 'bg-[var(--color-button-primary)] hover:bg-[var(--color-button-primary-hover)]',
+          ].join(' ')}
+        >
+          {isSubmitting ? 'Creating Account...' : 'Create Account'}
+        </button>
       </form>
 
       <p className="mt-8 text-center text-base text-[var(--color-text-muted)]">
         Already have an account?{' '}
-        <Link
-          to="/login"
-          className="font-semibold text-[var(--color-link)] hover:text-[#1D4ED8]"
-        >
+        <Link to="/login" className="font-semibold text-[var(--color-link)] hover:text-[#1D4ED8]">
           Sign in
         </Link>
       </p>

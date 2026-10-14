@@ -29,7 +29,9 @@ after(async () => {
 test('article search with an unbalanced parenthesis returns 200', async () => {
   await createArticles(['Budgeting (the basics)', 'Saving tips']);
 
-  const response = await request(runtime.app).get('/api/v1/education/articles?search=%28').expect(200);
+  const response = await request(runtime.app)
+    .get('/api/v1/education/articles?search=%28')
+    .expect(200);
 
   assert.deepEqual(
     response.body.data.articles.map((article) => article.title),

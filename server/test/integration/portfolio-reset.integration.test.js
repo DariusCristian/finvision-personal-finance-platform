@@ -23,8 +23,18 @@ const registerAndLogin = async () => {
 };
 
 const RESET_ENDPOINTS = [
-  { name: 'crypto', modePath: '/api/v1/invest/crypto/mode', resetPath: '/api/v1/invest/reset', accountType: 'crypto' },
-  { name: 'stocks', modePath: '/api/v1/market/stocks/mode', resetPath: '/api/v1/market/stocks/reset', accountType: 'stocks' },
+  {
+    name: 'crypto',
+    modePath: '/api/v1/invest/crypto/mode',
+    resetPath: '/api/v1/invest/reset',
+    accountType: 'crypto',
+  },
+  {
+    name: 'stocks',
+    modePath: '/api/v1/market/stocks/mode',
+    resetPath: '/api/v1/market/stocks/reset',
+    accountType: 'stocks',
+  },
 ];
 
 before(async () => {
@@ -58,7 +68,10 @@ for (const { name, modePath, resetPath, accountType } of RESET_ENDPOINTS) {
     const response = await request(runtime.app).post(resetPath).set(auth).expect(400);
 
     assert.equal(response.body.error.code, 'RESET_NOT_ALLOWED_IN_FUNDED_MODE');
-    assert.equal((await PortfolioAccount.findOne({ userId, accountType, mode: 'funded' }).lean()).cashBalance, 250);
+    assert.equal(
+      (await PortfolioAccount.findOne({ userId, accountType, mode: 'funded' }).lean()).cashBalance,
+      250,
+    );
     assert.equal(await InvestFunding.countDocuments({ userId }), 1);
   });
 
@@ -69,7 +82,13 @@ for (const { name, modePath, resetPath, accountType } of RESET_ENDPOINTS) {
 
     const response = await request(runtime.app).post(resetPath).set(auth).expect(200);
 
-    assert.equal(response.body.data.account.cashBalanceEUR ?? response.body.data.account.cashBalance, 5000);
-    assert.equal((await PortfolioAccount.findOne({ userId, accountType, mode: 'demo' }).lean()).cashBalance, 5000);
+    assert.equal(
+      response.body.data.account.cashBalanceEUR ?? response.body.data.account.cashBalance,
+      5000,
+    );
+    assert.equal(
+      (await PortfolioAccount.findOne({ userId, accountType, mode: 'demo' }).lean()).cashBalance,
+      5000,
+    );
   });
 }

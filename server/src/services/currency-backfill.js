@@ -11,7 +11,11 @@ const MISSING_CONVERSION_FILTER = {
 
 const toIsoDay = (date) => new Date(date).toISOString().slice(0, 10);
 
-export const backfillTransactionCurrencies = async ({ apply = false, batchSize = 200, sampleSize = 5 } = {}) => {
+export const backfillTransactionCurrencies = async ({
+  apply = false,
+  batchSize = 200,
+  sampleSize = 5,
+} = {}) => {
   const report = {
     mode: apply ? 'apply' : 'dry-run',
     candidates: 0,
@@ -55,7 +59,9 @@ export const backfillTransactionCurrencies = async ({ apply = false, batchSize =
         report.rateRequests += 1;
         ratesByCurrencyDay.set(
           key,
-          buildCurrencyConversion({ amount: 1, currency, date: transaction.date }).catch((error) => ({ error })),
+          buildCurrencyConversion({ amount: 1, currency, date: transaction.date }).catch(
+            (error) => ({ error }),
+          ),
         );
       }
 
@@ -63,7 +69,12 @@ export const backfillTransactionCurrencies = async ({ apply = false, batchSize =
 
       if (unitConversion.error) {
         report.failed += 1;
-        report.failures.push({ id: String(transaction._id), currency, date: day, reason: unitConversion.error.message });
+        report.failures.push({
+          id: String(transaction._id),
+          currency,
+          date: day,
+          reason: unitConversion.error.message,
+        });
         continue;
       }
 
@@ -79,7 +90,13 @@ export const backfillTransactionCurrencies = async ({ apply = false, batchSize =
       report.converted += 1;
 
       if (report.samples.length < sampleSize) {
-        report.samples.push({ id: String(transaction._id), amount: transaction.amount, currency, date: day, ...conversion });
+        report.samples.push({
+          id: String(transaction._id),
+          amount: transaction.amount,
+          currency,
+          date: day,
+          ...conversion,
+        });
       }
 
       updates.push({

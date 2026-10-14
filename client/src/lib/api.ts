@@ -1,8 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001';
-const AUTH_TOKEN_STORAGE_KEYS = [
-  'finvision.accessToken',
-  'accessToken',
-] as const;
+const AUTH_TOKEN_STORAGE_KEYS = ['finvision.accessToken', 'accessToken'] as const;
 const REFRESH_TOKEN_STORAGE_KEY = 'finvision.refreshToken';
 
 export type AuthUser = {
@@ -159,7 +156,11 @@ export type NewsArticle = {
 export type Insight = {
   id: string;
   userId: string;
-  type: 'SUBSCRIPTION_NO_END' | 'BUDGET_PACE_WARNING' | 'INVESTING_UNFUNDED' | 'PORTFOLIO_CONCENTRATION';
+  type:
+    | 'SUBSCRIPTION_NO_END'
+    | 'BUDGET_PACE_WARNING'
+    | 'INVESTING_UNFUNDED'
+    | 'PORTFOLIO_CONCENTRATION';
   severity: 'low' | 'medium' | 'high';
   title: string;
   whatNoticed: string;
@@ -708,7 +709,6 @@ type InvestFundingResponse = ApiSuccessEnvelope<{
   funding: InvestFundingEntry[];
 }>;
 
-
 type InvestCryptoStateResponse = ApiSuccessEnvelope<InvestCryptoState>;
 type MarketStocksStateResponse = ApiSuccessEnvelope<MarketStocksState>;
 
@@ -745,7 +745,6 @@ type InvestingWalletSummaryResponse = ApiSuccessEnvelope<InvestingWalletSummary>
 type InvestingWalletLedgerResponse = ApiSuccessEnvelope<{
   entries: InvestingWalletLedgerEntry[];
 }>;
-
 
 type InvestOrderResponse = ApiSuccessEnvelope<{
   selectedMode?: InvestCryptoMode;
@@ -933,7 +932,6 @@ type InvestStockOrderPayload = {
   quantity: number;
 };
 
-
 type InvestingWalletUpdatePayload = {
   monthlyGoal?: number;
   autoFundEnabled?: boolean;
@@ -1088,7 +1086,8 @@ export const toApiFailure = (error: unknown): ApiFailure => {
   return {
     ok: false,
     code: 'UNKNOWN_ERROR',
-    message: error instanceof Error && error.message.trim().length > 0 ? error.message : 'Request failed.',
+    message:
+      error instanceof Error && error.message.trim().length > 0 ? error.message : 'Request failed.',
     status: 500,
     details: [],
   };
@@ -1260,8 +1259,7 @@ const requestCsv = async (
 
   const blob = await response.blob();
   const filename =
-    parseFilenameFromDisposition(response.headers.get('content-disposition')) ??
-    fallbackFilename;
+    parseFilenameFromDisposition(response.headers.get('content-disposition')) ?? fallbackFilename;
 
   return { blob, filename };
 };
@@ -1332,9 +1330,10 @@ export const sendFinnyChatMessage = async (
   if (responseData.format === 'text' && typeof responseData.text === 'string') {
     return {
       format: 'text',
-      text: responseData.text.trim().length > 0
-        ? responseData.text.trim()
-        : 'Finny response is unavailable right now.',
+      text:
+        responseData.text.trim().length > 0
+          ? responseData.text.trim()
+          : 'Finny response is unavailable right now.',
       ...(responseData.meta ? { meta: responseData.meta } : {}),
     };
   }
@@ -1358,7 +1357,8 @@ export const sendFinnyChatMessage = async (
   return {
     format: 'text',
     text:
-      typeof responseData.replyTextFallback === 'string' && responseData.replyTextFallback.trim().length > 0
+      typeof responseData.replyTextFallback === 'string' &&
+      responseData.replyTextFallback.trim().length > 0
         ? responseData.replyTextFallback.trim()
         : 'Finny response is unavailable right now.',
     ...(responseData.meta ? { meta: responseData.meta } : {}),
@@ -1405,7 +1405,11 @@ export const exportInvestCsv = async (query: InvestExportQuery, token: string) =
     params.set('month', String(query.month));
   }
 
-  return requestCsv('/api/v1/exports/invest.csv?' + params.toString(), token, 'finvision-invest.csv');
+  return requestCsv(
+    '/api/v1/exports/invest.csv?' + params.toString(),
+    token,
+    'finvision-invest.csv',
+  );
 };
 
 export const fetchCategories = async (token: string) => {
@@ -1427,12 +1431,9 @@ export const fetchNewsArticles = async (
 
   const queryString = params.toString();
   const path = queryString ? `/api/v1/news?${queryString}` : '/api/v1/news';
-  const payload = await apiRequest<NewsResponse>(
-    path,
-    {
-      signal: options.signal,
-    },
-  );
+  const payload = await apiRequest<NewsResponse>(path, {
+    signal: options.signal,
+  });
 
   return {
     ...payload.data,
@@ -1472,7 +1473,11 @@ export const fetchInvestAccount = async (token: string) => {
 };
 
 export const fetchInvestCryptoState = async (token: string) => {
-  const payload = await apiRequest<InvestCryptoStateResponse>('/api/v1/invest/crypto/state', {}, token);
+  const payload = await apiRequest<InvestCryptoStateResponse>(
+    '/api/v1/invest/crypto/state',
+    {},
+    token,
+  );
   return payload.data;
 };
 
@@ -1577,11 +1582,7 @@ export const fetchInvestingWallet = async (token: string) => {
   return payload.data;
 };
 
-export const fetchInvestingWalletSummary = async (
-  token: string,
-  year: number,
-  month: number,
-) => {
+export const fetchInvestingWalletSummary = async (token: string, year: number, month: number) => {
   const params = new URLSearchParams({
     year: String(year),
     month: String(month),
@@ -1608,7 +1609,10 @@ export const updateInvestingWallet = async (body: InvestingWalletUpdatePayload, 
   return payload.data;
 };
 
-export const depositInvestingWallet = async (body: InvestingWalletDepositPayload, token: string) => {
+export const depositInvestingWallet = async (
+  body: InvestingWalletDepositPayload,
+  token: string,
+) => {
   const payload = await apiRequest<InvestingWalletResponse>(
     '/api/v1/investing-wallet/deposit',
     {
@@ -1660,12 +1664,20 @@ export const placeInvestOrder = async (body: InvestOrderPayload, token: string) 
 };
 
 export const fetchMarketAccount = async (token: string) => {
-  const payload = await apiRequest<MarketAccountResponse>('/api/v1/market/stocks/account', {}, token);
+  const payload = await apiRequest<MarketAccountResponse>(
+    '/api/v1/market/stocks/account',
+    {},
+    token,
+  );
   return payload.data;
 };
 
 export const fetchMarketHoldings = async (token: string) => {
-  const payload = await apiRequest<MarketHoldingsResponse>('/api/v1/market/stocks/holdings', {}, token);
+  const payload = await apiRequest<MarketHoldingsResponse>(
+    '/api/v1/market/stocks/holdings',
+    {},
+    token,
+  );
   return payload.data;
 };
 
@@ -1680,14 +1692,15 @@ export const fetchMarketTrades = async (token: string, limit = 50) => {
 };
 
 export const fetchMarketAllocation = async (token: string) => {
-  const payload = await apiRequest<MarketAllocationResponse>('/api/v1/market/stocks/allocation', {}, token);
+  const payload = await apiRequest<MarketAllocationResponse>(
+    '/api/v1/market/stocks/allocation',
+    {},
+    token,
+  );
   return payload.data;
 };
 
-export const fetchMarketPerformance = async (
-  token: string,
-  range: '7d' | '30d' = '7d',
-) => {
+export const fetchMarketPerformance = async (token: string, range: '7d' | '30d' = '7d') => {
   const payload = await apiRequest<MarketPerformanceResponse>(
     `/api/v1/market/stocks/performance?range=${range}`,
     {},
@@ -1751,7 +1764,11 @@ export const resetMarketDemoPortfolio = async (token: string) => {
 };
 
 export const fetchMarketStocksState = async (token: string) => {
-  const payload = await apiRequest<MarketStocksStateResponse>('/api/v1/market/stocks/state', {}, token);
+  const payload = await apiRequest<MarketStocksStateResponse>(
+    '/api/v1/market/stocks/state',
+    {},
+    token,
+  );
   return payload.data;
 };
 
@@ -1817,11 +1834,7 @@ export const searchCryptoMarket = async (
   params.set('q', resolvedQuery);
 
   const path = `/api/v1/market/crypto/search${params.toString() ? `?${params.toString()}` : ''}`;
-  const payload = await apiRequest<MarketSearchResponse>(
-    path,
-    { signal: options.signal },
-    token,
-  );
+  const payload = await apiRequest<MarketSearchResponse>(path, { signal: options.signal }, token);
 
   return payload.data;
 };
@@ -1907,7 +1920,9 @@ export const fetchStockQuotes = async (
   token: string,
   options: { signal?: AbortSignal } = {},
 ) => {
-  const normalizedSymbols = [...new Set(symbols.map((symbol) => symbol.trim().toUpperCase()).filter(Boolean))];
+  const normalizedSymbols = [
+    ...new Set(symbols.map((symbol) => symbol.trim().toUpperCase()).filter(Boolean)),
+  ];
 
   if (normalizedSymbols.length === 0) {
     return {
@@ -1956,11 +1971,7 @@ export const fetchStockCandles = async (
     range,
   });
   const path = `/api/v1/market/stocks/candles?${params.toString()}`;
-  const payload = await apiRequest<StockCandlesResponse>(
-    path,
-    { signal: options.signal },
-    token,
-  );
+  const payload = await apiRequest<StockCandlesResponse>(path, { signal: options.signal }, token);
 
   return {
     ...payload.data,
@@ -1989,11 +2000,7 @@ export const fetchTransactions = async (query: TransactionsQuery, token: string)
   };
 };
 
-export const fetchBudgetSummary = async (
-  token: string,
-  year: number,
-  month: number,
-) => {
+export const fetchBudgetSummary = async (token: string, year: number, month: number) => {
   const params = new URLSearchParams({
     year: String(year),
     month: String(month),
@@ -2125,7 +2132,9 @@ export const fetchEducationArticles = async (query: EducationArticlesQuery = {})
 };
 
 export const fetchEducationArticle = async (idOrSlug: string) => {
-  const payload = await apiRequest<EducationArticleResponse>(`/api/v1/education/articles/${idOrSlug}`);
+  const payload = await apiRequest<EducationArticleResponse>(
+    `/api/v1/education/articles/${idOrSlug}`,
+  );
   return payload.data;
 };
 
@@ -2172,6 +2181,10 @@ export const submitEducationQuizAttempt = async (
 };
 
 export const fetchEducationProgress = async (token: string) => {
-  const payload = await apiRequest<EducationProgressResponse>('/api/v1/education/progress', {}, token);
+  const payload = await apiRequest<EducationProgressResponse>(
+    '/api/v1/education/progress',
+    {},
+    token,
+  );
   return payload.data;
 };

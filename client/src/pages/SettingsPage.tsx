@@ -194,8 +194,8 @@ export function SettingsPage() {
   }, [hydrateForms, user?.id]);
 
   useEffect(() => {
-    const sections = Object.values(sectionRefs.current).filter(
-      (section): section is HTMLElement => Boolean(section),
+    const sections = Object.values(sectionRefs.current).filter((section): section is HTMLElement =>
+      Boolean(section),
     );
 
     if (sections.length === 0) {
@@ -284,9 +284,7 @@ export function SettingsPage() {
       setProfileNotice({
         kind: 'error',
         message:
-          error instanceof ApiRequestError
-            ? error.message
-            : 'Unable to update profile right now.',
+          error instanceof ApiRequestError ? error.message : 'Unable to update profile right now.',
       });
     } finally {
       setIsSavingProfile(false);
@@ -380,9 +378,7 @@ export function SettingsPage() {
       setSecurityNotice({
         kind: 'error',
         message:
-          error instanceof ApiRequestError
-            ? error.message
-            : 'Unable to update password right now.',
+          error instanceof ApiRequestError ? error.message : 'Unable to update password right now.',
       });
     } finally {
       setIsSavingPassword(false);
@@ -404,7 +400,9 @@ export function SettingsPage() {
     <AppShell activeTab="settings">
       <div className="fv-page space-y-6">
         <header>
-          <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Account Settings</h1>
+          <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+            Account Settings
+          </h1>
           <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">
             Manage your profile details, preferences, and security settings.
           </p>
@@ -432,7 +430,9 @@ export function SettingsPage() {
                   ].join(' ')}
                 >
                   <p className="text-sm font-semibold">{item.label}</p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{item.description}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {item.description}
+                  </p>
                 </button>
               ))}
             </nav>
@@ -448,8 +448,12 @@ export function SettingsPage() {
             >
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Profile</h2>
-                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Update your personal details.</p>
+                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
+                    Profile
+                  </h2>
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                    Update your personal details.
+                  </p>
                 </div>
                 <div className="inline-flex items-center gap-3 self-start rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
                   <span>Plan</span>
@@ -465,8 +469,12 @@ export function SettingsPage() {
                     {initials}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Profile avatar</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Generated from your initials.</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      Profile avatar
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Generated from your initials.
+                    </p>
                   </div>
                 </div>
 
@@ -477,7 +485,10 @@ export function SettingsPage() {
                       type="text"
                       value={profileForm.displayName}
                       onChange={(event) => {
-                        setProfileForm((current) => ({ ...current, displayName: event.target.value }));
+                        setProfileForm((current) => ({
+                          ...current,
+                          displayName: event.target.value,
+                        }));
                         setProfileNotice(null);
                       }}
                       className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-blue-900/40"
@@ -496,14 +507,15 @@ export function SettingsPage() {
                       className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-blue-900/40"
                     />
                   </label>
-
                 </div>
 
                 {profileNotice ? (
-                  <p className={[
-                    'rounded-xl border px-3 py-2 text-sm font-medium',
-                    noticeClassByKind(profileNotice.kind),
-                  ].join(' ')}>
+                  <p
+                    className={[
+                      'rounded-xl border px-3 py-2 text-sm font-medium',
+                      noticeClassByKind(profileNotice.kind),
+                    ].join(' ')}
+                  >
                     {profileNotice.message}
                   </p>
                 ) : null}
@@ -530,8 +542,12 @@ export function SettingsPage() {
               }}
               className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-800 dark:bg-slate-900 sm:p-7"
             >
-              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Preferences</h2>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Customize defaults used across your dashboard.</p>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
+                Preferences
+              </h2>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                Customize defaults used across your dashboard.
+              </p>
 
               <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={handlePreferencesSubmit}>
                 <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -573,8 +589,12 @@ export function SettingsPage() {
 
                 <div className="md:col-span-2">
                   <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Appearance</p>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Choose how FinVision looks to you.</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                      Appearance
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      Choose how FinVision looks to you.
+                    </p>
                     <div className="mt-3 flex gap-2">
                       {(['light', 'dark', 'system'] as const).map((option) => (
                         <button
@@ -588,7 +608,9 @@ export function SettingsPage() {
                               : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700',
                           ].join(' ')}
                         >
-                          {option === 'system' ? 'Follow system' : option.charAt(0).toUpperCase() + option.slice(1)}
+                          {option === 'system'
+                            ? 'Follow system'
+                            : option.charAt(0).toUpperCase() + option.slice(1)}
                         </button>
                       ))}
                     </div>
@@ -596,10 +618,12 @@ export function SettingsPage() {
                 </div>
 
                 {prefsNotice ? (
-                  <p className={[
-                    'md:col-span-2 rounded-xl border px-3 py-2 text-sm font-medium',
-                    noticeClassByKind(prefsNotice.kind),
-                  ].join(' ')}>
+                  <p
+                    className={[
+                      'md:col-span-2 rounded-xl border px-3 py-2 text-sm font-medium',
+                      noticeClassByKind(prefsNotice.kind),
+                    ].join(' ')}
+                  >
                     {prefsNotice.message}
                   </p>
                 ) : null}
@@ -630,8 +654,12 @@ export function SettingsPage() {
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Security</h2>
-                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Change your password.</p>
+                  <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
+                    Security
+                  </h2>
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                    Change your password.
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -672,7 +700,9 @@ export function SettingsPage() {
                     ].join(' ')}
                   />
                   {passwordErrors.currentPassword ? (
-                    <p className="mt-2 text-xs font-medium text-rose-600">{passwordErrors.currentPassword}</p>
+                    <p className="mt-2 text-xs font-medium text-rose-600">
+                      {passwordErrors.currentPassword}
+                    </p>
                   ) : null}
                 </label>
 
@@ -683,7 +713,10 @@ export function SettingsPage() {
                       type="password"
                       value={securityForm.newPassword}
                       onChange={(event) => {
-                        setSecurityForm((current) => ({ ...current, newPassword: event.target.value }));
+                        setSecurityForm((current) => ({
+                          ...current,
+                          newPassword: event.target.value,
+                        }));
                         setPasswordErrors((current) => ({ ...current, newPassword: undefined }));
                         setSecurityNotice(null);
                       }}
@@ -695,7 +728,9 @@ export function SettingsPage() {
                       ].join(' ')}
                     />
                     {passwordErrors.newPassword ? (
-                      <p className="mt-2 text-xs font-medium text-rose-600">{passwordErrors.newPassword}</p>
+                      <p className="mt-2 text-xs font-medium text-rose-600">
+                        {passwordErrors.newPassword}
+                      </p>
                     ) : null}
                   </label>
 
@@ -709,7 +744,10 @@ export function SettingsPage() {
                           ...current,
                           confirmNewPassword: event.target.value,
                         }));
-                        setPasswordErrors((current) => ({ ...current, confirmNewPassword: undefined }));
+                        setPasswordErrors((current) => ({
+                          ...current,
+                          confirmNewPassword: undefined,
+                        }));
                         setSecurityNotice(null);
                       }}
                       className={[
@@ -728,10 +766,12 @@ export function SettingsPage() {
                 </div>
 
                 {securityNotice ? (
-                  <p className={[
-                    'rounded-xl border px-3 py-2 text-sm font-medium',
-                    noticeClassByKind(securityNotice.kind),
-                  ].join(' ')}>
+                  <p
+                    className={[
+                      'rounded-xl border px-3 py-2 text-sm font-medium',
+                      noticeClassByKind(securityNotice.kind),
+                    ].join(' ')}
+                  >
                     {securityNotice.message}
                   </p>
                 ) : null}
@@ -758,20 +798,27 @@ export function SettingsPage() {
               }}
               className="scroll-mt-24 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:border-slate-800 dark:bg-slate-900 sm:p-7"
             >
-              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">Billing</h2>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-100">
+                Billing
+              </h2>
               <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 dark:border-slate-700 dark:bg-slate-700">
                 <p className="text-sm text-slate-600 dark:text-slate-300">
-                  Current plan: <span className="font-semibold text-slate-900 dark:text-slate-100">Free plan</span>
+                  Current plan:{' '}
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">
+                    Free plan
+                  </span>
                 </p>
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                  Next billing date: <span className="font-medium text-slate-900 dark:text-slate-100">—</span>
+                  Next billing date:{' '}
+                  <span className="font-medium text-slate-900 dark:text-slate-100">—</span>
                 </p>
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                  Payment method: <span className="font-medium text-slate-900 dark:text-slate-100">—</span>
+                  Payment method:{' '}
+                  <span className="font-medium text-slate-900 dark:text-slate-100">—</span>
                 </p>
                 <p className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-700 dark:border-blue-900 dark:bg-blue-900/30 dark:text-blue-300">
-                  Billing will be handled via Stripe in a future update. This section will show invoices,
-                  payment methods, and plan upgrades.
+                  Billing will be handled via Stripe in a future update. This section will show
+                  invoices, payment methods, and plan upgrades.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button

@@ -54,7 +54,14 @@ const createExpense = async ({ amount, currency, date = PAST_DAY, description = 
   const response = await request(runtime.app)
     .post('/api/v1/transactions')
     .set(auth)
-    .send({ type: 'expense', categoryId: await expenseCategoryId(), amount, currency, date, description });
+    .send({
+      type: 'expense',
+      categoryId: await expenseCategoryId(),
+      amount,
+      currency,
+      date,
+      description,
+    });
 
   return response;
 };
@@ -105,7 +112,10 @@ test('a transaction stores its amount in RON, EUR and USD with the rates and rat
   assert.equal(stored.fxRates.RON, 5);
   assert.equal(stored.fxRateDate, PAST_DAY);
   assert.equal(stored.fxProvider, 'frankfurter');
-  assert.ok(fxCalls.some((call) => call.startsWith(`/v1/${PAST_DAY}?`)), 'uses the transaction date rates');
+  assert.ok(
+    fxCalls.some((call) => call.startsWith(`/v1/${PAST_DAY}?`)),
+    'uses the transaction date rates',
+  );
 });
 
 test('budget totals add mixed currencies in the base currency (100 RON + 100 EUR)', async () => {
@@ -135,9 +145,10 @@ test('switching the base currency changes the totals without recomputing or refe
   assert.equal(
     inUsd.expenseTotal,
     Number(
-      (Number((100 * testRate('RON', 'USD')).toFixed(2)) + Number((100 * testRate('EUR', 'USD')).toFixed(2))).toFixed(
-        2,
-      ),
+      (
+        Number((100 * testRate('RON', 'USD')).toFixed(2)) +
+        Number((100 * testRate('EUR', 'USD')).toFixed(2))
+      ).toFixed(2),
     ),
   );
   assert.equal(fxCalls.length, 0, 'no FX calls when switching or reading totals');
@@ -152,7 +163,14 @@ test('editing amount, currency or date re-converts; editing only the description
     request(runtime.app)
       .patch(`/api/v1/transactions/${id}`)
       .set(auth)
-      .send({ type: 'expense', categoryId, amount: 100, currency: 'EUR', date: PAST_DAY, ...changes })
+      .send({
+        type: 'expense',
+        categoryId,
+        amount: 100,
+        currency: 'EUR',
+        date: PAST_DAY,
+        ...changes,
+      })
       .expect(200);
 
   fxCalls.length = 0;
@@ -182,7 +200,11 @@ test('Finny net worth converts the EUR investing accounts into the base currency
   await createExpense({ amount: 100, currency: 'RON', date: today });
   await createExpense({ amount: 100, currency: 'EUR', date: today });
   // Demo crypto starts with 5000 EUR cash.
-  await request(runtime.app).post('/api/v1/invest/crypto/mode').set(auth).send({ mode: 'demo' }).expect(200);
+  await request(runtime.app)
+    .post('/api/v1/invest/crypto/mode')
+    .set(auth)
+    .send({ mode: 'demo' })
+    .expect(200);
 
   const response = await request(runtime.app)
     .post('/api/v1/finny/chat')

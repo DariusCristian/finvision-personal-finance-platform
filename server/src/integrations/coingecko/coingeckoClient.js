@@ -213,12 +213,17 @@ export const searchCoins = async (query) => {
 
     const coins = Array.isArray(payload?.coins) ? payload.coins : [];
 
-    return coins.slice(0, 20).map((coin) => ({
-      coinId: String(coin.id ?? '').trim(),
-      symbol: String(coin.symbol ?? '').trim().toUpperCase(),
-      name: String(coin.name ?? '').trim(),
-      thumb: String(coin.thumb ?? '').trim(),
-    })).filter((coin) => coin.coinId && coin.symbol && coin.name);
+    return coins
+      .slice(0, 20)
+      .map((coin) => ({
+        coinId: String(coin.id ?? '').trim(),
+        symbol: String(coin.symbol ?? '')
+          .trim()
+          .toUpperCase(),
+        name: String(coin.name ?? '').trim(),
+        thumb: String(coin.thumb ?? '').trim(),
+      }))
+      .filter((coin) => coin.coinId && coin.symbol && coin.name);
   });
 };
 
@@ -229,7 +234,9 @@ export const getSimplePrices = async (coinIds, vsCurrency) => {
     return {};
   }
 
-  const normalizedVs = String(vsCurrency || 'usd').trim().toLowerCase();
+  const normalizedVs = String(vsCurrency || 'usd')
+    .trim()
+    .toLowerCase();
   const cacheKey = `coingecko:price:${normalizedVs}:${normalizedCoinIds.join(',')}`;
 
   return withCachedRequest(cacheKey, PRICE_CACHE_TTL_MS, async () => {
@@ -260,13 +267,17 @@ export const getSimplePrices = async (coinIds, vsCurrency) => {
 };
 
 export const getMarketChart = async (coinId, vsCurrency, days = 7) => {
-  const normalizedCoinId = String(coinId || '').trim().toLowerCase();
+  const normalizedCoinId = String(coinId || '')
+    .trim()
+    .toLowerCase();
 
   if (!normalizedCoinId) {
     return [];
   }
 
-  const normalizedVs = String(vsCurrency || 'usd').trim().toLowerCase();
+  const normalizedVs = String(vsCurrency || 'usd')
+    .trim()
+    .toLowerCase();
   const safeDays = Math.max(1, Math.min(365, Number(days) || 7));
   const cacheKey = `coingecko:chart:${normalizedCoinId}:${normalizedVs}:${safeDays}`;
 

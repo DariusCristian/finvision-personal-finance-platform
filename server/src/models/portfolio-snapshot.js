@@ -57,8 +57,7 @@ const portfolioSnapshotSchema = new mongoose.Schema(
 portfolioSnapshotSchema.index({ userId: 1, accountType: 1, mode: 1, date: 1 }, { unique: true });
 
 export const PortfolioSnapshot =
-  mongoose.models.PortfolioSnapshot ??
-  mongoose.model('PortfolioSnapshot', portfolioSnapshotSchema);
+  mongoose.models.PortfolioSnapshot ?? mongoose.model('PortfolioSnapshot', portfolioSnapshotSchema);
 
 export const backfillPortfolioSnapshotAccountType = async () => {
   await PortfolioSnapshot.updateMany(

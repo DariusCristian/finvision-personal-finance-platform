@@ -69,7 +69,9 @@ const resolveSelectedModeOrNull = (authUser) =>
 const resolveActiveMode = (authUser) => resolveSelectedModeOrNull(authUser) ?? CRYPTO_DEFAULT_MODE;
 
 const getStartingCashBalanceForMode = (mode) =>
-  mode === CRYPTO_DEMO_MODE ? DEMO_STARTING_CRYPTO_CASH_BALANCE : FUNDED_STARTING_CRYPTO_CASH_BALANCE;
+  mode === CRYPTO_DEMO_MODE
+    ? DEMO_STARTING_CRYPTO_CASH_BALANCE
+    : FUNDED_STARTING_CRYPTO_CASH_BALANCE;
 
 const logModeScopedAccount = ({ selectedMode, account, holdingsCount }) => {
   if (env.NODE_ENV !== 'development') {
@@ -98,9 +100,10 @@ const buildRangeDayTimestamps = (days) => {
     today.getUTCDate(),
   );
 
-  return Array.from({ length: days }, (_item, index) => (
-    todayDayTimestamp - ((days - 1 - index) * DAY_MS)
-  ));
+  return Array.from(
+    { length: days },
+    (_item, index) => todayDayTimestamp - (days - 1 - index) * DAY_MS,
+  );
 };
 
 const buildDailyPriceResolver = ({ chartPoints, fallbackPrice }) => {
@@ -272,7 +275,15 @@ const normalizeProviderError = (error) => {
 
 const fetchCryptoPricesMap = async (coinIds) => {
   const uniqueCoinIds = [
-    ...new Set(coinIds.map((coinId) => String(coinId || '').trim().toLowerCase()).filter(Boolean)),
+    ...new Set(
+      coinIds
+        .map((coinId) =>
+          String(coinId || '')
+            .trim()
+            .toLowerCase(),
+        )
+        .filter(Boolean),
+    ),
   ];
 
   if (uniqueCoinIds.length === 0 || !isCoinGeckoConfigured()) {
@@ -288,7 +299,7 @@ const buildPortfolioSummary = async ({ account, holdings }) => {
 
   const enriched = holdings
     .map((holding) => {
-      const quote = holding.coinId ? cryptoPricesMap[holding.coinId] ?? null : null;
+      const quote = holding.coinId ? (cryptoPricesMap[holding.coinId] ?? null) : null;
       const currentPrice = quote?.price ?? 0;
       const change24h = typeof quote?.change24h === 'number' ? quote.change24h : null;
       const marketValue = holding.quantity * currentPrice;
@@ -342,7 +353,10 @@ const buildPortfolioSummary = async ({ account, holdings }) => {
 };
 
 const computeAllocation = ({ holdingsSummary }) => {
-  const cryptoValue = holdingsSummary.holdings.reduce((sum, holding) => sum + holding.marketValue, 0);
+  const cryptoValue = holdingsSummary.holdings.reduce(
+    (sum, holding) => sum + holding.marketValue,
+    0,
+  );
   const cashValue = holdingsSummary.totals.cashBalance;
   const total = toMoney(cryptoValue + cashValue);
 
@@ -368,8 +382,7 @@ const computeAllocation = ({ holdingsSummary }) => {
       symbol: holding.symbol,
       coinId: holding.coinId,
       value: holding.marketValue,
-      pctOfAssets:
-        cryptoValue > 0 ? toNumber((holding.marketValue / cryptoValue) * 100, 4) : 0,
+      pctOfAssets: cryptoValue > 0 ? toNumber((holding.marketValue / cryptoValue) * 100, 4) : 0,
       pctOfTotal: total > 0 ? toNumber((holding.marketValue / total) * 100, 4) : 0,
     }));
 
@@ -410,7 +423,9 @@ const computePerformanceSeries = async ({ account, holdings, range }) => {
   const days = PERFORMANCE_DAYS_BY_RANGE[range] ?? PERFORMANCE_DAYS_BY_RANGE['7d'];
   const dayTimestamps = buildRangeDayTimestamps(days);
   const cashBalance = typeof account.cashBalance === 'number' ? account.cashBalance : 0;
-  const cryptoHoldings = holdings.filter((holding) => holding.assetType === 'crypto' && holding.coinId);
+  const cryptoHoldings = holdings.filter(
+    (holding) => holding.assetType === 'crypto' && holding.coinId,
+  );
 
   if (cryptoHoldings.length === 0) {
     return {
@@ -461,9 +476,10 @@ const computePerformanceSeries = async ({ account, holdings, range }) => {
   });
 
   const series = dayTimestamps.map((dayTimestamp) => {
-    const holdingsValue = priceResolvers.reduce((sum, resolver) => (
-      sum + (resolver.quantity * resolver.resolvePrice(dayTimestamp))
-    ), 0);
+    const holdingsValue = priceResolvers.reduce(
+      (sum, resolver) => sum + resolver.quantity * resolver.resolvePrice(dayTimestamp),
+      0,
+    );
 
     return {
       t: dayTimestamp,
@@ -662,23 +678,32 @@ investRouter.post(
       await ensureCryptoPortfolioAccount(req.authUser, CRYPTO_DEMO_MODE);
 
       const demoAccount = await runInTransaction(async (session) => {
-        await PortfolioHolding.deleteMany({
-          userId: req.authUser._id,
-          accountType: CRYPTO_ACCOUNT_TYPE,
-          mode: CRYPTO_DEMO_MODE,
-          assetType: 'crypto',
-        }, { session });
-        await PortfolioTrade.deleteMany({
-          userId: req.authUser._id,
-          accountType: CRYPTO_ACCOUNT_TYPE,
-          mode: CRYPTO_DEMO_MODE,
-          assetType: 'crypto',
-        }, { session });
-        await PortfolioSnapshot.deleteMany({
-          userId: req.authUser._id,
-          accountType: CRYPTO_ACCOUNT_TYPE,
-          mode: CRYPTO_DEMO_MODE,
-        }, { session });
+        await PortfolioHolding.deleteMany(
+          {
+            userId: req.authUser._id,
+            accountType: CRYPTO_ACCOUNT_TYPE,
+            mode: CRYPTO_DEMO_MODE,
+            assetType: 'crypto',
+          },
+          { session },
+        );
+        await PortfolioTrade.deleteMany(
+          {
+            userId: req.authUser._id,
+            accountType: CRYPTO_ACCOUNT_TYPE,
+            mode: CRYPTO_DEMO_MODE,
+            assetType: 'crypto',
+          },
+          { session },
+        );
+        await PortfolioSnapshot.deleteMany(
+          {
+            userId: req.authUser._id,
+            accountType: CRYPTO_ACCOUNT_TYPE,
+            mode: CRYPTO_DEMO_MODE,
+          },
+          { session },
+        );
 
         return setAccountCash(
           { userId: req.authUser._id, accountType: CRYPTO_ACCOUNT_TYPE, mode: CRYPTO_DEMO_MODE },
@@ -938,11 +963,13 @@ investRouter.post(
 );
 
 investRouter.post('/topup', requireAuth, (req, res, next) => {
-  next(new AppError({
-    message: 'Use /api/v1/invest/crypto/topup-from-wallet for Start Investing top-ups.',
-    statusCode: 410,
-    code: 'INVEST_TOPUP_ENDPOINT_DEPRECATED',
-  }));
+  next(
+    new AppError({
+      message: 'Use /api/v1/invest/crypto/topup-from-wallet for Start Investing top-ups.',
+      statusCode: 410,
+      code: 'INVEST_TOPUP_ENDPOINT_DEPRECATED',
+    }),
+  );
 });
 
 investRouter.get(
@@ -1043,25 +1070,37 @@ investRouter.post('/reset', requireAuth, async (req, res, next) => {
     await ensureCryptoPortfolioAccount(req.authUser, selectedMode);
 
     const account = await runInTransaction(async (session) => {
-      await PortfolioHolding.deleteMany({
-        userId: req.authUser._id,
-        accountType: CRYPTO_ACCOUNT_TYPE,
-        mode: selectedMode,
-      }, { session });
-      await PortfolioTrade.deleteMany({
-        userId: req.authUser._id,
-        accountType: CRYPTO_ACCOUNT_TYPE,
-        mode: selectedMode,
-      }, { session });
-      await PortfolioSnapshot.deleteMany({
-        userId: req.authUser._id,
-        accountType: CRYPTO_ACCOUNT_TYPE,
-        mode: selectedMode,
-      }, { session });
-      await InvestFunding.deleteMany({
-        userId: req.authUser._id,
-        mode: selectedMode,
-      }, { session });
+      await PortfolioHolding.deleteMany(
+        {
+          userId: req.authUser._id,
+          accountType: CRYPTO_ACCOUNT_TYPE,
+          mode: selectedMode,
+        },
+        { session },
+      );
+      await PortfolioTrade.deleteMany(
+        {
+          userId: req.authUser._id,
+          accountType: CRYPTO_ACCOUNT_TYPE,
+          mode: selectedMode,
+        },
+        { session },
+      );
+      await PortfolioSnapshot.deleteMany(
+        {
+          userId: req.authUser._id,
+          accountType: CRYPTO_ACCOUNT_TYPE,
+          mode: selectedMode,
+        },
+        { session },
+      );
+      await InvestFunding.deleteMany(
+        {
+          userId: req.authUser._id,
+          mode: selectedMode,
+        },
+        { session },
+      );
 
       return setAccountCash(
         { userId: req.authUser._id, accountType: CRYPTO_ACCOUNT_TYPE, mode: selectedMode },
@@ -1214,7 +1253,17 @@ const handleCryptoOrder = async (req, res, next) => {
   }
 };
 
-investRouter.post('/order', requireAuth, validateRequest({ body: investOrderSchema }), handleCryptoOrder);
-investRouter.post('/crypto/order', requireAuth, validateRequest({ body: investOrderSchema }), handleCryptoOrder);
+investRouter.post(
+  '/order',
+  requireAuth,
+  validateRequest({ body: investOrderSchema }),
+  handleCryptoOrder,
+);
+investRouter.post(
+  '/crypto/order',
+  requireAuth,
+  validateRequest({ body: investOrderSchema }),
+  handleCryptoOrder,
+);
 
 export { investRouter };

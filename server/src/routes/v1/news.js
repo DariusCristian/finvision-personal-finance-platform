@@ -111,7 +111,8 @@ newsRouter.get('/', validateRequest({ query: newsQuerySchema }), async (req, res
         typeof providerResponse?.providerMeta?.found === 'number'
           ? providerResponse.providerMeta.found
           : null;
-      const returned = typeof providerResponse?.returned === 'number' ? providerResponse.returned : 0;
+      const returned =
+        typeof providerResponse?.returned === 'number' ? providerResponse.returned : 0;
 
       if (providerResponse.articles.length === 0 && returned !== 0) {
         throw new MarketauxProviderError('News provider unavailable', {

@@ -26,7 +26,13 @@ function CheckIcon({ completed }: { completed: boolean }) {
 
   return (
     <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-emerald-300 bg-emerald-50 text-emerald-600 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-3.5 w-3.5">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        className="h-3.5 w-3.5"
+      >
         <path d="m5 13 4 4L19 7" />
       </svg>
     </span>
@@ -41,7 +47,9 @@ export function OnboardingChecklistCard({ items, onDismiss }: OnboardingChecklis
     <section className="fv-card rounded-[1.5rem] p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Getting started</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+            Getting started
+          </h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Complete these steps to unlock your full FinVision workflow.
           </p>
@@ -52,7 +60,13 @@ export function OnboardingChecklistCard({ items, onDismiss }: OnboardingChecklis
           className="rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
           aria-label="Dismiss onboarding checklist"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            className="h-4 w-4"
+          >
             <path d="M6 6l12 12M18 6 6 18" />
           </svg>
         </button>
@@ -84,8 +98,12 @@ export function OnboardingChecklistCard({ items, onDismiss }: OnboardingChecklis
                 <div className="flex items-start gap-2.5">
                   <CheckIcon completed={item.completed} />
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.title}</p>
-                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{item.description}</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      {item.title}
+                    </p>
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                      {item.description}
+                    </p>
                   </div>
                 </div>
               </div>

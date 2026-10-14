@@ -114,9 +114,15 @@ export function LearningCenterPage() {
         <header className="rounded-[1.5rem] border border-slate-100 bg-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#2563eb]">Learning Center</p>
-              <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">Financial Learning Center</h1>
-              <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">Learn core money concepts and test yourself with guided quizzes.</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                Learning Center
+              </p>
+              <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-slate-100">
+                Financial Learning Center
+              </h1>
+              <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">
+                Learn core money concepts and test yourself with guided quizzes.
+              </p>
             </div>
 
             <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600">
@@ -124,9 +130,16 @@ export function LearningCenterPage() {
                 <span>Loading progress...</span>
               ) : progress ? (
                 <div className="space-y-1 text-right">
-                  <p><span className="font-semibold text-slate-900">XP:</span> {progress.xp}</p>
-                  <p><span className="font-semibold text-slate-900">Level:</span> {progress.level}</p>
-                  <p><span className="font-semibold text-slate-900">Quiz Accuracy:</span> {progress.quizAccuracyPct}%</p>
+                  <p>
+                    <span className="font-semibold text-slate-900">XP:</span> {progress.xp}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-slate-900">Level:</span> {progress.level}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-slate-900">Quiz Accuracy:</span>{' '}
+                    {progress.quizAccuracyPct}%
+                  </p>
                 </div>
               ) : (
                 <span>Progress will appear after your first completion.</span>
@@ -182,7 +195,9 @@ export function LearningCenterPage() {
               onClick={() => setActiveTab('articles')}
               className={[
                 'rounded-lg px-4 py-2 text-sm font-medium transition',
-                activeTab === 'articles' ? 'bg-white text-[#2563eb] shadow-sm' : 'text-slate-500 hover:text-slate-700',
+                activeTab === 'articles'
+                  ? 'bg-white text-[#2563eb] shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700',
               ].join(' ')}
             >
               Articles
@@ -192,7 +207,9 @@ export function LearningCenterPage() {
               onClick={() => setActiveTab('quizzes')}
               className={[
                 'rounded-lg px-4 py-2 text-sm font-medium transition',
-                activeTab === 'quizzes' ? 'bg-white text-[#2563eb] shadow-sm' : 'text-slate-500 hover:text-slate-700',
+                activeTab === 'quizzes'
+                  ? 'bg-white text-[#2563eb] shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700',
               ].join(' ')}
             >
               Quizzes
@@ -209,7 +226,10 @@ export function LearningCenterPage() {
         {isLoadingContent ? (
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="h-48 animate-pulse rounded-[1.5rem] border border-slate-100 bg-white" />
+              <div
+                key={index}
+                className="h-48 animate-pulse rounded-[1.5rem] border border-slate-100 bg-white"
+              />
             ))}
           </section>
         ) : activeCount === 0 ? (
@@ -226,13 +246,22 @@ export function LearningCenterPage() {
               >
                 <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.14em] text-slate-500">
                   <span>{article.category}</span>
-                  <span className={['rounded-full px-2 py-1 font-semibold', difficultyClass(article.difficulty)].join(' ')}>
+                  <span
+                    className={[
+                      'rounded-full px-2 py-1 font-semibold',
+                      difficultyClass(article.difficulty),
+                    ].join(' ')}
+                  >
                     {article.difficulty}
                   </span>
                 </div>
-                <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em] text-slate-900">{article.title}</h3>
+                <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em] text-slate-900">
+                  {article.title}
+                </h3>
                 <p className="mt-3 line-clamp-3 text-sm text-slate-500">{article.excerpt}</p>
-                <p className="mt-5 text-sm font-medium text-[#2563eb]">{article.estimatedMinutes} min read</p>
+                <p className="mt-5 text-sm font-medium text-[#2563eb]">
+                  {article.estimatedMinutes} min read
+                </p>
               </Link>
             ))}
           </section>
@@ -246,11 +275,18 @@ export function LearningCenterPage() {
               >
                 <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.14em] text-slate-500">
                   <span>{quiz.category}</span>
-                  <span className={['rounded-full px-2 py-1 font-semibold', difficultyClass(quiz.difficulty)].join(' ')}>
+                  <span
+                    className={[
+                      'rounded-full px-2 py-1 font-semibold',
+                      difficultyClass(quiz.difficulty),
+                    ].join(' ')}
+                  >
                     {quiz.difficulty}
                   </span>
                 </div>
-                <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em] text-slate-900">{quiz.title}</h3>
+                <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em] text-slate-900">
+                  {quiz.title}
+                </h3>
                 <p className="mt-3 text-sm text-slate-500">
                   {quiz.questionCount} questions • Passing score {quiz.passingScore}%
                 </p>

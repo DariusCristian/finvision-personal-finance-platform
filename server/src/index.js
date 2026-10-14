@@ -76,7 +76,10 @@ const normalizeLegacyFundedCryptoCashBalances = async () => {
       type: 'fx_convert_to_eur',
       $and: [
         {
-          $or: [{ 'meta.targetAccountType': 'crypto' }, { 'meta.targetAccountType': { $exists: false } }],
+          $or: [
+            { 'meta.targetAccountType': 'crypto' },
+            { 'meta.targetAccountType': { $exists: false } },
+          ],
         },
         {
           $or: [{ 'meta.targetMode': 'funded' }, { 'meta.targetMode': { $exists: false } }],
@@ -84,9 +87,13 @@ const normalizeLegacyFundedCryptoCashBalances = async () => {
       ],
     }),
   ]);
-  const usersWithTopupHistory = new Set([...fundingUserIds, ...walletLedgerUserIds].map((value) => String(value)));
+  const usersWithTopupHistory = new Set(
+    [...fundingUserIds, ...walletLedgerUserIds].map((value) => String(value)),
+  );
 
-  const accountsToReset = fundedAccounts.filter((account) => !usersWithTopupHistory.has(String(account.userId)));
+  const accountsToReset = fundedAccounts.filter(
+    (account) => !usersWithTopupHistory.has(String(account.userId)),
+  );
 
   if (accountsToReset.length === 0) {
     return;
@@ -119,7 +126,8 @@ const start = async () => {
   try {
     if (env.NODE_ENV === 'development' && !env.MARKETAUX_API_KEY) {
       logger.warn('news.marketaux.missing_api_key', {
-        message: 'MARKETAUX_API_KEY is missing. /api/v1/news will return 501 until it is configured.',
+        message:
+          'MARKETAUX_API_KEY is missing. /api/v1/news will return 501 until it is configured.',
       });
     }
 
@@ -181,7 +189,10 @@ const start = async () => {
     });
   } catch (error) {
     if (error?.code === 'MONGO_STANDALONE') {
-      logger.error('server.start_failed', { code: error.code, message: 'MongoDB replica set required.' });
+      logger.error('server.start_failed', {
+        code: error.code,
+        message: 'MongoDB replica set required.',
+      });
       process.stderr.write(`\n${error.message}\n\n`);
       process.exit(1);
     }

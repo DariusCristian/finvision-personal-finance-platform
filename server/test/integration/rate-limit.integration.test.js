@@ -26,7 +26,8 @@ const register = (email) =>
     .send({ email, password: 'Password123', displayName: 'Limited User' })
     .expect(201);
 
-const login = (email, password) => request(runtime.app).post('/api/v1/auth/login').send({ email, password });
+const login = (email, password) =>
+  request(runtime.app).post('/api/v1/auth/login').send({ email, password });
 
 // All requests come from 127.0.0.1 and the limiter's memory store lives for the whole file, so order matters:
 // successful logins first (they must not count), then the failed-login burst.

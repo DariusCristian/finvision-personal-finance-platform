@@ -87,7 +87,9 @@ const serializeOccurrence = (transaction, occurrenceDate, options = {}) => {
     recurrenceEndDate: transaction.recurrenceEndDate
       ? transaction.recurrenceEndDate.toISOString()
       : null,
-    nextOccurrenceAt: transaction.nextOccurrenceAt ? transaction.nextOccurrenceAt.toISOString() : null,
+    nextOccurrenceAt: transaction.nextOccurrenceAt
+      ? transaction.nextOccurrenceAt.toISOString()
+      : null,
     isProjected,
     category: toCategoryPayload(transaction.categoryId),
   };
@@ -264,7 +266,9 @@ transactionRouter.get(
         .sort({ date: -1, createdAt: -1 });
 
       const expandedTransactions = sortTransactions(
-        transactions.flatMap((transaction) => expandTransactionForRange(transaction, rangeStart, rangeEnd)),
+        transactions.flatMap((transaction) =>
+          expandTransactionForRange(transaction, rangeStart, rangeEnd),
+        ),
         sort,
       );
       const shouldPaginate = typeof page === 'number' || typeof limit === 'number';
@@ -285,7 +289,8 @@ transactionRouter.get(
         200,
         {
           count: paginatedTransactions.length,
-          projectedCount: paginatedTransactions.filter((transaction) => transaction.isProjected).length,
+          projectedCount: paginatedTransactions.filter((transaction) => transaction.isProjected)
+            .length,
           sort,
           page: shouldPaginate ? safePage : null,
           limit: shouldPaginate ? normalizedLimit : null,
@@ -332,7 +337,11 @@ transactionRouter.post(
       const normalizedRecurrenceEndDate = isRecurring ? recurrenceEndDate : null;
       const transactionCurrency = currency ?? req.authUser.baseCurrency ?? 'RON';
       // Fetch the date's exchange rates before writing anything; a missing rate fails the request (502).
-      const conversion = await buildCurrencyConversion({ amount, currency: transactionCurrency, date });
+      const conversion = await buildCurrencyConversion({
+        amount,
+        currency: transactionCurrency,
+        date,
+      });
 
       const transaction = await Transaction.create({
         userId: req.authUser._id,
@@ -352,12 +361,17 @@ transactionRouter.post(
           : null,
       });
 
-      const populatedTransaction = await Transaction.findById(transaction._id).populate('categoryId');
+      const populatedTransaction = await Transaction.findById(transaction._id).populate(
+        'categoryId',
+      );
 
       sendSuccess(
         res,
         {
-          transaction: serializeOccurrence(populatedTransaction, new Date(populatedTransaction.date)),
+          transaction: serializeOccurrence(
+            populatedTransaction,
+            new Date(populatedTransaction.date),
+          ),
         },
         201,
       );
@@ -412,7 +426,8 @@ transactionRouter.patch(
 
       const normalizedRecurrenceEndDate = isRecurring ? recurrenceEndDate : null;
       const nextCurrency = currency ?? transaction.currency ?? req.authUser.baseCurrency ?? 'RON';
-      const isSameDay = new Date(transaction.date).toISOString().slice(0, 10) === date.toISOString().slice(0, 10);
+      const isSameDay =
+        new Date(transaction.date).toISOString().slice(0, 10) === date.toISOString().slice(0, 10);
       const needsConversion =
         !hasCurrencyConversion(transaction) ||
         transaction.amount !== amount ||
@@ -444,7 +459,9 @@ transactionRouter.patch(
 
       await transaction.save();
 
-      const populatedTransaction = await Transaction.findById(transaction._id).populate('categoryId');
+      const populatedTransaction = await Transaction.findById(transaction._id).populate(
+        'categoryId',
+      );
 
       sendSuccess(res, {
         transaction: serializeOccurrence(populatedTransaction, new Date(populatedTransaction.date)),

@@ -36,7 +36,12 @@ export const errorHandler = (error, req, res, _next) => {
     path: req.originalUrl,
     name: error instanceof Error ? error.name : 'UnknownError',
     message: error instanceof Error ? error.message : 'Unknown error payload',
-    stack: process.env.NODE_ENV === 'production' ? undefined : error instanceof Error ? error.stack : undefined,
+    stack:
+      process.env.NODE_ENV === 'production'
+        ? undefined
+        : error instanceof Error
+          ? error.stack
+          : undefined,
   });
 
   res.status(normalizedError.statusCode).json({

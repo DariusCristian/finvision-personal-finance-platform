@@ -36,29 +36,35 @@ const buildInsightKey = ({ type, related }) => {
   ].join('|');
 };
 
-const sortInsights = (insights) => [...insights].sort((left, right) => {
-  const severityDelta = (SEVERITY_RANK[right.severity] || 0) - (SEVERITY_RANK[left.severity] || 0);
+const sortInsights = (insights) =>
+  [...insights].sort((left, right) => {
+    const severityDelta =
+      (SEVERITY_RANK[right.severity] || 0) - (SEVERITY_RANK[left.severity] || 0);
 
-  if (severityDelta !== 0) {
-    return severityDelta;
-  }
+    if (severityDelta !== 0) {
+      return severityDelta;
+    }
 
-  const rightTime = new Date(right.updatedAt || right.createdAt || 0).getTime();
-  const leftTime = new Date(left.updatedAt || left.createdAt || 0).getTime();
+    const rightTime = new Date(right.updatedAt || right.createdAt || 0).getTime();
+    const leftTime = new Date(left.updatedAt || left.createdAt || 0).getTime();
 
-  return rightTime - leftTime;
-});
+    return rightTime - leftTime;
+  });
 
 const buildSubscriptionInsights = (context) => {
-  const recurringWithoutEnd = (context.recurringTransactions ?? []).filter((transaction) => (
-    transaction.type === 'expense' && transaction.isRecurring && transaction.recurrenceEndDate === null
-  ));
+  const recurringWithoutEnd = (context.recurringTransactions ?? []).filter(
+    (transaction) =>
+      transaction.type === 'expense' &&
+      transaction.isRecurring &&
+      transaction.recurrenceEndDate === null,
+  );
 
   return recurringWithoutEnd.map((transaction) => {
     const description = transaction.description?.trim() || 'Recurring subscription';
-    const recurrenceLabel = transaction.recurrence && transaction.recurrence !== 'none'
-      ? transaction.recurrence
-      : 'recurring';
+    const recurrenceLabel =
+      transaction.recurrence && transaction.recurrence !== 'none'
+        ? transaction.recurrence
+        : 'recurring';
 
     return {
       type: 'SUBSCRIPTION_NO_END',
@@ -66,7 +72,8 @@ const buildSubscriptionInsights = (context) => {
       title: `Subscription alert: ${description}`,
       whatNoticed: `${description} is billed ${recurrenceLabel} at ${toMoneyText(transaction.amount, transaction.currency)} with no end date set.`,
       whyMatters: 'Unused subscriptions can silently drain your budget month after month.',
-      whatYouCanDo: 'Set an end date so you remember to review this subscription and cancel if needed.',
+      whatYouCanDo:
+        'Set an end date so you remember to review this subscription and cancel if needed.',
       actions: [
         { label: 'Set end date', href: `/budget?openEditTx=${transaction.id}`, variant: 'primary' },
         { label: 'Open Budget', href: '/budget', variant: 'secondary' },
@@ -107,7 +114,8 @@ const buildBudgetPaceWarningInsight = (context) => {
       title: 'Budget pace warning',
       whatNoticed: `By day ${daysPassed} of ${daysInMonth}, you spent ${toMoneyText(expenseToDate, context.profile?.baseCurrency)} versus a pace target of ${toMoneyText(expectedSpendToDate, context.profile?.baseCurrency)}.`,
       whyMatters: 'If this pace continues, you are likely to exceed your monthly budget goal.',
-      whatYouCanDo: 'Review your top discretionary expenses and cap non-essential spending for the rest of the month.',
+      whatYouCanDo:
+        'Review your top discretionary expenses and cap non-essential spending for the rest of the month.',
       actions: [
         { label: 'Open Budget', href: '/budget', variant: 'primary' },
         { label: 'Review expenses', href: '/budget?sort=-amount', variant: 'secondary' },
@@ -134,7 +142,8 @@ const buildInvestingUnfundedInsight = (context) => {
       title: 'Crypto investing account is unfunded',
       whatNoticed: 'Your funded crypto account currently has 0 buying power.',
       whyMatters: 'You cannot place new crypto buy orders without available cash balance.',
-      whatYouCanDo: 'Top up your investing balance from wallet or switch to demo mode for practice.',
+      whatYouCanDo:
+        'Top up your investing balance from wallet or switch to demo mode for practice.',
       actions: [
         { label: 'Open Invest', href: '/invest', variant: 'primary' },
         { label: 'Open Wallet', href: '/invest?tab=wallet', variant: 'secondary' },
@@ -188,10 +197,19 @@ const buildPortfolioConcentrationInsights = (context) => {
       title: `${holding.symbol} concentration is high`,
       whatNoticed: `${holding.symbol} is ${allocationPct.toFixed(2)}% of your ${isStock ? 'stocks' : 'crypto'} holdings value.`,
       whyMatters: 'High concentration increases risk when a single asset drops sharply.',
-      whatYouCanDo: 'Consider diversifying over time so one position does not dominate your portfolio.',
+      whatYouCanDo:
+        'Consider diversifying over time so one position does not dominate your portfolio.',
       actions: [
-        { label: isStock ? 'Open Market' : 'Open Invest', href: isStock ? '/market' : '/invest', variant: 'primary' },
-        { label: 'Review allocations', href: isStock ? '/market' : '/invest', variant: 'secondary' },
+        {
+          label: isStock ? 'Open Market' : 'Open Invest',
+          href: isStock ? '/market' : '/invest',
+          variant: 'primary',
+        },
+        {
+          label: 'Review allocations',
+          href: isStock ? '/market' : '/invest',
+          variant: 'secondary',
+        },
         { label: 'Learn diversification', href: '/learn', variant: 'link' },
       ],
       related: {
@@ -202,16 +220,17 @@ const buildPortfolioConcentrationInsights = (context) => {
   });
 };
 
-const buildCandidates = (context) => [
-  ...buildSubscriptionInsights(context),
-  ...buildBudgetPaceWarningInsight(context),
-  ...buildInvestingUnfundedInsight(context),
-  ...buildPortfolioConcentrationInsights(context),
-].map((candidate) => ({
-  ...candidate,
-  related: normalizeRelated(candidate.related),
-  actions: Array.isArray(candidate.actions) ? candidate.actions : [],
-}));
+const buildCandidates = (context) =>
+  [
+    ...buildSubscriptionInsights(context),
+    ...buildBudgetPaceWarningInsight(context),
+    ...buildInvestingUnfundedInsight(context),
+    ...buildPortfolioConcentrationInsights(context),
+  ].map((candidate) => ({
+    ...candidate,
+    related: normalizeRelated(candidate.related),
+    actions: Array.isArray(candidate.actions) ? candidate.actions : [],
+  }));
 
 const persistCandidates = async ({ userId, candidates }) => {
   const existingInsights = await Insight.find({

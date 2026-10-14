@@ -48,7 +48,13 @@ export const ensureInvestingWallet = (userId) =>
     { upsert: true, new: true, setDefaultsOnInsert: true, timestamps: false },
   );
 
-export const ensurePortfolioAccount = async ({ userId, accountType, mode, baseCurrency, startingCashBalance }) => {
+export const ensurePortfolioAccount = async ({
+  userId,
+  accountType,
+  mode,
+  baseCurrency,
+  startingCashBalance,
+}) => {
   const account = await PortfolioAccount.findOneAndUpdate(
     { userId, accountType, mode },
     { $setOnInsert: { baseCurrency, cashBalance: startingCashBalance, ...insertOnlyTimestamps() } },
@@ -65,10 +71,19 @@ export const ensurePortfolioAccount = async ({ userId, accountType, mode, baseCu
 
 // Sets account cash to an absolute value (demo budget, demo reset). Use inside the same transaction as the
 // related deletes so a concurrent order cannot interleave.
-export const setAccountCash = ({ userId, accountType, mode }, cashBalance, { session, baseCurrency } = {}) =>
+export const setAccountCash = (
+  { userId, accountType, mode },
+  cashBalance,
+  { session, baseCurrency } = {},
+) =>
   PortfolioAccount.findOneAndUpdate(
     { userId, accountType, mode },
-    { $set: { cashBalance: roundTo(cashBalance, MONEY_DECIMALS), ...(baseCurrency ? { baseCurrency } : {}) } },
+    {
+      $set: {
+        cashBalance: roundTo(cashBalance, MONEY_DECIMALS),
+        ...(baseCurrency ? { baseCurrency } : {}),
+      },
+    },
     { new: true, session },
   );
 
@@ -139,7 +154,10 @@ export const addToHolding = (filter, { quantity, price, insertFields = {} }, { s
         $set: {
           ...insertOnlyFields,
           avgCost: {
-            $round: [{ $divide: [{ $add: [currentCost, addedQuantity * price] }, nextQuantity] }, QUANTITY_DECIMALS],
+            $round: [
+              { $divide: [{ $add: [currentCost, addedQuantity * price] }, nextQuantity] },
+              QUANTITY_DECIMALS,
+            ],
           },
           quantity: { $round: [nextQuantity, QUANTITY_DECIMALS] },
           // Mongoose does not apply timestamps to pipeline upserts, so set them here.
@@ -160,12 +178,21 @@ export const removeFromHolding = async (filter, quantity, { session } = {}) => {
 
   const holding = await PortfolioHolding.findOneAndUpdate(
     { ...filter, quantity: { $gte: removedQuantity } },
-    [{ $set: { quantity: roundedField('quantity', '$subtract', removedQuantity, QUANTITY_DECIMALS) } }],
+    [
+      {
+        $set: {
+          quantity: roundedField('quantity', '$subtract', removedQuantity, QUANTITY_DECIMALS),
+        },
+      },
+    ],
     { new: true, session },
   );
 
   if (holding && holding.quantity <= MIN_HOLDING_QUANTITY) {
-    await PortfolioHolding.deleteOne({ _id: holding._id, quantity: { $lte: MIN_HOLDING_QUANTITY } }, { session });
+    await PortfolioHolding.deleteOne(
+      { _id: holding._id, quantity: { $lte: MIN_HOLDING_QUANTITY } },
+      { session },
+    );
   }
 
   return holding;
@@ -187,7 +214,12 @@ export const claimAutoFund = (walletId, { now = new Date() } = {}, { session } =
     [
       {
         $set: {
-          balance: { $round: [{ $add: ['$balance', { $round: ['$autoFundAmount', MONEY_DECIMALS] }] }, MONEY_DECIMALS] },
+          balance: {
+            $round: [
+              { $add: ['$balance', { $round: ['$autoFundAmount', MONEY_DECIMALS] }] },
+              MONEY_DECIMALS,
+            ],
+          },
           lastAutoFundAt: now,
         },
       },

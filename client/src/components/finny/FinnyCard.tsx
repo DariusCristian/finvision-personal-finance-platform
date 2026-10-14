@@ -50,7 +50,9 @@ export function FinnyCard({ card }: { card: FinnyCardModel | null | undefined })
         return (
           <section key={`${heading || 'section'}-${index}`} className="mt-4">
             {heading ? <h4 className="font-medium text-slate-800">{heading}</h4> : null}
-            {content ? <p className="mt-1 text-sm leading-relaxed text-slate-600">{content}</p> : null}
+            {content ? (
+              <p className="mt-1 text-sm leading-relaxed text-slate-600">{content}</p>
+            ) : null}
             {bullets.length > 0 ? (
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-600">
                 {bullets.map((bullet, bulletIndex) => (

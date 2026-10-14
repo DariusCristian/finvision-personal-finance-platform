@@ -81,7 +81,8 @@ const loginAndGetTokens = async (email = 'refresh@example.com') => {
   return response.body.data;
 };
 
-const refresh = (refreshToken) => request(runtime.app).post('/api/v1/auth/refresh').send({ refreshToken });
+const refresh = (refreshToken) =>
+  request(runtime.app).post('/api/v1/auth/refresh').send({ refreshToken });
 
 test('refresh rotates the refresh token: the new one works, the old one is rejected', async () => {
   const { refreshToken } = await registerAndGetTokens();
@@ -109,7 +110,10 @@ test('logout of one device keeps the other device signed in', async () => {
   const phone = await loginAndGetTokens();
 
   await refresh(phone.refreshToken).expect(200);
-  await request(runtime.app).post('/api/v1/auth/logout').send({ refreshToken: phone.refreshToken }).expect(200);
+  await request(runtime.app)
+    .post('/api/v1/auth/logout')
+    .send({ refreshToken: phone.refreshToken })
+    .expect(200);
 
   await refresh(laptop.refreshToken).expect(200);
 });
@@ -125,12 +129,17 @@ test('concurrent refreshes with the same token succeed only once', async () => {
 
 test('logout without a valid refresh token still succeeds', async () => {
   await request(runtime.app).post('/api/v1/auth/logout').send({}).expect(200);
-  await request(runtime.app).post('/api/v1/auth/logout').send({ refreshToken: 'not-a-jwt' }).expect(200);
+  await request(runtime.app)
+    .post('/api/v1/auth/logout')
+    .send({ refreshToken: 'not-a-jwt' })
+    .expect(200);
 });
 
 test('a refresh token without a session id (issued before rotation) is rejected', async () => {
   const { user } = await registerAndGetTokens();
-  const legacyToken = jwt.sign({ sub: user.id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+  const legacyToken = jwt.sign({ sub: user.id }, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: '7d',
+  });
 
   const response = await refresh(legacyToken);
   assert.equal(response.status, 401);

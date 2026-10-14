@@ -209,10 +209,15 @@ const fetchFinnhub = async ({ path, query = {} }) => {
   return payload;
 };
 
-const normalizeSymbol = (symbol) => String(symbol || '').trim().toUpperCase();
+const normalizeSymbol = (symbol) =>
+  String(symbol || '')
+    .trim()
+    .toUpperCase();
 
 export const searchSymbol = async (query) => {
-  const normalizedQuery = String(query || '').trim().toLowerCase();
+  const normalizedQuery = String(query || '')
+    .trim()
+    .toLowerCase();
 
   if (!normalizedQuery) {
     return [];
@@ -235,7 +240,9 @@ export const searchSymbol = async (query) => {
       .map((item) => ({
         symbol: normalizeSymbol(item?.symbol),
         description: String(item?.description || '').trim(),
-        type: String(item?.type || '').trim().toLowerCase(),
+        type: String(item?.type || '')
+          .trim()
+          .toLowerCase(),
       }))
       .filter((item) => item.symbol.length > 0);
   });
@@ -323,7 +330,12 @@ export const getCandles = async (symbol, resolution, from, to) => {
   const normalizedFrom = Number(from);
   const normalizedTo = Number(to);
 
-  if (!normalizedSymbol || !normalizedResolution || !Number.isFinite(normalizedFrom) || !Number.isFinite(normalizedTo)) {
+  if (
+    !normalizedSymbol ||
+    !normalizedResolution ||
+    !Number.isFinite(normalizedFrom) ||
+    !Number.isFinite(normalizedTo)
+  ) {
     throw new FinnhubProviderError('Invalid candle query parameters.', {
       status: 400,
       code: 'INVALID_CANDLE_QUERY',

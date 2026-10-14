@@ -51,7 +51,9 @@ test('smoke: auth + categories + transactions + finny chat flow', async () => {
     .set('Authorization', `Bearer ${accessToken}`)
     .expect(200);
 
-  const expenseCategory = categoriesResponse.body?.data?.categories?.find((category) => category.type === 'expense');
+  const expenseCategory = categoriesResponse.body?.data?.categories?.find(
+    (category) => category.type === 'expense',
+  );
   assert.ok(expenseCategory?.id);
 
   await request(runtime.app)

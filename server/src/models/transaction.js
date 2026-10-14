@@ -101,7 +101,6 @@ const transactionSchema = new mongoose.Schema(
 transactionSchema.index({ userId: 1, date: -1 });
 transactionSchema.index({ userId: 1, categoryId: 1 });
 
-const Transaction =
-  mongoose.models.Transaction ?? mongoose.model('Transaction', transactionSchema);
+const Transaction = mongoose.models.Transaction ?? mongoose.model('Transaction', transactionSchema);
 
 export { PAYMENT_METHOD_VALUES, RECURRENCE_VALUES, Transaction };

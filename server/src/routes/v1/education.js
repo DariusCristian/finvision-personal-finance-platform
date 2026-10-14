@@ -68,8 +68,7 @@ const computeLevel = (xp) => Math.max(1, Math.floor(xp / 100) + 1);
 
 const getOrCreateProgress = async (userId) => {
   const progress =
-    (await UserProgress.findOne({ userId })) ??
-    (await UserProgress.create({ userId }));
+    (await UserProgress.findOne({ userId })) ?? (await UserProgress.create({ userId }));
 
   return progress;
 };
@@ -132,7 +131,11 @@ educationRouter.get(
 
       if (search) {
         const regex = buildLiteralSearchRegex(search);
-        filters.$or = [{ title: { $regex: regex } }, { excerpt: { $regex: regex } }, { tags: { $in: [regex] } }];
+        filters.$or = [
+          { title: { $regex: regex } },
+          { excerpt: { $regex: regex } },
+          { tags: { $in: [regex] } },
+        ];
       }
 
       const articles = await Article.find(filters).sort({ createdAt: -1 });
