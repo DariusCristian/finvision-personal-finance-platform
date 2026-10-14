@@ -24,6 +24,13 @@ const assertPositiveAmount = (value, name) => {
   }
 };
 
+// Credits may round to zero (e.g. a 0.01 RON top-up is 0.002 EUR); crediting zero is harmless.
+const assertNonNegativeAmount = (value, name) => {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new TypeError(`${name} must be a non-negative number, received ${value}`);
+  }
+};
+
 const roundedField = (field, operator, amount, decimals) => ({
   $round: [{ [operator]: [{ $ifNull: [`$${field}`, 0] }, amount] }, decimals],
 });
@@ -69,7 +76,7 @@ export const debitWallet = (userId, amountRON, { session } = {}) => {
 
 export const creditWallet = (userId, amountRON, { session } = {}) => {
   const amount = roundTo(amountRON, MONEY_DECIMALS);
-  assertPositiveAmount(amount, 'amountRON');
+  assertNonNegativeAmount(amount, 'amountRON');
 
   return InvestingWallet.findOneAndUpdate(
     { userId },
@@ -91,7 +98,7 @@ export const debitAccountCash = ({ userId, accountType, mode }, amountEUR, { ses
 
 export const creditAccountCash = ({ userId, accountType, mode }, amountEUR, { session } = {}) => {
   const amount = roundTo(amountEUR, MONEY_DECIMALS);
-  assertPositiveAmount(amount, 'amountEUR');
+  assertNonNegativeAmount(amount, 'amountEUR');
 
   return PortfolioAccount.findOneAndUpdate(
     { userId, accountType, mode },

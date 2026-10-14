@@ -12,12 +12,12 @@ import { FxProviderError, convert } from '../../integrations/fx/frankfurterClien
 import { requireAuth } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { InvestFunding } from '../../models/invest-funding.js';
-import { InvestingWalletLedger } from '../../models/investing-wallet-ledger.js';
 import { PortfolioAccount } from '../../models/portfolio-account.js';
 import { PortfolioHolding } from '../../models/portfolio-holding.js';
 import { PortfolioSnapshot } from '../../models/portfolio-snapshot.js';
 import { PortfolioTrade } from '../../models/portfolio-trade.js';
 import { ensureInvestingWallet, ensurePortfolioAccount } from '../../services/balance-ops.js';
+import { topUpAccountFromWallet } from '../../services/wallet-topup.js';
 import { logger } from '../../utils/logger.js';
 import { sendSuccess } from '../../utils/response.js';
 import {
@@ -539,18 +539,15 @@ const topUpFundedFromWallet = async ({ authUser, amountRON }) => {
       ? toRate(conversion.rateFromPerTo)
       : null;
 
-  wallet.balance = toMoney(wallet.balance - normalizedAmountRON);
-  await wallet.save();
+  await ensureCryptoPortfolioAccount(authUser, CRYPTO_FUNDED_MODE);
 
-  const account = await ensureCryptoPortfolioAccount(authUser, CRYPTO_FUNDED_MODE);
-  account.cashBalance = toMoney(account.cashBalance + addedEUR);
-  await account.save();
-
-  await InvestingWalletLedger.create({
+  const { wallet: updatedWallet, account } = await topUpAccountFromWallet({
     userId: authUser._id,
-    type: 'fx_convert_to_eur',
-    amountRON: -normalizedAmountRON,
-    meta: {
+    accountType: CRYPTO_ACCOUNT_TYPE,
+    mode: CRYPTO_FUNDED_MODE,
+    amountRON: normalizedAmountRON,
+    amountEUR: addedEUR,
+    ledgerMeta: {
       from: WALLET_CURRENCY,
       to: INVEST_BASE_CURRENCY,
       fromAmountRON: normalizedAmountRON,
@@ -560,17 +557,12 @@ const topUpFundedFromWallet = async ({ authUser, amountRON }) => {
       targetAccountType: CRYPTO_ACCOUNT_TYPE,
       targetMode: CRYPTO_FUNDED_MODE,
     },
-  });
-
-  await InvestFunding.create({
-    userId: authUser._id,
-    mode: CRYPTO_FUNDED_MODE,
-    fromCurrency: WALLET_CURRENCY,
-    fromAmount: normalizedAmountRON,
-    toCurrency: INVEST_BASE_CURRENCY,
-    toAmount: addedEUR,
-    rate: eurPerRonRate,
-    provider: 'frankfurter',
+    funding: {
+      fromCurrency: WALLET_CURRENCY,
+      toCurrency: INVEST_BASE_CURRENCY,
+      rate: eurPerRonRate,
+      provider: 'frankfurter',
+    },
   });
 
   const refreshedHoldings = await PortfolioHolding.find({
@@ -595,7 +587,7 @@ const topUpFundedFromWallet = async ({ authUser, amountRON }) => {
     fromAmountRON: normalizedAmountRON,
     addedEUR,
     cashBalanceEUR: toMoney(account.cashBalance),
-    walletBalanceRON: toMoney(wallet.balance),
+    walletBalanceRON: toMoney(updatedWallet.balance),
     rate: {
       eurPerRon: eurPerRonRate,
       ronPerEur: ronPerEurRate,

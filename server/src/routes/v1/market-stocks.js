@@ -17,13 +17,12 @@ import {
 } from '../../integrations/stooq/stooqClient.js';
 import { fetchYahooStockHistory, YahooProviderError } from '../../integrations/yahoo/yahooChartClient.js';
 import { requireAuth } from '../../middleware/auth.js';
-import { InvestFunding } from '../../models/invest-funding.js';
-import { InvestingWalletLedger } from '../../models/investing-wallet-ledger.js';
 import { PortfolioAccount } from '../../models/portfolio-account.js';
 import { PortfolioHolding } from '../../models/portfolio-holding.js';
 import { PortfolioSnapshot } from '../../models/portfolio-snapshot.js';
 import { PortfolioTrade } from '../../models/portfolio-trade.js';
 import { ensureInvestingWallet as ensureWallet, ensurePortfolioAccount } from '../../services/balance-ops.js';
+import { topUpAccountFromWallet } from '../../services/wallet-topup.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { logger } from '../../utils/logger.js';
 import { sendSuccess } from '../../utils/response.js';
@@ -1647,18 +1646,15 @@ marketStocksRouter.post(
           ? toNumber(conversion.rateFromPerTo, 10)
           : null;
 
-      wallet.balance = toNumber(wallet.balance - amountRON, 2);
-      await wallet.save();
+      const existingStocksAccount = await ensureStocksAccount(req.authUser, STOCKS_FUNDED_MODE);
 
-      const stocksAccount = await ensureStocksAccount(req.authUser, STOCKS_FUNDED_MODE);
-      stocksAccount.cashBalance = toNumber(stocksAccount.cashBalance + toppedUpEUR, 2);
-      await stocksAccount.save();
-
-      await InvestingWalletLedger.create({
+      const { wallet: updatedWallet, account: stocksAccount } = await topUpAccountFromWallet({
         userId: req.authUser._id,
-        type: 'fx_convert_to_eur',
-        amountRON: -amountRON,
-        meta: {
+        accountType: STOCKS_ACCOUNT_TYPE,
+        mode: STOCKS_FUNDED_MODE,
+        amountRON,
+        amountEUR: toppedUpEUR,
+        ledgerMeta: {
           from: WALLET_CURRENCY,
           to: STOCKS_BASE_CURRENCY,
           fromAmountRON: amountRON,
@@ -1670,19 +1666,14 @@ marketStocksRouter.post(
           eurAmount: toppedUpEUR,
           targetAccountType: STOCKS_ACCOUNT_TYPE,
           targetMode: STOCKS_FUNDED_MODE,
-          portfolioAccountId: stocksAccount._id.toString(),
+          portfolioAccountId: existingStocksAccount._id.toString(),
         },
-      });
-
-      await InvestFunding.create({
-        userId: req.authUser._id,
-        mode: STOCKS_FUNDED_MODE,
-        fromCurrency: WALLET_CURRENCY,
-        fromAmount: amountRON,
-        toCurrency: STOCKS_BASE_CURRENCY,
-        toAmount: toppedUpEUR,
-        rate: eurPerRonRate,
-        provider: 'frankfurter',
+        funding: {
+          fromCurrency: WALLET_CURRENCY,
+          toCurrency: STOCKS_BASE_CURRENCY,
+          rate: eurPerRonRate,
+          provider: 'frankfurter',
+        },
       });
 
       const refreshedHoldings = await PortfolioHolding.find({
@@ -1706,7 +1697,7 @@ marketStocksRouter.post(
         selectedMode,
         amountRON,
         toppedUpEUR,
-        walletBalanceRON: toNumber(wallet.balance, 2),
+        walletBalanceRON: toNumber(updatedWallet.balance, 2),
         stocksCashBalanceEUR: toNumber(stocksAccount.cashBalance, 2),
         rate: {
           eurPerRon: eurPerRonRate,

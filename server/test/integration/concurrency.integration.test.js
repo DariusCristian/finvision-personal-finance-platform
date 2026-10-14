@@ -14,7 +14,6 @@ import { getTestRuntime, releaseTestRuntime } from '../support/test-runtime.js';
 
 // Finding 1 (AUDIT.md): each test fires concurrent requests whose total exceeds the balance or holding.
 // Tests stay `todo` until the part of PLAN-finding-1.md that fixes their spot enables them.
-const TODO_PART_5 = { todo: 'finding 1, part 5: top-ups (spots A, B)' };
 const TODO_PART_6 = { todo: 'finding 1, part 6: orders (spots E, F, G)' };
 
 const CONCURRENT_REQUESTS = 5;
@@ -133,7 +132,7 @@ const assertTopUpRace = async ({ modePath, topUpPath, accountType }) => {
   assert.equal(fundings, 3);
 };
 
-test('spot A: concurrent crypto top-ups cannot spend more than the wallet holds', TODO_PART_5, async () => {
+test('spot A: concurrent crypto top-ups cannot spend more than the wallet holds', async () => {
   await assertTopUpRace({
     modePath: '/invest/crypto/mode',
     topUpPath: '/invest/crypto/topup-from-wallet',
@@ -141,7 +140,7 @@ test('spot A: concurrent crypto top-ups cannot spend more than the wallet holds'
   });
 });
 
-test('spot B: concurrent stocks top-ups cannot spend more than the wallet holds', TODO_PART_5, async () => {
+test('spot B: concurrent stocks top-ups cannot spend more than the wallet holds', async () => {
   await assertTopUpRace({
     modePath: '/market/stocks/mode',
     topUpPath: '/market/stocks/topup-from-wallet',
