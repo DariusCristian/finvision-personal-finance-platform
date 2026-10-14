@@ -50,10 +50,11 @@ const HEADER_CELL_CLASS =
 const GRID_TEMPLATE = 'minmax(0,2.4fr) minmax(0,1.25fr) minmax(0,1.1fr) minmax(0,1fr) 4.5rem';
 const VIRTUAL_ROW_HEIGHT = 104;
 
-const formatAmount = (transaction: BudgetTransaction, currency: 'RON' | 'EUR' | 'USD') => {
+// Each row shows the transaction in its own currency; `fallbackCurrency` only covers rows without one.
+const formatAmount = (transaction: BudgetTransaction, fallbackCurrency: 'RON' | 'EUR' | 'USD') => {
   const amount = new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency,
+    currency: transaction.currency ?? fallbackCurrency,
     minimumFractionDigits: 2,
   }).format(transaction.amount);
   return transaction.type === 'income' ? `+${amount}` : `-${amount}`;

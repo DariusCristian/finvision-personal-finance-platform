@@ -76,6 +76,15 @@ const serializeOccurrence = (transaction, occurrenceDate, options = {}) => {
     type: transaction.type,
     amount: transaction.amount,
     currency: transaction.currency,
+    // The amount in RON, EUR and USD (rates of the transaction's date), so clients can total in the base currency;
+    // null for transactions created before conversions were stored and not yet backfilled.
+    convertedAmounts: transaction.convertedAmounts
+      ? {
+          RON: transaction.convertedAmounts.RON,
+          EUR: transaction.convertedAmounts.EUR,
+          USD: transaction.convertedAmounts.USD,
+        }
+      : null,
     paymentMethod: transaction.paymentMethod ?? null,
     date: occurrenceDate.toISOString(),
     occurrenceDate: occurrenceDate.toISOString(),

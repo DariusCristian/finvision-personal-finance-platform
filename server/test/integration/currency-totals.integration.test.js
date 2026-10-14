@@ -118,6 +118,24 @@ test('a transaction stores its amount in RON, EUR and USD with the rates and rat
   );
 });
 
+test('the transaction list returns each transaction with its amounts in every currency', async () => {
+  await createExpense({ amount: 100, currency: 'EUR' });
+
+  const response = await request(runtime.app)
+    .get(`/api/v1/transactions?from=${PAST_DAY}&to=${PAST_DAY}`)
+    .set(auth)
+    .expect(200);
+  const [transaction] = response.body.data.transactions;
+
+  assert.equal(transaction.currency, 'EUR');
+  assert.equal(transaction.amount, 100);
+  assert.deepEqual(transaction.convertedAmounts, {
+    RON: 500,
+    EUR: 100,
+    USD: Number((100 * testRate('EUR', 'USD')).toFixed(2)),
+  });
+});
+
 test('budget totals add mixed currencies in the base currency (100 RON + 100 EUR)', async () => {
   await createExpense({ amount: 100, currency: 'RON' });
   await createExpense({ amount: 100, currency: 'EUR' });

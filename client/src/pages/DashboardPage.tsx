@@ -33,6 +33,7 @@ import {
   type PortfolioTotals,
   type StockQuote,
 } from '../lib/api';
+import { amountInCurrency } from '../lib/currencyAmounts';
 import { formatMoney, formatPct } from '../lib/formatters';
 
 type RecurrenceValue = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'annually' | 'none';
@@ -378,10 +379,10 @@ export function DashboardPage() {
   const budgetSummary = useMemo(() => {
     const income = transactions
       .filter((transaction) => transaction.type === 'income')
-      .reduce((sum, transaction) => sum + transaction.amount, 0);
+      .reduce((sum, transaction) => sum + amountInCurrency(transaction, budgetDisplayCurrency), 0);
     const expenses = transactions
       .filter((transaction) => transaction.type === 'expense')
-      .reduce((sum, transaction) => sum + transaction.amount, 0);
+      .reduce((sum, transaction) => sum + amountInCurrency(transaction, budgetDisplayCurrency), 0);
     const budgetGoal =
       typeof activeProfile?.monthlyBudgetGoal === 'number' && activeProfile.monthlyBudgetGoal > 0
         ? activeProfile.monthlyBudgetGoal
@@ -400,15 +401,16 @@ export function DashboardPage() {
       const label = transaction.category?.name ?? 'Uncategorized';
       const color = transaction.category?.color ?? '#94a3b8';
       const existing = categoryTotals.get(label);
+      const amount = amountInCurrency(transaction, budgetDisplayCurrency);
 
       if (existing) {
-        existing.value += transaction.amount;
+        existing.value += amount;
         return;
       }
 
       categoryTotals.set(label, {
         label,
-        value: transaction.amount,
+        value: amount,
         color,
       });
     });
@@ -444,7 +446,7 @@ export function DashboardPage() {
       donutSlices,
       recentTransactions: transactions.slice(0, 5),
     };
-  }, [activeProfile?.monthlyBudgetGoal, transactions]);
+  }, [activeProfile?.monthlyBudgetGoal, budgetDisplayCurrency, transactions]);
 
   const portfolioSummary = useMemo(() => {
     const totalValue = cryptoPortfolioTotals.totalValue + stockPortfolioTotals.totalValue;
@@ -1015,7 +1017,10 @@ export function DashboardPage() {
                       ].join(' ')}
                     >
                       {transaction.type === 'income' ? '+' : '-'}
-                      {formatMoney(transaction.amount, budgetDisplayCurrency)}
+                      {formatMoney(
+                        transaction.amount,
+                        transaction.currency ?? budgetDisplayCurrency,
+                      )}
                     </span>
                   </div>
                 ))}

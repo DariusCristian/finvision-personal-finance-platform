@@ -30,7 +30,11 @@ export type BudgetTransaction = {
   originalTransactionId: string;
   sourceDate: string;
   type: 'income' | 'expense';
+  /** Amount in the transaction's own currency. */
   amount: number;
+  currency: 'RON' | 'EUR' | 'USD';
+  /** The amount in every supported currency (rates of the transaction's date); null until backfilled. */
+  convertedAmounts: Record<'RON' | 'EUR' | 'USD', number> | null;
   date: string;
   occurrenceDate: string;
   description: string;

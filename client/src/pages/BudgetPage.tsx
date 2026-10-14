@@ -9,6 +9,7 @@ import { KpiCard } from '../components/KpiCard';
 import { ManageInvestingWalletModal } from '../components/ManageInvestingWalletModal';
 import { SetBudgetModal } from '../components/SetBudgetModal';
 import { TransactionsTable } from '../components/TransactionsTable';
+import { amountInCurrency } from '../lib/currencyAmounts';
 import { useAuth } from '../context/AuthContext';
 import {
   ApiRequestError,
@@ -181,7 +182,7 @@ const buildBudgetSummaryFromTransactions = ({
 
   const totals = transactions.reduce(
     (accumulator, transaction) => {
-      const amount = Math.abs(Number(transaction.amount || 0));
+      const amount = Math.abs(Number(amountInCurrency(transaction, currency) || 0));
 
       if (!Number.isFinite(amount) || amount <= 0) {
         return accumulator;
@@ -264,6 +265,7 @@ const findCategory = (categories: BudgetCategory[], slug: string) =>
 const buildMockTransactions = (
   selectedMonth: string,
   categories: BudgetCategory[],
+  currency: 'RON' | 'EUR' | 'USD',
 ): BudgetTransaction[] => {
   const [year, month] = selectedMonth.split('-').map(Number);
   const selectedMonthDate = new Date(Date.UTC(year, month - 1, 1));
@@ -297,6 +299,8 @@ const buildMockTransactions = (
       sourceDate: occurrenceDate.toISOString(),
       type: options.type,
       amount: options.amount,
+      currency,
+      convertedAmounts: null,
       date: occurrenceDate.toISOString(),
       occurrenceDate: occurrenceDate.toISOString(),
       description: options.description,
@@ -434,11 +438,19 @@ const renderChip = (label: string, tone: ChipTone) => (
   </span>
 );
 
-const sortTransactionsByOption = (items: BudgetTransaction[], sortOption: SortOption) =>
+const sortTransactionsByOption = (
+  items: BudgetTransaction[],
+  sortOption: SortOption,
+  currency: 'RON' | 'EUR' | 'USD',
+) =>
   [...items].sort((left, right) => {
     if (sortOption === 'amount' || sortOption === '-amount') {
-      if (left.amount !== right.amount) {
-        return sortOption === 'amount' ? left.amount - right.amount : right.amount - left.amount;
+      // Compare in one currency so 100 EUR sorts above 100 RON.
+      const leftAmount = amountInCurrency(left, currency);
+      const rightAmount = amountInCurrency(right, currency);
+
+      if (leftAmount !== rightAmount) {
+        return sortOption === 'amount' ? leftAmount - rightAmount : rightAmount - leftAmount;
       }
     } else {
       const leftDate = new Date(left.occurrenceDate).getTime();
@@ -556,10 +568,15 @@ export function BudgetPage() {
       setIsUsingMockData(false);
     } catch {
       const fallbackCategories = MOCK_CATEGORIES;
-      const fallbackTransactions = buildMockTransactions(selectedMonth, fallbackCategories);
+      const fallbackTransactions = buildMockTransactions(
+        selectedMonth,
+        fallbackCategories,
+        user?.baseCurrency ?? 'RON',
+      );
       const fallbackPreviousTransactions = buildMockTransactions(
         previousMonthKey,
         fallbackCategories,
+        user?.baseCurrency ?? 'RON',
       );
       const fallbackBudgetGoal =
         typeof user?.monthlyBudgetGoal === 'number' && user.monthlyBudgetGoal > 0
@@ -640,22 +657,21 @@ export function BudgetPage() {
           return haystacks.includes(term);
         });
 
-    return sortTransactionsByOption(filteredTransactions, sortOption);
-  }, [searchValue, sortOption, transactions]);
+    return sortTransactionsByOption(filteredTransactions, sortOption, budgetCurrency);
+  }, [budgetCurrency, searchValue, sortOption, transactions]);
 
   const metrics = useMemo(() => {
-    const fallbackIncome = transactions
-      .filter((transaction) => transaction.type === 'income')
-      .reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
-    const fallbackExpenses = transactions
-      .filter((transaction) => transaction.type === 'expense')
-      .reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
-    const fallbackPreviousIncome = previousMonthTransactions
-      .filter((transaction) => transaction.type === 'income')
-      .reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
-    const fallbackPreviousExpenses = previousMonthTransactions
-      .filter((transaction) => transaction.type === 'expense')
-      .reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
+    const sumInBudgetCurrency = (items: BudgetTransaction[], type: 'income' | 'expense') =>
+      items
+        .filter((transaction) => transaction.type === type)
+        .reduce(
+          (sum, transaction) => sum + Math.abs(amountInCurrency(transaction, budgetCurrency)),
+          0,
+        );
+    const fallbackIncome = sumInBudgetCurrency(transactions, 'income');
+    const fallbackExpenses = sumInBudgetCurrency(transactions, 'expense');
+    const fallbackPreviousIncome = sumInBudgetCurrency(previousMonthTransactions, 'income');
+    const fallbackPreviousExpenses = sumInBudgetCurrency(previousMonthTransactions, 'expense');
     const income = budgetSummary?.incomeTotal ?? fallbackIncome;
     const expenses = budgetSummary?.expenseTotal ?? fallbackExpenses;
     const previousIncome = previousMonthBudgetSummary?.incomeTotal ?? fallbackPreviousIncome;
@@ -698,6 +714,7 @@ export function BudgetPage() {
       investingAccountBalance,
     };
   }, [
+    budgetCurrency,
     budgetSummary,
     investingWallet,
     investingWalletSummary,
@@ -719,16 +736,18 @@ export function BudgetPage() {
       const color = transaction.category?.color ?? '#CBD5E1';
       const existing = grouped.get(label);
 
+      const amount = amountInCurrency(transaction, budgetCurrency);
+
       if (existing) {
-        existing.value += transaction.amount;
+        existing.value += amount;
         return;
       }
 
-      grouped.set(label, { label, value: transaction.amount, color });
+      grouped.set(label, { label, value: amount, color });
     });
 
     return Array.from(grouped.values()).sort((left, right) => right.value - left.value);
-  }, [transactions]);
+  }, [budgetCurrency, transactions]);
 
   const handleSaveTransaction = async (payload: CreateTransactionArgs) => {
     if (!accessToken) {
@@ -786,6 +805,8 @@ export function BudgetPage() {
             sourceDate: normalizedDate.toISOString(),
             type: payload.type,
             amount: payload.amount,
+            currency: budgetCurrency,
+            convertedAmounts: null,
             date: normalizedDate.toISOString(),
             occurrenceDate: normalizedDate.toISOString(),
             description: payload.description,
