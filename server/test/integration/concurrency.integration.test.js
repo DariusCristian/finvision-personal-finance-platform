@@ -14,7 +14,6 @@ import { getTestRuntime, releaseTestRuntime } from '../support/test-runtime.js';
 
 // Finding 1 (AUDIT.md): each test fires concurrent requests whose total exceeds the balance or holding.
 // Tests stay `todo` until the part of PLAN-finding-1.md that fixes their spot enables them.
-const TODO_PART_3 = { todo: 'finding 1, part 3: race-free ensure* (spot H)' };
 const TODO_PART_4 = { todo: 'finding 1, part 4: deposit and auto-fund (spots C, D)' };
 const TODO_PART_5 = { todo: 'finding 1, part 5: top-ups (spots A, B)' };
 const TODO_PART_6 = { todo: 'finding 1, part 6: orders (spots E, F, G)' };
@@ -297,7 +296,7 @@ test('spot G: concurrent stock sells cannot sell more than the holding', TODO_PA
   await assertSellRace(stockOrderSetup);
 });
 
-test('spot H: concurrent first use creates exactly one wallet and one account', TODO_PART_3, async () => {
+test('spot H: concurrent first use creates exactly one wallet and one account', async () => {
   const { userId, auth } = await registerAndLogin();
 
   const responses = await Promise.all([

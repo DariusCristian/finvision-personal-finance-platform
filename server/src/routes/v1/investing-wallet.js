@@ -6,8 +6,8 @@ import { requireAuth } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { Category } from '../../models/category.js';
 import { InvestingWalletLedger } from '../../models/investing-wallet-ledger.js';
-import { InvestingWallet } from '../../models/investing-wallet.js';
 import { Transaction } from '../../models/transaction.js';
+import { ensureInvestingWallet as ensureWallet } from '../../services/balance-ops.js';
 import { sendSuccess } from '../../utils/response.js';
 import {
   investingWalletConvertQuoteQuerySchema,
@@ -64,25 +64,6 @@ const recordInvestingDepositExpense = async (userId, amountRON, note) => {
     description: trimmedNote ? `Investing wallet deposit — ${trimmedNote}` : 'Investing wallet deposit',
     recurrence: 'none',
   });
-};
-
-const ensureWallet = async (userId) => {
-  let wallet = await InvestingWallet.findOne({ userId });
-
-  if (!wallet) {
-    wallet = await InvestingWallet.create({
-      userId,
-      currency: WALLET_CURRENCY,
-      balance: 0,
-      monthlyGoal: 0,
-      autoFundEnabled: false,
-      autoFundAmount: 0,
-      autoFundDayOfMonth: 1,
-      lastAutoFundAt: null,
-    });
-  }
-
-  return wallet;
 };
 
 const computeInvestedThisMonth = async (userId) => {

@@ -19,11 +19,11 @@ import { fetchYahooStockHistory, YahooProviderError } from '../../integrations/y
 import { requireAuth } from '../../middleware/auth.js';
 import { InvestFunding } from '../../models/invest-funding.js';
 import { InvestingWalletLedger } from '../../models/investing-wallet-ledger.js';
-import { InvestingWallet } from '../../models/investing-wallet.js';
 import { PortfolioAccount } from '../../models/portfolio-account.js';
 import { PortfolioHolding } from '../../models/portfolio-holding.js';
 import { PortfolioSnapshot } from '../../models/portfolio-snapshot.js';
 import { PortfolioTrade } from '../../models/portfolio-trade.js';
+import { ensureInvestingWallet as ensureWallet, ensurePortfolioAccount } from '../../services/balance-ops.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { logger } from '../../utils/logger.js';
 import { sendSuccess } from '../../utils/response.js';
@@ -231,32 +231,14 @@ const serializeTrade = (trade) => ({
   createdAt: trade.createdAt?.toISOString?.() ?? null,
 });
 
-const ensureStocksAccount = async (authUser, mode = STOCKS_DEFAULT_MODE) => {
-  let account = await PortfolioAccount.findOne({
+const ensureStocksAccount = (authUser, mode = STOCKS_DEFAULT_MODE) =>
+  ensurePortfolioAccount({
     userId: authUser._id,
     accountType: STOCKS_ACCOUNT_TYPE,
     mode,
+    baseCurrency: STOCKS_BASE_CURRENCY,
+    startingCashBalance: getStartingCashBalanceForMode(mode),
   });
-
-  if (!account) {
-    account = await PortfolioAccount.create({
-      userId: authUser._id,
-      accountType: STOCKS_ACCOUNT_TYPE,
-      mode,
-      baseCurrency: STOCKS_BASE_CURRENCY,
-      cashBalance: getStartingCashBalanceForMode(mode),
-    });
-
-    return account;
-  }
-
-  if (account.baseCurrency !== STOCKS_BASE_CURRENCY) {
-    account.baseCurrency = STOCKS_BASE_CURRENCY;
-    await account.save();
-  }
-
-  return account;
-};
 
 const ensureStocksAccounts = async (authUser) => {
   const [funded, demo] = await Promise.all([
@@ -265,25 +247,6 @@ const ensureStocksAccounts = async (authUser) => {
   ]);
 
   return { funded, demo };
-};
-
-const ensureWallet = async (userId) => {
-  let wallet = await InvestingWallet.findOne({ userId });
-
-  if (!wallet) {
-    wallet = await InvestingWallet.create({
-      userId,
-      currency: WALLET_CURRENCY,
-      balance: 0,
-      monthlyGoal: 0,
-      autoFundEnabled: false,
-      autoFundAmount: 0,
-      autoFundDayOfMonth: 1,
-      lastAutoFundAt: null,
-    });
-  }
-
-  return wallet;
 };
 
 const getUsdToEurRate = async () => {
