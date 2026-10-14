@@ -15,6 +15,11 @@ export const errorHandler = (error, req, res, _next) => {
     normalizedError = error;
   } else if (error instanceof ZodError) {
     normalizedError = new ValidationError('Request validation failed', mapZodIssues(error.issues));
+  } else if (error?.type === 'entity.parse.failed') {
+    // express.json() could not parse the body: a client error, not a server failure.
+    normalizedError = new ValidationError('Request body is not valid JSON.', [
+      { path: 'body', code: 'invalid_json', message: 'Malformed JSON' },
+    ]);
   } else {
     normalizedError = new AppError({
       message: 'Internal server error',

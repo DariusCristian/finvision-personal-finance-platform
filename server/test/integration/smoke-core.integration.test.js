@@ -80,3 +80,15 @@ test('smoke: auth + categories + transactions + finny chat flow', async () => {
 
   assert.equal(finnyResponse.body?.success, true);
 });
+
+test('a malformed JSON body returns 400 VALIDATION_ERROR instead of 500', async () => {
+  const response = await request(runtime.app)
+    .post('/api/v1/auth/login')
+    .set('Content-Type', 'application/json')
+    .send('{"email": "broken@example.com",')
+    .expect(400);
+
+  assert.equal(response.body.success, false);
+  assert.equal(response.body.error.code, 'VALIDATION_ERROR');
+  assert.equal(response.body.error.message, 'Request body is not valid JSON.');
+});
