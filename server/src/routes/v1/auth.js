@@ -5,7 +5,12 @@ import { AuthError, ConflictError } from '../../errors/app-error.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { User } from '../../models/user.js';
-import { createAccessToken, createRefreshToken, verifyRefreshToken } from '../../utils/jwt.js';
+import {
+  issueRefreshToken,
+  revokeRefreshToken,
+  rotateRefreshToken,
+} from '../../services/refresh-sessions.js';
+import { createAccessToken, verifyRefreshToken } from '../../utils/jwt.js';
 import { sendSuccess } from '../../utils/response.js';
 import { serializeUser } from '../../utils/serializers.js';
 import { loginSchema, registerSchema } from '../../validation/auth.js';
@@ -14,11 +19,26 @@ const SALT_ROUNDS = 12;
 
 const authRouter = Router();
 
-const toAuthPayload = (user) => ({
+const toAuthPayload = async (user) => ({
   user: serializeUser(user),
   accessToken: createAccessToken(user._id.toString()),
-  refreshToken: createRefreshToken(user._id.toString()),
+  refreshToken: await issueRefreshToken(user._id),
 });
+
+// Returns the verified payload of a refresh token that carries a session id, or null.
+const readRefreshToken = (refreshToken) => {
+  if (!refreshToken || typeof refreshToken !== 'string') {
+    return null;
+  }
+
+  try {
+    const payload = verifyRefreshToken(refreshToken);
+    return typeof payload?.sub === 'string' && typeof payload?.jti === 'string' ? payload : null;
+  } catch {
+    // Invalid signature or expired: treated the same as a missing token.
+    return null;
+  }
+};
 
 authRouter.post('/register', validateRequest({ body: registerSchema }), async (req, res, next) => {
   try {
@@ -42,7 +62,7 @@ authRouter.post('/register', validateRequest({ body: registerSchema }), async (r
       baseCurrency,
     });
 
-    sendSuccess(res, toAuthPayload(user), 201);
+    sendSuccess(res, await toAuthPayload(user), 201);
   } catch (error) {
     if (error?.code === 11000) {
       next(
@@ -74,7 +94,7 @@ authRouter.post('/login', validateRequest({ body: loginSchema }), async (req, re
       throw new AuthError('Invalid email or password');
     }
 
-    sendSuccess(res, toAuthPayload(user));
+    sendSuccess(res, await toAuthPayload(user));
   } catch (error) {
     next(error);
   }
@@ -88,22 +108,17 @@ authRouter.post('/refresh', async (req, res, next) => {
       throw new AuthError('Refresh token is required');
     }
 
-    let payload;
-    try {
-      payload = verifyRefreshToken(refreshToken);
-    } catch {
+    const payload = readRefreshToken(refreshToken);
+    // Rotation: the presented token's session is replaced, so it can't be used again after this refresh.
+    const nextRefreshToken = payload ? await rotateRefreshToken(payload.sub, payload.jti) : null;
+
+    if (!nextRefreshToken) {
       throw new AuthError('Invalid or expired refresh token');
     }
 
-    const user = await User.findById(payload.sub);
-
-    if (!user) {
-      throw new AuthError('User not found');
-    }
-
     sendSuccess(res, {
-      accessToken: createAccessToken(user._id.toString()),
-      refreshToken: createRefreshToken(user._id.toString()),
+      accessToken: createAccessToken(payload.sub),
+      refreshToken: nextRefreshToken,
     });
   } catch (error) {
     next(error);
@@ -116,10 +131,21 @@ authRouter.get('/me', requireAuth, (req, res) => {
   });
 });
 
-authRouter.post('/logout', (_req, res) => {
-  sendSuccess(res, {
-    loggedOut: true,
-  });
+// Revokes the refresh token's session. Always succeeds, so logging out works even with an expired access token.
+authRouter.post('/logout', async (req, res, next) => {
+  try {
+    const payload = readRefreshToken(req.body?.refreshToken);
+
+    if (payload) {
+      await revokeRefreshToken(payload.sub, payload.jti);
+    }
+
+    sendSuccess(res, {
+      loggedOut: true,
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 export { authRouter };

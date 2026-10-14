@@ -100,15 +100,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    const refreshToken = window.localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+
     try {
-      if (accessToken) {
-        await logoutRequest(accessToken);
+      if (refreshToken) {
+        await logoutRequest(refreshToken);
       }
     } catch {
+      // The local session is cleared either way; the refresh token then simply expires on the server.
     } finally {
       clearSessionState();
     }
-  }, [accessToken, clearSessionState]);
+  }, [clearSessionState]);
 
   const setCurrentUser = useCallback((nextUser: AuthUser) => {
     setUser(nextUser);

@@ -1013,33 +1013,55 @@ const clearStoredAuthTokens = () => {
   window.localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
 };
 
+// Returns true when valid tokens are stored afterwards. Refresh tokens are single-use (the server rotates them).
+const refreshStoredTokens = async (): Promise<boolean> => {
+  const refreshToken = window.localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+
+  if (!refreshToken) {
+    return false;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (response.ok) {
+      const payload = (await response.json()) as ApiSuccessEnvelope<{
+        accessToken: string;
+        refreshToken: string;
+      }>;
+      window.localStorage.setItem('finvision.accessToken', payload.data.accessToken);
+      window.localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, payload.data.refreshToken);
+      return true;
+    }
+  } catch {
+    // Network failure: handled like a rejected refresh below.
+  }
+
+  // Another tab may have rotated the token while this request was in flight; its new token is still valid.
+  const currentRefreshToken = window.localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+  return Boolean(currentRefreshToken) && currentRefreshToken !== refreshToken;
+};
+
+let refreshInFlight: Promise<boolean> | null = null;
+
 const handleUnauthorizedResponse = async () => {
   if (typeof window === 'undefined') {
     return;
   }
 
-  const refreshToken = window.localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+  // Several requests fail with 401 at once when the access token expires. They share one refresh, because a
+  // second refresh with the same (already rotated) token would be rejected and sign the user out.
+  refreshInFlight ??= refreshStoredTokens().finally(() => {
+    refreshInFlight = null;
+  });
 
-  if (refreshToken) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
-
-      if (response.ok) {
-        const payload = (await response.json()) as ApiSuccessEnvelope<{
-          accessToken: string;
-          refreshToken: string;
-        }>;
-        window.localStorage.setItem('finvision.accessToken', payload.data.accessToken);
-        window.localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, payload.data.refreshToken);
-        window.location.reload();
-        return;
-      }
-    } catch {
-    }
+  if (await refreshInFlight) {
+    window.location.reload();
+    return;
   }
 
   clearStoredAuthTokens();
@@ -1343,14 +1365,12 @@ export const sendFinnyChatMessage = async (
   };
 };
 
-export const logoutRequest = async (token?: string | null) => {
-  const payload = await apiRequest<LogoutResponse>(
-    '/api/v1/auth/logout',
-    {
-      method: 'POST',
-    },
-    token ?? undefined,
-  );
+// Revokes the refresh token's session on the server. Sent without the access token, which may have expired.
+export const logoutRequest = async (refreshToken: string) => {
+  const payload = await apiRequest<LogoutResponse>('/api/v1/auth/logout', {
+    method: 'POST',
+    body: JSON.stringify({ refreshToken }),
+  });
   return payload.data;
 };
 

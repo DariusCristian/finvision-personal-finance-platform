@@ -55,6 +55,19 @@ const userSchema = new mongoose.Schema(
       enum: ['funded', 'demo'],
       default: null,
     },
+    // One entry per signed-in device, so refresh tokens can be rotated and revoked. Only changed through atomic
+    // updates in services/refresh-sessions.js, and never loaded with the user unless selected explicitly.
+    refreshSessions: {
+      type: [
+        {
+          _id: false,
+          jti: { type: String, required: true },
+          expiresAt: { type: Date, required: true },
+        },
+      ],
+      default: [],
+      select: false,
+    },
   },
   {
     timestamps: {

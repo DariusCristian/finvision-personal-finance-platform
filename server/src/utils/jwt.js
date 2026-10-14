@@ -12,9 +12,13 @@ export const verifyAccessToken = (token) => {
   return jwt.verify(token, env.JWT_ACCESS_SECRET);
 };
 
-export const createRefreshToken = (userId) => {
+export const REFRESH_TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60;
+
+// `jti` identifies the refresh session stored on the user (see services/refresh-sessions.js).
+export const createRefreshToken = (userId, jti) => {
   return jwt.sign({ sub: userId }, env.JWT_REFRESH_SECRET, {
-    expiresIn: '7d',
+    expiresIn: REFRESH_TOKEN_TTL_SECONDS,
+    jwtid: jti,
   });
 };
 
