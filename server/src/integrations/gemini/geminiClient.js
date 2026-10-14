@@ -2,7 +2,13 @@ import { GoogleGenAI } from '@google/genai';
 
 import { logger } from '../../utils/logger.js';
 
-const ai = new GoogleGenAI({});
+// Created on first use: the SDK reads GEMINI_API_KEY and warns at construction when it is missing, which would
+// otherwise happen in every process that merely imports this module (e.g. tests that never call Gemini).
+let ai = null;
+const getClient = () => {
+  ai ??= new GoogleGenAI({});
+  return ai;
+};
 
 const MAX_ATTEMPTS = 3;
 const REQUEST_TIMEOUT_MS = 20_000;
@@ -101,7 +107,7 @@ export async function generateFinnyReply({ message, systemInstruction, context }
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     try {
-      const res = await withTimeout(ai.models.generateContent(requestPayload), REQUEST_TIMEOUT_MS);
+      const res = await withTimeout(getClient().models.generateContent(requestPayload), REQUEST_TIMEOUT_MS);
       return res.text || '';
     } catch (error) {
       lastError = error;

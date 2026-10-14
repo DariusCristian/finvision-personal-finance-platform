@@ -447,7 +447,15 @@ const getStockCandlesByRange = async (symbol, range) => {
 
           return yahooPayload;
         }
-      } catch {
+      } catch (error) {
+        // Fallback attempt failed: log it and continue with the next source.
+        logger.warn('market.stocks.candles.fallback_failed', {
+          symbol: String(symbol || '').trim().toUpperCase(),
+          range: normalizedRange,
+          provider: 'yahoo',
+          reason: 'STOOQ_QUOTE_FALLBACK',
+          message: error?.message ?? 'Unknown error',
+        });
       }
     }
 
@@ -488,7 +496,15 @@ const getStockCandlesByRange = async (symbol, range) => {
 
           return yahooPayload;
         }
-      } catch {
+      } catch (error) {
+        // Fallback attempt failed: log it and continue with the next source.
+        logger.warn('market.stocks.candles.fallback_failed', {
+          symbol: String(symbol || '').trim().toUpperCase(),
+          range: normalizedRange,
+          provider: 'yahoo',
+          reason: 'STOOQ_NO_DATA',
+          message: error?.message ?? 'Unknown error',
+        });
       }
 
       try {
@@ -530,7 +546,15 @@ const getStockCandlesByRange = async (symbol, range) => {
 
           return quoteFallbackPayload;
         }
-      } catch {
+      } catch (error) {
+        // Fallback attempt failed: log it and continue with the next source.
+        logger.warn('market.stocks.candles.fallback_failed', {
+          symbol: String(symbol || '').trim().toUpperCase(),
+          range: normalizedRange,
+          provider: 'finnhub_quote',
+          reason: 'STOOQ_NO_DATA',
+          message: error?.message ?? 'Unknown error',
+        });
       }
     }
 
@@ -578,7 +602,15 @@ const getStockCandlesByRange = async (symbol, range) => {
 
         return yahooPayload;
       }
-    } catch {
+    } catch (error) {
+      // Fallback attempt failed: log it and continue with the next source.
+      logger.warn('market.stocks.candles.fallback_failed', {
+        symbol: String(symbol || '').trim().toUpperCase(),
+        range: normalizedRange,
+        provider: 'yahoo',
+        reason: 'STOOQ_PROVIDER_ERROR',
+        message: error?.message ?? 'Unknown error',
+      });
     }
 
     if (isFinnhubConfigured()) {
@@ -621,7 +653,15 @@ const getStockCandlesByRange = async (symbol, range) => {
 
           return quoteFallbackPayload;
         }
-      } catch {
+      } catch (error) {
+        // Fallback attempt failed: log it and continue with the next source.
+        logger.warn('market.stocks.candles.fallback_failed', {
+          symbol: String(symbol || '').trim().toUpperCase(),
+          range: normalizedRange,
+          provider: 'finnhub_quote',
+          reason: 'STOOQ_NO_DATA',
+          message: error?.message ?? 'Unknown error',
+        });
       }
     }
 

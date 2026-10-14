@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { AppShell } from '../components/AppShell';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/useTheme';
 import {
   ApiRequestError,
   fetchProfile,
