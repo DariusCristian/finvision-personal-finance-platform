@@ -2,7 +2,11 @@ import 'dotenv/config';
 
 import { app } from './app.js';
 import { env } from './config/env.js';
-import { connectToDatabase, disconnectFromDatabase } from './database/mongoose.js';
+import {
+  assertTransactionSupport,
+  connectToDatabase,
+  disconnectFromDatabase,
+} from './database/mongoose.js';
 import { Article } from './models/article.js';
 import { ensureSystemCategories } from './models/category.js';
 import { InvestFunding } from './models/invest-funding.js';
@@ -134,6 +138,8 @@ const start = async () => {
     }
 
     await connectToDatabase();
+    const topology = await assertTransactionSupport();
+    logger.info('db.topology', { topology });
     await Promise.all([
       backfillPortfolioAccountType(),
       backfillPortfolioAccountMode(),
@@ -174,6 +180,12 @@ const start = async () => {
       });
     });
   } catch (error) {
+    if (error?.code === 'MONGO_STANDALONE') {
+      logger.error('server.start_failed', { code: error.code, message: 'MongoDB replica set required.' });
+      process.stderr.write(`\n${error.message}\n\n`);
+      process.exit(1);
+    }
+
     logger.error('server.start_failed', {
       message: error?.message ?? 'Unknown startup error',
       stack: error?.stack,
