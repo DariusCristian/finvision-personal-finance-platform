@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 
 let runtimePromise = null;
 let activeConsumers = 0;
@@ -15,7 +15,8 @@ const ensureTestEnv = () => {
 const createRuntime = async () => {
   ensureTestEnv();
 
-  const mongoServer = await MongoMemoryServer.create();
+  // Transactions need a replica set; a single wiredTiger node is enough.
+  const mongoServer = await MongoMemoryReplSet.create({ replSet: { count: 1, storageEngine: 'wiredTiger' } });
   process.env.MONGODB_URI = mongoServer.getUri('finvision_test');
 
   const [{ app }, { connectToDatabase, disconnectFromDatabase }, { ensureSystemCategories }] =
@@ -26,10 +27,13 @@ const createRuntime = async () => {
     ]);
 
   await connectToDatabase();
+  await Promise.all(Object.values(mongoose.models).map((model) => model.init()));
   await ensureSystemCategories();
 
+  // Clear documents instead of dropping the database so unique indexes survive between tests.
   const resetDatabase = async () => {
-    await mongoose.connection.db.dropDatabase();
+    const collections = await mongoose.connection.db.collections();
+    await Promise.all(collections.map((collection) => collection.deleteMany({})));
     await ensureSystemCategories();
   };
 
