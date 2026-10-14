@@ -21,12 +21,23 @@ const createRuntime = async () => {
   const mongoServer = await MongoMemoryReplSet.create({ replSet: { count: 1, storageEngine: 'wiredTiger' } });
   process.env.MONGODB_URI = mongoServer.getUri('finvision_test');
 
-  const [{ app }, { connectToDatabase, disconnectFromDatabase }, { ensureSystemCategories }] =
+  const [{ app }, { connectToDatabase, disconnectFromDatabase }, { ensureSystemCategories }, { env }] =
     await Promise.all([
       import('../../src/app.js'),
       import('../../src/database/mongoose.js'),
       import('../../src/models/category.js'),
+      import('../../src/config/env.js'),
     ]);
+
+  // env.js reads server/.env once, on first import. If a test file imported it before this runtime set the
+  // in-memory URI, the real database URI would be used: refuse to connect rather than touch a real database.
+  if (env.MONGODB_URI !== process.env.MONGODB_URI) {
+    await mongoServer.stop();
+    throw new Error(
+      'Refusing to run tests: src/config/env.js was loaded before the test runtime set the in-memory MONGODB_URI. ' +
+        'Import src modules that read env dynamically, after getTestRuntime().',
+    );
+  }
 
   await connectToDatabase();
   await Promise.all(Object.values(mongoose.models).map((model) => model.init()));
