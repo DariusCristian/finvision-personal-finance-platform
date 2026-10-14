@@ -13,8 +13,7 @@ import { Transaction } from '../../src/models/transaction.js';
 import { getTestRuntime, releaseTestRuntime } from '../support/test-runtime.js';
 
 // Finding 1 (AUDIT.md): each test fires concurrent requests whose total exceeds the balance or holding.
-// Tests stay `todo` until the part of PLAN-finding-1.md that fixes their spot enables them.
-const TODO_PART_6 = { todo: 'finding 1, part 6: orders (spots E, F, G)' };
+// Every test failed on the code before the fix; run this file repeatedly to check a race fix is reliable.
 
 const CONCURRENT_REQUESTS = 5;
 // Auto-fund and first-buy holding creation have no uncached external call between check and write, so their race
@@ -270,27 +269,27 @@ const stockOrderSetup = {
   priceEUR: STOCK_PRICE_EUR,
 };
 
-test('spot E: concurrent crypto buys cannot spend more cash than the account holds', TODO_PART_6, async () => {
+test('spot E: concurrent crypto buys cannot spend more cash than the account holds', async () => {
   await assertBuyRace(cryptoOrderSetup);
 });
 
-test('spot E: concurrent first buys of a new coin create one holding', TODO_PART_6, async () => {
+test('spot E: concurrent first buys of a new coin create one holding', async () => {
   await assertFirstBuyRace(cryptoOrderSetup);
 });
 
-test('spot F: concurrent crypto sells cannot sell more than the holding', TODO_PART_6, async () => {
+test('spot F: concurrent crypto sells cannot sell more than the holding', async () => {
   await assertSellRace(cryptoOrderSetup);
 });
 
-test('spot G: concurrent stock buys cannot spend more cash than the account holds', TODO_PART_6, async () => {
+test('spot G: concurrent stock buys cannot spend more cash than the account holds', async () => {
   await assertBuyRace(stockOrderSetup);
 });
 
-test('spot G: concurrent first buys of a new stock create one holding', TODO_PART_6, async () => {
+test('spot G: concurrent first buys of a new stock create one holding', async () => {
   await assertFirstBuyRace(stockOrderSetup);
 });
 
-test('spot G: concurrent stock sells cannot sell more than the holding', TODO_PART_6, async () => {
+test('spot G: concurrent stock sells cannot sell more than the holding', async () => {
   await assertSellRace(stockOrderSetup);
 });
 

@@ -17,6 +17,7 @@ import { PortfolioHolding } from '../../models/portfolio-holding.js';
 import { PortfolioSnapshot } from '../../models/portfolio-snapshot.js';
 import { PortfolioTrade } from '../../models/portfolio-trade.js';
 import { ensureInvestingWallet, ensurePortfolioAccount } from '../../services/balance-ops.js';
+import { executeOrder } from '../../services/portfolio-order.js';
 import { topUpAccountFromWallet } from '../../services/wallet-topup.js';
 import { logger } from '../../utils/logger.js';
 import { sendSuccess } from '../../utils/response.js';
@@ -44,7 +45,6 @@ const INVEST_PRICING_VS = 'eur';
 const INVEST_PRICING_CURRENCY = 'EUR';
 const FUNDED_STARTING_CRYPTO_CASH_BALANCE = 0;
 const DEMO_STARTING_CRYPTO_CASH_BALANCE = 5000;
-const MIN_HOLDING_QUANTITY = 0.00000001;
 const PERFORMANCE_DAYS_BY_RANGE = {
   '7d': 7,
   '30d': 30,
@@ -1135,7 +1135,6 @@ const handleCryptoOrder = async (req, res, next) => {
 
     const { coinId, symbol, side, quantity } = req.body;
     const selectedMode = resolveActiveMode(req.authUser);
-    const account = await ensureCryptoPortfolioAccount(req.authUser, selectedMode);
     const pricesMap = await getSimplePrices([coinId], INVEST_PRICING_VS);
     const quote = pricesMap[coinId];
 
@@ -1148,87 +1147,22 @@ const handleCryptoOrder = async (req, res, next) => {
     }
 
     const executionPrice = quote.price;
-    const orderTotal = quantity * executionPrice;
-    const roundedOrderTotal = toMoney(orderTotal);
+    const roundedOrderTotal = toMoney(quantity * executionPrice);
 
-    let holding = await PortfolioHolding.findOne({
+    await ensureCryptoPortfolioAccount(req.authUser, selectedMode);
+
+    const { account, trade } = await executeOrder({
       userId: req.authUser._id,
       accountType: CRYPTO_ACCOUNT_TYPE,
       mode: selectedMode,
       assetType: 'crypto',
-      coinId,
-    });
-
-    if (side === 'buy') {
-      if (account.cashBalance < roundedOrderTotal) {
-        throw new AppError({
-          message: 'Insufficient buying power for this order.',
-          statusCode: 400,
-          code: 'INSUFFICIENT_FUNDS',
-        });
-      }
-
-      if (!holding) {
-        holding = await PortfolioHolding.create({
-          userId: req.authUser._id,
-          accountType: CRYPTO_ACCOUNT_TYPE,
-          mode: selectedMode,
-          assetType: 'crypto',
-          coinId,
-          symbol,
-          quantity,
-          avgCost: executionPrice,
-        });
-      } else {
-        const nextQuantity = holding.quantity + quantity;
-        const nextAvgCost =
-          (holding.quantity * holding.avgCost + quantity * executionPrice) / nextQuantity;
-
-        holding.quantity = toNumber(nextQuantity);
-        holding.avgCost = toNumber(nextAvgCost);
-        await holding.save();
-      }
-
-      account.cashBalance = toMoney(account.cashBalance - roundedOrderTotal);
-    }
-
-    if (side === 'sell') {
-      if (!holding || holding.quantity < quantity) {
-        throw new AppError({
-          message: 'Insufficient quantity available to sell.',
-          statusCode: 400,
-          code: 'INSUFFICIENT_HOLDINGS',
-        });
-      }
-
-      const nextQuantity = toNumber(holding.quantity - quantity);
-
-      if (nextQuantity <= MIN_HOLDING_QUANTITY) {
-        await PortfolioHolding.deleteOne({
-          _id: holding._id,
-        });
-      } else {
-        holding.quantity = nextQuantity;
-        await holding.save();
-      }
-
-      account.cashBalance = toMoney(account.cashBalance + roundedOrderTotal);
-    }
-
-    await account.save();
-
-    const trade = await PortfolioTrade.create({
-      userId: req.authUser._id,
-      accountType: CRYPTO_ACCOUNT_TYPE,
-      mode: selectedMode,
-      assetType: 'crypto',
-      coinId,
-      symbol,
+      holdingKey: { coinId },
+      insertFields: { symbol, name: null },
       side,
       quantity,
       price: executionPrice,
       total: roundedOrderTotal,
-      executedAt: new Date(),
+      tradeFields: { symbol },
     });
 
     const refreshedHoldings = await PortfolioHolding.find({

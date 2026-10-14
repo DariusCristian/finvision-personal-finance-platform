@@ -22,6 +22,7 @@ import { PortfolioHolding } from '../../models/portfolio-holding.js';
 import { PortfolioSnapshot } from '../../models/portfolio-snapshot.js';
 import { PortfolioTrade } from '../../models/portfolio-trade.js';
 import { ensureInvestingWallet as ensureWallet, ensurePortfolioAccount } from '../../services/balance-ops.js';
+import { executeOrder } from '../../services/portfolio-order.js';
 import { topUpAccountFromWallet } from '../../services/wallet-topup.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { logger } from '../../utils/logger.js';
@@ -47,7 +48,6 @@ const STOCKS_DEMO_MODE = 'demo';
 const STOCKS_DEFAULT_MODE = STOCKS_FUNDED_MODE;
 const STOCKS_BASE_CURRENCY = 'EUR';
 const STOCKS_PRICING_CURRENCY = 'EUR';
-const MIN_HOLDING_QUANTITY = 0.00000001;
 const WALLET_CURRENCY = 'RON';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PERFORMANCE_DAYS_BY_RANGE = {
@@ -1016,93 +1016,30 @@ const handleStockOrder = async (req, res, next) => {
   try {
     const { symbol, side, quantity } = req.body;
     const selectedMode = resolveActiveMode(req.authUser);
-    const account = await ensureStocksAccount(req.authUser, selectedMode);
     const executionQuote = await fetchStockExecutionQuote(symbol);
 
     const executionPrice = executionQuote.priceEUR;
-    const orderTotal = quantity * executionPrice;
-    const roundedOrderTotal = toNumber(orderTotal);
+    const roundedOrderTotal = toMoney(quantity * executionPrice);
 
-    let holding = await PortfolioHolding.findOne({
+    await ensureStocksAccount(req.authUser, selectedMode);
+
+    const { account, trade } = await executeOrder({
       userId: req.authUser._id,
       accountType: STOCKS_ACCOUNT_TYPE,
       mode: selectedMode,
       assetType: 'stock',
-      symbol,
-    });
-
-    if (side === 'buy') {
-      if (account.cashBalance < roundedOrderTotal) {
-        throw new AppError({
-          message: 'Insufficient buying power for this order.',
-          statusCode: 400,
-          code: 'INSUFFICIENT_FUNDS',
-        });
-      }
-
-      if (!holding) {
-        holding = await PortfolioHolding.create({
-          userId: req.authUser._id,
-          accountType: STOCKS_ACCOUNT_TYPE,
-          mode: selectedMode,
-          assetType: 'stock',
-          symbol,
-          name: null,
-          coinId: null,
-          quantity,
-          avgCost: executionPrice,
-        });
-      } else {
-        const nextQuantity = holding.quantity + quantity;
-        const nextAvgCost =
-          (holding.quantity * holding.avgCost + quantity * executionPrice) / nextQuantity;
-
-        holding.quantity = toNumber(nextQuantity);
-        holding.avgCost = toNumber(nextAvgCost);
-        await holding.save();
-      }
-
-      account.cashBalance = toNumber(account.cashBalance - roundedOrderTotal);
-    }
-
-    if (side === 'sell') {
-      if (!holding || holding.quantity < quantity) {
-        throw new AppError({
-          message: 'Insufficient quantity available to sell.',
-          statusCode: 400,
-          code: 'INSUFFICIENT_HOLDINGS',
-        });
-      }
-
-      const nextQuantity = toNumber(holding.quantity - quantity);
-
-      if (nextQuantity <= MIN_HOLDING_QUANTITY) {
-        await PortfolioHolding.deleteOne({ _id: holding._id });
-      } else {
-        holding.quantity = nextQuantity;
-        await holding.save();
-      }
-
-      account.cashBalance = toNumber(account.cashBalance + roundedOrderTotal);
-    }
-
-    await account.save();
-
-    const trade = await PortfolioTrade.create({
-      userId: req.authUser._id,
-      accountType: STOCKS_ACCOUNT_TYPE,
-      mode: selectedMode,
-      assetType: 'stock',
-      coinId: null,
-      symbol,
+      holdingKey: { symbol },
+      insertFields: { name: null, coinId: null },
       side,
       quantity,
       price: executionPrice,
       total: roundedOrderTotal,
-      executedPriceOriginal: executionQuote.priceUSD,
-      originalCurrency: 'USD',
-      fxRateToEur: executionQuote.usdToEurRate,
-      executedAt: new Date(),
+      tradeFields: {
+        coinId: null,
+        executedPriceOriginal: executionQuote.priceUSD,
+        originalCurrency: 'USD',
+        fxRateToEur: executionQuote.usdToEurRate,
+      },
     });
 
     const refreshedHoldings = await PortfolioHolding.find({
