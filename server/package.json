@@ -8,8 +8,7 @@
     "start": "node src/index.js",
     "lint": "eslint \"src/**/*.js\"",
     "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
-    "seed:education": "node scripts/seedEducation.js",
-    "reset:invest:crypto": "node src/scripts/resetInvestCrypto.js"
+    "seed:education": "node scripts/seedEducation.js"
   },
   "dependencies": {
     "@google/genai": "^1.47.0",
