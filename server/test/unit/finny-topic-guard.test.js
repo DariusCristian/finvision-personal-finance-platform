@@ -95,3 +95,32 @@ test('topic guard still blocks Romanian off-topic sports question', () => {
   assert.equal(isInScope(message), false);
   assert.equal(classifyIntent(message), 'OFF_TOPIC');
 });
+
+test('topic guard allows finance questions containing everyday words that used to be blocked', () => {
+  for (const message of [
+    'Does my spending match my budget?',
+    'Be my budget coach for this month',
+    'Who are the big players in the stock market?',
+    'How much do I spend on movie subscriptions?',
+    'Cheap recipes to cut spending on food',
+    'How do I weather a market downturn with my portfolio?',
+    'How should I budget for a trip to Barcelona?',
+  ]) {
+    assert.equal(isInScope(message), true, message);
+  }
+});
+
+test('topic guard matches blocked words as whole words only', () => {
+  const scope = inspectTopicScope('Any tips for stock selection?');
+
+  assert.equal(scope.inScope, true);
+  assert.deepEqual(scope.matchedBlockKeywords, []);
+});
+
+test('topic guard still refuses clear sports and off-topic questions', () => {
+  assert.equal(isInScope('Who won the match last night?'), false);
+  assert.equal(classifyIntent('Who won the match last night?'), 'OFF_TOPIC');
+  assert.equal(isInScope('Who won the football match last night? Should I buy stocks?'), false);
+  assert.equal(isInScope('Is the NBA final worth betting my savings on?'), false);
+  assert.equal(isInScope('Write the lyrics of a song about my budget'), false);
+});

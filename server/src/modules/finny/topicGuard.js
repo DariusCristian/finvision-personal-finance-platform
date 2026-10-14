@@ -1,3 +1,5 @@
+import { escapeRegex } from '../../utils/regex.js';
+
 const ALLOWLIST_KEYWORDS = [
   'finance',
   'personal finance',
@@ -95,15 +97,14 @@ const ALLOWLIST_KEYWORDS = [
   'fond de urgență',
 ];
 
+// The blocklist only matters when a message also contains an allowlist keyword, so it must not contain everyday
+// words that appear in finance questions ("does my spending match my budget", "budget coach", "big market players",
+// "movie subscriptions", "cheap recipes", "weather a downturn", "trip to Barcelona"). Matched on whole words.
 const BLOCKLIST_KEYWORDS = [
   'football',
   'soccer',
   'fc barcelona',
-  'barcelona',
   'striker',
-  'coach',
-  'player',
-  'match',
   'goalkeeper',
   'premier league',
   'champions league',
@@ -117,17 +118,24 @@ const BLOCKLIST_KEYWORDS = [
   'president',
   'prime minister',
   'celebrity',
-  'movie',
   'lyrics',
-  'recipe',
-  'weather',
   'general trivia',
 ];
 
 const normalize = (message) => String(message ?? '').trim().toLowerCase();
 
+// Substring match: the allowlist relies on stems such as 'economi' and 'cheltui'.
 const getMatchedKeywords = (text, keywords) =>
   keywords.filter((keyword) => text.includes(keyword));
+
+const BLOCKLIST_PATTERNS = BLOCKLIST_KEYWORDS.map((keyword) => ({
+  keyword,
+  pattern: new RegExp(`\\b${escapeRegex(keyword)}\\b`),
+}));
+
+// Whole-word match, so 'election' does not block "stock selection".
+const getMatchedBlockKeywords = (text) =>
+  BLOCKLIST_PATTERNS.filter(({ pattern }) => pattern.test(text)).map(({ keyword }) => keyword);
 
 const includesAnyKeyword = (text, keywords) => keywords.some((keyword) => text.includes(keyword));
 
@@ -265,7 +273,7 @@ export const inspectTopicScope = (message) => {
   }
 
   const matchedAllowKeywords = getMatchedKeywords(normalized, ALLOWLIST_KEYWORDS);
-  const matchedBlockKeywords = getMatchedKeywords(normalized, BLOCKLIST_KEYWORDS);
+  const matchedBlockKeywords = getMatchedBlockKeywords(normalized);
 
   const inScope = matchedAllowKeywords.length > 0 && matchedBlockKeywords.length === 0;
 
