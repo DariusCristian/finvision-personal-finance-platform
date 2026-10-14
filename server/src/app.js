@@ -26,6 +26,7 @@ import { transactionRouter } from './routes/v1/transactions.js';
 
 const app = express();
 
+app.set('trust proxy', env.TRUST_PROXY);
 app.use(requestIdMiddleware);
 app.use(requestLoggerMiddleware);
 app.use(helmet());

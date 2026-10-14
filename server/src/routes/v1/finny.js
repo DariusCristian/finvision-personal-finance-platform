@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { AppError } from '../../errors/app-error.js';
 import { generateFinnyReply } from '../../integrations/gemini/geminiClient.js';
 import { requireAuth } from '../../middleware/auth.js';
+import { finnyChatRateLimit } from '../../middleware/rate-limit.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { inspectIntent, inspectTopicScope } from '../../modules/finny/topicGuard.js';
 import { Category } from '../../models/category.js';
@@ -922,7 +923,7 @@ const buildGeminiContextByType = ({ insightContext, contextTypeUsed, shouldAllow
 
 const router = express.Router();
 
-router.post('/chat', requireAuth, validateRequest({ body: finnyChatSchema }), async (req, res, next) => {
+router.post('/chat', requireAuth, finnyChatRateLimit, validateRequest({ body: finnyChatSchema }), async (req, res, next) => {
   const userId = req.authUser._id.toString();
   let contextTypeUsed = 'general';
 

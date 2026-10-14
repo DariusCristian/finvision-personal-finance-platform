@@ -12,6 +12,8 @@ const ensureTestEnv = () => {
   process.env.CORS_ORIGINS = process.env.CORS_ORIGINS ?? 'http://localhost:5173';
   process.env.JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET ?? 'test_access_secret';
   process.env.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET ?? 'test_refresh_secret';
+  // Rate limits are off unless a test file enables them before starting the runtime (see rate-limit tests).
+  process.env.RATE_LIMIT_ENABLED = process.env.RATE_LIMIT_ENABLED ?? 'false';
 };
 
 const createRuntime = async () => {

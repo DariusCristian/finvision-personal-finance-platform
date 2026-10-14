@@ -3,6 +3,7 @@ import { Router } from 'express';
 
 import { AuthError, ConflictError } from '../../errors/app-error.js';
 import { requireAuth } from '../../middleware/auth.js';
+import { loginRateLimit, refreshRateLimit, registerRateLimit } from '../../middleware/rate-limit.js';
 import { validateRequest } from '../../middleware/validate-request.js';
 import { User } from '../../models/user.js';
 import {
@@ -40,7 +41,7 @@ const readRefreshToken = (refreshToken) => {
   }
 };
 
-authRouter.post('/register', validateRequest({ body: registerSchema }), async (req, res, next) => {
+authRouter.post('/register', registerRateLimit, validateRequest({ body: registerSchema }), async (req, res, next) => {
   try {
     const { email, password, displayName, baseCurrency } = req.body;
 
@@ -79,7 +80,7 @@ authRouter.post('/register', validateRequest({ body: registerSchema }), async (r
   }
 });
 
-authRouter.post('/login', validateRequest({ body: loginSchema }), async (req, res, next) => {
+authRouter.post('/login', loginRateLimit, validateRequest({ body: loginSchema }), async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -100,7 +101,7 @@ authRouter.post('/login', validateRequest({ body: loginSchema }), async (req, re
   }
 });
 
-authRouter.post('/refresh', async (req, res, next) => {
+authRouter.post('/refresh', refreshRateLimit, async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
 
