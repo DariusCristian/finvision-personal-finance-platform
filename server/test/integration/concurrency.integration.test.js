@@ -14,7 +14,6 @@ import { getTestRuntime, releaseTestRuntime } from '../support/test-runtime.js';
 
 // Finding 1 (AUDIT.md): each test fires concurrent requests whose total exceeds the balance or holding.
 // Tests stay `todo` until the part of PLAN-finding-1.md that fixes their spot enables them.
-const TODO_PART_4 = { todo: 'finding 1, part 4: deposit and auto-fund (spots C, D)' };
 const TODO_PART_5 = { todo: 'finding 1, part 5: top-ups (spots A, B)' };
 const TODO_PART_6 = { todo: 'finding 1, part 6: orders (spots E, F, G)' };
 
@@ -150,7 +149,7 @@ test('spot B: concurrent stocks top-ups cannot spend more than the wallet holds'
   });
 });
 
-test('spot C: concurrent deposits are all credited to the wallet', TODO_PART_4, async () => {
+test('spot C: concurrent deposits are all credited to the wallet', async () => {
   const { userId, auth } = await registerAndLogin();
   await expectOk(send('get', '/investing-wallet', auth));
 
@@ -167,7 +166,7 @@ test('spot C: concurrent deposits are all credited to the wallet', TODO_PART_4, 
   assert.equal(expenseCount, 5);
 });
 
-test('spot D: concurrent wallet reads apply the monthly auto-fund only once', TODO_PART_4, async () => {
+test('spot D: concurrent wallet reads apply the monthly auto-fund only once', async () => {
   const { userId, auth } = await registerAndLogin();
   await expectOk(send('get', '/investing-wallet', auth));
 

@@ -1,3 +1,5 @@
+import mongoose from 'mongoose';
+
 import { InvestingWallet } from '../models/investing-wallet.js';
 import { PortfolioAccount } from '../models/portfolio-account.js';
 import { PortfolioHolding } from '../models/portfolio-holding.js';
@@ -9,6 +11,10 @@ import { PortfolioHolding } from '../models/portfolio-holding.js';
 const MONEY_DECIMALS = 2;
 const QUANTITY_DECIMALS = 8;
 export const MIN_HOLDING_QUANTITY = 0.00000001;
+
+// Runs `work(session)` in a MongoDB transaction (requires a replica set). The callback may be retried on transient
+// errors, so it must not call external APIs or have side effects outside the session.
+export const runInTransaction = (work) => mongoose.connection.transaction(work);
 
 const roundTo = (value, decimals) => Number(Number(value).toFixed(decimals));
 

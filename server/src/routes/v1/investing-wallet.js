@@ -7,7 +7,12 @@ import { validateRequest } from '../../middleware/validate-request.js';
 import { Category } from '../../models/category.js';
 import { InvestingWalletLedger } from '../../models/investing-wallet-ledger.js';
 import { Transaction } from '../../models/transaction.js';
-import { ensureInvestingWallet as ensureWallet } from '../../services/balance-ops.js';
+import {
+  claimAutoFund,
+  creditWallet,
+  ensureInvestingWallet as ensureWallet,
+  runInTransaction,
+} from '../../services/balance-ops.js';
 import { sendSuccess } from '../../utils/response.js';
 import {
   investingWalletConvertQuoteQuerySchema,
@@ -42,11 +47,13 @@ const serializeWallet = (wallet) => ({
   autoFundDayOfMonth: wallet.autoFundDayOfMonth,
 });
 
-const recordInvestingDepositExpense = async (userId, amountRON, note) => {
+const recordInvestingDepositExpense = async (userId, amountRON, note, { session } = {}) => {
   const investingCategory = await Category.findOne({
     userId: null,
     slug: 'investing',
-  }).select('_id');
+  })
+    .select('_id')
+    .session(session ?? null);
 
   if (!investingCategory) {
     return;
@@ -54,16 +61,21 @@ const recordInvestingDepositExpense = async (userId, amountRON, note) => {
 
   const trimmedNote = typeof note === 'string' ? note.trim() : '';
 
-  await Transaction.create({
-    userId,
-    type: 'expense',
-    categoryId: investingCategory._id,
-    amount: amountRON,
-    currency: WALLET_CURRENCY,
-    date: new Date(),
-    description: trimmedNote ? `Investing wallet deposit — ${trimmedNote}` : 'Investing wallet deposit',
-    recurrence: 'none',
-  });
+  await Transaction.create(
+    [
+      {
+        userId,
+        type: 'expense',
+        categoryId: investingCategory._id,
+        amount: amountRON,
+        currency: WALLET_CURRENCY,
+        date: new Date(),
+        description: trimmedNote ? `Investing wallet deposit — ${trimmedNote}` : 'Investing wallet deposit',
+        recurrence: 'none',
+      },
+    ],
+    { session },
+  );
 };
 
 const computeInvestedThisMonth = async (userId) => {
@@ -139,30 +151,44 @@ const applyAutoFundIfDue = async (wallet) => {
     return wallet;
   }
 
-  const amountToAdd = toMoney(wallet.autoFundAmount);
-
-  if (amountToAdd <= 0) {
+  if (toMoney(wallet.autoFundAmount) <= 0) {
     return wallet;
   }
 
-  wallet.balance = toMoney(wallet.balance + amountToAdd);
-  wallet.lastAutoFundAt = now;
-  await wallet.save();
+  // The checks above only skip the transaction on most reads; claimAutoFund re-checks atomically so concurrent
+  // requests apply the auto-fund at most once per month.
+  const claimedWallet = await runInTransaction(async (session) => {
+    const claimed = await claimAutoFund(wallet._id, { now }, { session });
 
-  await InvestingWalletLedger.create({
-    userId: wallet.userId,
-    type: 'autofund',
-    amountRON: amountToAdd,
-    meta: {
-      note: 'Monthly auto-fund',
-      autoFundDayOfMonth: wallet.autoFundDayOfMonth,
-      autoFundAmount: amountToAdd,
-    },
+    if (!claimed) {
+      return null;
+    }
+
+    const amountToAdd = toMoney(claimed.autoFundAmount);
+
+    await InvestingWalletLedger.create(
+      [
+        {
+          userId: claimed.userId,
+          type: 'autofund',
+          amountRON: amountToAdd,
+          meta: {
+            note: 'Monthly auto-fund',
+            autoFundDayOfMonth: claimed.autoFundDayOfMonth,
+            autoFundAmount: amountToAdd,
+          },
+        },
+      ],
+      { session },
+    );
+
+    await recordInvestingDepositExpense(claimed.userId, amountToAdd, 'Monthly auto-fund', { session });
+
+    return claimed;
   });
 
-  await recordInvestingDepositExpense(wallet.userId, amountToAdd, 'Monthly auto-fund');
-
-  return wallet;
+  // Another request may have claimed it first; return the current wallet either way.
+  return claimedWallet ?? ensureWallet(wallet.userId);
 };
 
 const normalizeProviderError = (error) => {
@@ -184,8 +210,7 @@ const normalizeProviderError = (error) => {
 
 investingWalletRouter.get('/', requireAuth, async (req, res, next) => {
   try {
-    const wallet = await ensureWallet(req.authUser._id);
-    await applyAutoFundIfDue(wallet);
+    const wallet = await applyAutoFundIfDue(await ensureWallet(req.authUser._id));
     const investedThisMonthRON = await computeInvestedThisMonth(req.authUser._id);
 
     sendSuccess(res, {
@@ -204,8 +229,7 @@ investingWalletRouter.get(
   validateRequest({ query: investingWalletSummaryQuerySchema }),
   async (req, res, next) => {
     try {
-      const wallet = await ensureWallet(req.authUser._id);
-      await applyAutoFundIfDue(wallet);
+      await applyAutoFundIfDue(await ensureWallet(req.authUser._id));
       const summary = await computeMonthSummary(req.authUser._id, req.query.year, req.query.month);
 
       sendSuccess(res, summary);
@@ -221,8 +245,7 @@ investingWalletRouter.patch(
   validateRequest({ body: investingWalletUpdateSchema }),
   async (req, res, next) => {
     try {
-      const wallet = await ensureWallet(req.authUser._id);
-      await applyAutoFundIfDue(wallet);
+      const wallet = await applyAutoFundIfDue(await ensureWallet(req.authUser._id));
       const { monthlyGoal, autoFundEnabled, autoFundAmount, autoFundDayOfMonth } = req.body;
 
       if (monthlyGoal !== undefined) {
@@ -260,23 +283,30 @@ investingWalletRouter.post(
   validateRequest({ body: investingWalletDepositSchema }),
   async (req, res, next) => {
     try {
-      const wallet = await ensureWallet(req.authUser._id);
-      await applyAutoFundIfDue(wallet);
+      await applyAutoFundIfDue(await ensureWallet(req.authUser._id));
       const amountRON = toMoney(req.body.amountRON);
 
-      wallet.balance = toMoney(wallet.balance + amountRON);
-      await wallet.save();
+      const wallet = await runInTransaction(async (session) => {
+        const credited = await creditWallet(req.authUser._id, amountRON, { session });
 
-      await InvestingWalletLedger.create({
-        userId: req.authUser._id,
-        type: 'deposit',
-        amountRON,
-        meta: {
-          note: req.body.note ?? '',
-        },
+        await InvestingWalletLedger.create(
+          [
+            {
+              userId: req.authUser._id,
+              type: 'deposit',
+              amountRON,
+              meta: {
+                note: req.body.note ?? '',
+              },
+            },
+          ],
+          { session },
+        );
+
+        await recordInvestingDepositExpense(req.authUser._id, amountRON, req.body.note, { session });
+
+        return credited;
       });
-
-      await recordInvestingDepositExpense(req.authUser._id, amountRON, req.body.note);
 
       sendSuccess(res, {
         ...serializeWallet(wallet),
